@@ -33,7 +33,9 @@ async fn main() {
         .await
         .unwrap();
 
-    rpc::turn_on();
+    std::thread::spawn(|| {
+        rpc::turn_on();
+    });
 
     if let Err(msg) = client.start().await {
         println!("Client error: {:?}", msg);
