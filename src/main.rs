@@ -1,12 +1,14 @@
 #![feature(fn_traits)]
-#![allow(unused_must_use)]
+#[allow(unused_must_use)]
 
-mod rpc;
 
 pub use serenity::{
     async_trait,
     client::bridge::gateway::GatewayIntents,
-    model::{channel::Message, gateway::Ready},
+    model::{
+        channel::Message, 
+        gateway::Ready
+    },
     prelude::*,
 };
 
@@ -32,10 +34,6 @@ async fn main() {
         .event_handler(Handler)
         .await
         .unwrap();
-
-    std::thread::spawn(|| {
-        rpc::turn_on();
-    });
 
     if let Err(msg) = client.start().await {
         println!("Client error: {:?}", msg);
