@@ -1,5 +1,5 @@
 #![feature(fn_traits)]
-#[allow(unused_must_use)]
+#![allow(unused_must_use)]
 
 
 pub use serenity::{
