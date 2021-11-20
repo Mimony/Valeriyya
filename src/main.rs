@@ -1,5 +1,6 @@
 #![feature(fn_traits)]
 #![allow(unused_must_use)]
+#![allow(unused_macros)]
 
 mod application;
 
@@ -11,9 +12,6 @@ pub use serenity::{
         gateway::Ready,
         id::GuildId,
         interactions::{
-            application_command::{
-                ApplicationCommand,
-            },
             Interaction,
             InteractionResponseType,
         },
@@ -32,6 +30,10 @@ impl EventHandler for Handler {
     }
 
     async fn interaction_create(&self, ctx: Context, interaction: Interaction) {
+        if !matches!(interaction, Interaction::ApplicationCommand(_)) {
+            return;
+        }
+
         if let Interaction::ApplicationCommand(command) = interaction {
             let content = match command.data.name.as_str() {
                 "ping" => "Ping pong".to_string(),
