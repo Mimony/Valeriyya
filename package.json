@@ -1,0 +1,29 @@
+{
+  "devDependencies": {
+    "typescript": "^4.5.2"
+  },
+  "dependencies": {
+    "@types/node": "^16.11.10",
+    "discord.js": "^13.3.1"
+  },
+  "name": "valeriyya",
+  "version": "1.0.0",
+  "description": "Discord.js Bot",
+  "main": "dist/index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/Mimony/Valeriyya.git"
+  },
+  "author": "Bloectasy & DecrepitHuman",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/Mimony/Valeriyya/issues"
+  },
+  "homepage": "https://github.com/Mimony/Valeriyya#readme",
+  "imports": {
+    "#lib/*": "/dist/lib/*.js"
+  }
+}
