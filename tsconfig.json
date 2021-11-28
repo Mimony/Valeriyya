@@ -34,6 +34,8 @@
     "baseUrl": "src",
     "paths": {
         "#lib/*": ["lib/*"],
+		"#util/*": ["lib/util/*"],
+        "#strucs/*": ["lib/structures/*"],
         "#root/*": ["*"]
     }
 	}
