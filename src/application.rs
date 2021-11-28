@@ -1,6 +1,9 @@
 use serenity::{
-    model::id::GuildId,
-    client::Context
+    client::Context, 
+    model::{
+        id::GuildId, 
+        interactions::application_command::ApplicationCommandOptionType
+    }
 };
 
 pub async fn load_dev_guild_commands(ctx: Context) {
@@ -10,6 +13,16 @@ pub async fn load_dev_guild_commands(ctx: Context) {
         cmds
         .create_application_command(|cmd| {
             cmd.name("ping").description("A ping command")
+        })
+        .create_application_command(|cmd| {
+            cmd.name("user").description("Displays the information of a specified user.")
+            .create_option(|option| {
+                option
+                .name("user")
+                .description("The user to get the information from.")
+                .kind(ApplicationCommandOptionType::User)
+                .required(false)
+            })
         })
     }).await;
 

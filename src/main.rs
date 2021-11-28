@@ -3,6 +3,8 @@
 #![allow(unused_macros)]
 
 mod application;
+mod commands;
+
 
 pub use serenity::{
     async_trait,
@@ -12,6 +14,11 @@ pub use serenity::{
         gateway::Ready,
         id::GuildId,
         interactions::{
+            application_command::{
+                ApplicationCommand,
+                ApplicationCommandInteractionDataOptionValue,
+                ApplicationCommandOptionType,
+            },
             Interaction,
             InteractionResponseType,
         },
@@ -23,40 +30,39 @@ struct Handler;
 
 #[async_trait]
 impl EventHandler for Handler {
+    async fn ready(&self, ctx: Context, client: Ready) {
+            application::load_dev_guild_commands(ctx).await;
+            
+            println!("{} is online", client.user.name);
+    }
+
     async fn message(&self, ctx: Context, message: Message) {
         if message.content == "!ping" {
             message.reply(ctx, "Pong!").await;
         }
     }
 
-    async fn interaction_create(&self, ctx: Context, interaction: Interaction) {
-        if !matches!(interaction, Interaction::ApplicationCommand(_)) {
+    async fn interaction_create(&self, ctx: Context, int: Interaction) {
+        if !matches!(int, Interaction::ApplicationCommand(_)) {
             return;
         }
 
-        if let Interaction::ApplicationCommand(command) = interaction {
-            let content = match command.data.name.as_str() {
-                "ping" => "Ping pong".to_string(),
+        if let Interaction::ApplicationCommand(cmd) = int {
+            let content = match cmd.data.name.as_str() {
+                "ping" => commands::ping::execute().to_string(),
+                "user" => commands::user::execute(&cmd).to_string(),
                 _ => "Error".to_string()
             };
 
-            if let Err(msg) = command
+            if let Err(msg) = cmd
                 .create_interaction_response(ctx, |response| {
                     response
                         .kind(InteractionResponseType::ChannelMessageWithSource)
                         .interaction_response_data(|message| message.content(content))
-                })
-                .await
-            {
-                println!("Error while respond to a interaction command: {}", msg);
-            }
+                }).await {
+                    println!("Error while responding to an interaction command: {}", msg);
+                }
         }
-    }
-
-    async fn ready(&self, ctx: Context, client: Ready) {
-        application::load_dev_guild_commands(ctx).await;
-        
-        println!("{} is online", client.user.name);
     }
 }
 
