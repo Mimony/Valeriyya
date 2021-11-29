@@ -1,5 +1,5 @@
 import type { Valeriyya } from "#lib/ValeriyyaClient";
-import type { ApplicationCommandOptionData, Awaitable, CommandInteraction } from "discord.js";
+import type { ApplicationCommandOptionData, CommandInteraction } from "discord.js";
 
 export abstract class Command<O extends Command.Options = Command.Options> {
 
@@ -12,7 +12,7 @@ export abstract class Command<O extends Command.Options = Command.Options> {
         this.description = options.description ?? '';
     }
 
-    public abstract execute(interaction: CommandInteraction): Awaitable<unknown>;
+    public abstract execute(interaction: CommandInteraction): void;
     
 }
 
