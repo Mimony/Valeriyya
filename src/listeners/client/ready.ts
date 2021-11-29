@@ -7,8 +7,8 @@ export default class extends Listener {
     });
   }
 
-  public execute() {
-    this.client?.fragments.loadCommands();
+  public async execute() {
+    await this.client?.fragments.loadCommands();
     const cmds = this.client?.commands!;
 
     const keys = Object.keys(cmds);
@@ -16,6 +16,6 @@ export default class extends Listener {
       cmds.set(keys[i], cmds.get(keys[i])!);
     }
 
-    console.log(`${this.client?.user?.tag} is ready!`)
+    console.log(`${this.client?.user?.tag} is ready!`);
   }
 }
