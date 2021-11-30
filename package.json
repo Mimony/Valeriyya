@@ -7,7 +7,7 @@
     "discord.js": "^13.3.1"
   },
   "name": "valeriyya",
-  "version": "1.1.0",
+  "version": "1.0.0",
   "description": "Discord.js Bot",
   "main": "dist/index.js",
   "scripts": {
@@ -24,8 +24,6 @@
   },
   "homepage": "https://github.com/Mimony/Valeriyya#readme",
   "imports": {
-    "#lib/*": "/dist/lib/*.js",
-    "#strucs/*": "/dist/lib/structures/*.js",
-    "#util/*": "/dist/lib/util/*.js"
+    "#lib/*": "/dist/lib/*.js"
   }
 }

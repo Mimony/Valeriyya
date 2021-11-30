@@ -1,10 +1,6 @@
-import { Client, Collection, type CommandInteraction } from "discord.js";
-import { Fragments } from "./structures/Fragment";
+import { Client } from "discord.js";
 
 export class Valeriyya extends Client {
-    public commands: Collection<string, (interaction: CommandInteraction) => void>= new Collection();
-    public fragments: Fragments = new Fragments(this);
-
     public constructor() {
         super({
             intents: [
@@ -17,7 +13,6 @@ export class Valeriyya extends Client {
     }
 
     public async start(token: string): Promise<string> {
-        this.fragments.loadListeners();
         return super.login(token)
     }
 }
