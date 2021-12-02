@@ -29,14 +29,7 @@
 		"strict": true,
 		"target": "ES2019",
 		"useDefineForClassFields": true,
-    "outDir": "dist",
-    "rootDir": "src",
-    "baseUrl": "src",
-    "paths": {
-        "#lib/*": ["lib/*"],
-		"#util/*": ["lib/util/*"],
-        "#strucs/*": ["lib/structures/*"],
-        "#root/*": ["*"]
-    }
+		"outDir": "dist",
+		"rootDir": "src",
 	}
 }

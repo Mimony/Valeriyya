@@ -3,7 +3,9 @@
     "typescript": "4.5.2"
   },
   "dependencies": {
+    "@sapphire/pieces": "^3.2.0",
     "@types/node": "^16.11.10",
+    "chalk": "^5.0.0",
     "discord.js": "^13.3.1"
   },
   "name": "valeriyya",
@@ -22,10 +24,5 @@
   "bugs": {
     "url": "https://github.com/Mimony/Valeriyya/issues"
   },
-  "homepage": "https://github.com/Mimony/Valeriyya#readme",
-  "imports": {
-    "#lib/*": "/dist/lib/*.js",
-    "#strucs/*": "/dist/lib/structures/*.js",
-    "#util/*": "/dist/lib/util/*.js"
-  }
+  "homepage": "https://github.com/Mimony/Valeriyya#readme"
 }
