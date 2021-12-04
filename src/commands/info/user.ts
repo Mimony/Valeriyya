@@ -1,5 +1,6 @@
-import { GuildMember, MessageEmbed } from "discord.js";
-import { defineCommand, ICommandInteraction } from "../../lib/util/utilityTypes";
+import { GuildMember } from "discord.js";
+import { ValeriyyaEmbed } from "../../lib/util/valeriyya.embed";
+import { defineCommand, ICommandInteraction } from "../../lib/util/valeriyya.types";
 
 export default defineCommand({
   name: "user",
@@ -17,7 +18,7 @@ export default defineCommand({
     if (!(member instanceof GuildMember)) return;
     const { user } = member!;
 
-    const embed = new MessageEmbed()
+    const embed = new ValeriyyaEmbed()
     .setAuthor(`${user.tag} (${user.id})`, user.displayAvatarURL({ dynamic: true }))
     .setDescription(`Nickname: ${member.nickname ?? "None"}`)
 

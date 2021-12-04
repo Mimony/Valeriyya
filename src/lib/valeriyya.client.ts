@@ -1,7 +1,7 @@
 import { Commands } from "../commands";
 import { Client, Collection, Interaction } from "discord.js";
-import { Logger } from "./util/Logger";
-import type { ICommand } from "./util/utilityTypes";
+import { Logger } from "./util/valeriyya.logger";
+import type { ICommand } from "./util/valeriyya.types";
 
 export class Valeriyya extends Client {
     public commands: Collection<string, ICommand> = new Collection();

@@ -1,4 +1,4 @@
-import { Valeriyya } from "./lib/ValeriyyaClient"
+import { Valeriyya } from "./lib/valeriyya.client"
 
 const client: Valeriyya = new Valeriyya();
 
