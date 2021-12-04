@@ -3,6 +3,13 @@ import { Client, Collection, Interaction } from "discord.js";
 import { Logger } from "./util/valeriyya.logger";
 import type { ICommand } from "./util/valeriyya.types";
 
+declare module "discord.js" {
+    interface Client {
+        logger: Logger;
+        commands: Collection<string, ICommand>;
+    }
+}
+
 export class Valeriyya extends Client {
     public commands: Collection<string, ICommand> = new Collection();
     public logger: Logger = new Logger();

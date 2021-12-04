@@ -1,0 +1,42 @@
+import { GuildMember } from "discord.js";
+import { Kick } from "../../lib/util/moderation/valeriyya.moderation.kick";
+import { ValeriyyaEmbed } from "../../lib/util/valeriyya.embed";
+import { defineCommand, type ICommandInteraction } from "../../lib/util/valeriyya.types";
+
+export default defineCommand({
+    data: {
+        name: "kick",
+        description: "Kicks a member from the guild.",
+        options: [
+            {
+                name: "member",
+                description: "The member to kick.",
+                type: "USER",
+                required: true
+            }
+        ]
+    },
+    execute: async (int: ICommandInteraction) => {
+        const staff = int.member;
+        const target = int.options.getMember("member");
+
+        if (!(staff instanceof GuildMember) || !(target instanceof GuildMember)) return;
+
+        const date = new Date();
+        const action = new Kick({
+            int,
+            staff,
+            target,
+            date
+        });
+
+        await action.all();
+
+        const embed = new ValeriyyaEmbed()
+        .setDescription(`Kicked person bla bla.`)
+
+        return {
+            embeds: [embed]
+        }
+    }
+})
