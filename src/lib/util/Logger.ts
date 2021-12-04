@@ -1,5 +1,4 @@
 import chalk from "chalk";
-
 export class Logger {
   protected emoji: string;
   protected color: string;
