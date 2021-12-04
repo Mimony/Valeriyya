@@ -57,7 +57,7 @@ export class Valeriyya extends Client {
         this.logger.print("Loading commands");
 
         for (const command of Commands()) {
-            this.commands.set(command.name, command)
+            this.commands.set(command.data.name, command)
         }
     }
 }

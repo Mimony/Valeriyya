@@ -3,15 +3,17 @@ import { ValeriyyaEmbed } from "../../lib/util/valeriyya.embed";
 import { defineCommand, ICommandInteraction } from "../../lib/util/valeriyya.types";
 
 export default defineCommand({
-  name: "user",
-  description: "Gets the information about a user.",
-  data: [
-    {
-      name: "user",
-      description: "Gets the information about this user.",
-      type: "USER",
-    },
-  ],
+  data: {
+    name: "user",
+    description: "Gets the information about a user.",
+    options: [
+      {
+        name: "user",
+        description: "Gets the information about this user.",
+        type: "USER",
+      },
+    ],
+  },
   execute: (int: ICommandInteraction) => {
     const member = int.options.getMember("user") || int.member;
 

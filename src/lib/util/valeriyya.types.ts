@@ -1,4 +1,4 @@
-import type { ApplicationCommandOptionData, CommandInteraction, InteractionReplyOptions, MessagePayload, PermissionResolvable } from "discord.js";
+import type { ApplicationCommandData, CommandInteraction, InteractionReplyOptions, MessagePayload } from "discord.js";
 
 // read only array of any types
 type Arr = readonly any[];
@@ -25,10 +25,7 @@ export type ICommandExecute = (interaction: CommandInteraction) => Promise<strin
 
 export interface ICommand {
     execute: ICommandExecute;
-    name: string;
-    description: string;
-    data: ApplicationCommandOptionData[];
-    permissions?: PermissionResolvable[];
+    data: ApplicationCommandData
 }
 
 export const defineCommand = (cmd: ICommand): ICommand => cmd;
