@@ -1,7 +1,10 @@
 import { Commands } from "../commands";
 import { Client, Collection, Interaction } from "discord.js";
+import * as mongo from "mongodb";
 import { Logger } from "./util/valeriyya.logger";
 import type { ICommand } from "./util/valeriyya.types";
+
+const uri = "mongodb+srv://Client:MomsSpaghetti@cluster0.i1oux.mongodb.net/myFirstDatabase?retryWrites=true&w=majority"
 
 declare module "discord.js" {
     interface Client {
@@ -13,6 +16,7 @@ declare module "discord.js" {
 export class Valeriyya extends Client {
     public commands: Collection<string, ICommand> = new Collection();
     public logger: Logger = new Logger();
+    public db: mongo.Db | undefined;
 
     public constructor() {
         super({
@@ -33,8 +37,13 @@ export class Valeriyya extends Client {
         return super.login(token)
     }
 
-    private onReady() {
-        this.loadCommands();
+    private async onReady() {
+        const client = new mongo.MongoClient(uri);
+        await client.connect();
+
+        this.db = client.db("Main");
+
+        await this.loadCommands();
         this.logger.print(`${this.user?.tag} is ready to shine.`)
     }
 
