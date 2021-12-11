@@ -1,7 +1,7 @@
-import {GuildMember} from "discord.js";
-import {Kick} from "../../lib/util/moderation/valeriyya.moderation.kick";
-import {ValeriyyaEmbed} from "../../lib/util/valeriyya.embed";
-import {defineCommand, type ICommandInteraction} from "../../lib/util/valeriyya.types";
+import { GuildMember } from "discord.js";
+import { Kick } from "../../lib/util/moderation/valeriyya.moderation.kick";
+import { ValeriyyaEmbed } from "../../lib/util/valeriyya.embed";
+import { defineCommand, type ICommandInteraction } from "../../lib/util/valeriyya.types";
 
 export default defineCommand({
     data: {

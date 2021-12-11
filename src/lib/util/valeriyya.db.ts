@@ -6,6 +6,7 @@ export class ValeriyyaDB {
 
     public client: Valeriyya;
     public db: mongodb.Db | Nullish;
+
     public constructor(client: Valeriyya) {
         this.client = client;
     }

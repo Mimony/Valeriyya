@@ -8,6 +8,6 @@ export class Guild {
 
 export class Moderation {
     public constructor(public action: ActionData) {
-        
+
     }
 }

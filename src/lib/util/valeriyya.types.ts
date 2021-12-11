@@ -19,9 +19,10 @@ export type AbstractConstructor<T> = abstract new (...args: any[]) => T;
 export type Nullish = null | undefined;
 
 export interface ICommandInteraction extends CommandInteraction {
-    // db: GuildDb 
+    // db: GuildDb
 }
-export type ICommandExecute = (interaction: CommandInteraction) => Promise<string | MessagePayload | InteractionReplyOptions | void> | InteractionReplyOptions | string| void;
+
+export type ICommandExecute = (interaction: CommandInteraction) => Promise<string | MessagePayload | InteractionReplyOptions | void> | InteractionReplyOptions | string | void;
 
 export interface ICommand {
     execute: ICommandExecute;

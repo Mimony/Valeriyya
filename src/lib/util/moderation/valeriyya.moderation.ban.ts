@@ -1,5 +1,5 @@
-import {Action, ActionData, Moderation} from "./valeriyya.moderation"
-import {ValeriyyaEmbed} from "../valeriyya.embed";
+import { Action, ActionData, Moderation } from "./valeriyya.moderation"
+import { ValeriyyaEmbed } from "../valeriyya.embed";
 
 type BanData = Omit<ActionData, "duration">;
 

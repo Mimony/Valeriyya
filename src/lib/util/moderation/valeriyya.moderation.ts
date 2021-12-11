@@ -1,6 +1,6 @@
-import type {GuildMember, User} from "discord.js";
-import type {Valeriyya} from "../../valeriyya.client";
-import type {ICommandInteraction} from "../valeriyya.types";
+import type { GuildMember, User } from "discord.js";
+import type { Valeriyya } from "../../valeriyya.client";
+import type { ICommandInteraction } from "../valeriyya.types";
 
 export enum Action {
     BAN = "ban",
@@ -18,6 +18,7 @@ export interface ActionData {
     reason?: string;
     duration?: number;
 }
+
 export abstract class Moderation {
     protected client: Valeriyya;
     protected int: ICommandInteraction;

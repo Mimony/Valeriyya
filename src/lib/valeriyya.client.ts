@@ -29,7 +29,7 @@ export class Valeriyya extends Client {
         })
 
         this.on("ready", () => this.onReady());
-        this.on("interactionCreate", (interaction) => this.onInteraction(interaction) )
+        this.on("interactionCreate", (interaction) => this.onInteraction(interaction))
 
     }
 
@@ -52,19 +52,19 @@ export class Valeriyya extends Client {
 
         try {
             var result = await command.execute(interaction)
-        } catch(err: any) {
-            interaction.replied ? 
-            interaction.followUp({ content: `There was an error ${err.message}`, ephemeral: true }) :
-            interaction.reply({ content: `There was an error ${err.message}`, ephemeral: true });
+        } catch (err: any) {
+            interaction.replied ?
+                interaction.followUp({content: `There was an error ${err.message}`, ephemeral: true}) :
+                interaction.reply({content: `There was an error ${err.message}`, ephemeral: true});
         }
-        
-        if (!result) return;
-        
-        interaction.replied ?
-        interaction.followUp(result) :
-        interaction.reply(result);
 
-    } 
+        if (!result) return;
+
+        interaction.replied ?
+            interaction.followUp(result) :
+            interaction.reply(result);
+
+    }
 
     private async loadCommands() {
         this.logger.print("Loading commands");
