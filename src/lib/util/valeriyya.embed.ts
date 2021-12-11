@@ -1,4 +1,4 @@
-import { MessageEmbed } from "discord.js";
+import {MessageEmbed} from "discord.js";
 
 export class ValeriyyaEmbed extends MessageEmbed {
     public type: "base" | "error";
@@ -6,8 +6,9 @@ export class ValeriyyaEmbed extends MessageEmbed {
         super();
         this.type = type;
         this.type === "base" ?
-        super.setColor("#524264") :
-        super.setColor("#ff0000");
+            super.setColor("#524264") :
+            super.setColor("#ff0000");
+        super.setTimestamp();
     }
 
 }

@@ -1,7 +1,7 @@
-import { GuildMember } from "discord.js";
-import { Kick } from "../../lib/util/moderation/valeriyya.moderation.kick";
-import { ValeriyyaEmbed } from "../../lib/util/valeriyya.embed";
-import { defineCommand, type ICommandInteraction } from "../../lib/util/valeriyya.types";
+import {GuildMember} from "discord.js";
+import {Kick} from "../../lib/util/moderation/valeriyya.moderation.kick";
+import {ValeriyyaEmbed} from "../../lib/util/valeriyya.embed";
+import {defineCommand, type ICommandInteraction} from "../../lib/util/valeriyya.types";
 
 export default defineCommand({
     data: {
@@ -30,10 +30,13 @@ export default defineCommand({
             date
         });
 
+        if (!action.permissions()) return;
         await action.all();
 
         const embed = new ValeriyyaEmbed()
-        .setDescription(`Kicked person bla bla.`)
+            .setAuthor(`${int.user.tag} (${int.user.id})`, int.user.displayAvatarURL({dynamic: true}))
+            .setThumbnail(int.guild?.iconURL({dynamic: true}) ?? '')
+            .setDescription(`${target} has been kicked from ${int.guild?.name}`);
 
         return {
             embeds: [embed]

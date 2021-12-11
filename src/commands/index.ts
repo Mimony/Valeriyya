@@ -1,9 +1,14 @@
+// Information Commands
 import user from "../commands/info/user";
 
-export const Commands = () => {
-    let commands = [
-        user
-    ]
+// Moderation Commands
+import ban from "../commands/moderation/ban";
+import kick from "../commands/moderation/kick"
 
-    return commands;
+export const Commands = () => {
+    return [
+        user,
+        ban,
+        kick
+    ];
 }

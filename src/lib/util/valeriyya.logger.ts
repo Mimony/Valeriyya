@@ -1,4 +1,5 @@
 import chalk from "chalk";
+
 export class Logger {
   protected emoji: string;
   protected color: string;
@@ -16,14 +17,15 @@ export class Logger {
     return chalk.bold.bgWhite.black(`[${new Date().toLocaleTimeString()}]`);
   }
 
-  public print(log: string): void {
-    console.log(chalk.hex(this.color)(`  ${this.getCurrentMemoryHeap()}  ${this.time()} ${this.emoji}  ${log}`));
+  public print(log: string, ...optionalParams: any[]): void {
+    console.log(chalk.hex(this.color)(`  ${Logger.getCurrentMemoryHeap()}  ${this.time()} ${this.emoji}  ${log}`), ...optionalParams);
   }
 
-  public error(log: string): void {
-    console.log(chalk.hex(this.errorColor)(`  ${this.getCurrentMemoryHeap()}  ${this.time()} ${this.errorEmoji}  ${log}`));
+  public error(log: string, ...optionalParams: any[]): void {
+    console.log(chalk.hex(this.errorColor)(`  ${Logger.getCurrentMemoryHeap()}  ${this.time()} ${this.errorEmoji}  ${log}`), ...optionalParams);
   }
-  private getCurrentMemoryHeap() {
+
+  private static getCurrentMemoryHeap() {
     const mem = process.memoryUsage();
     const used = mem.heapUsed / 1000 / 1000;
     const total = mem.heapTotal / 1000 / 1000;
