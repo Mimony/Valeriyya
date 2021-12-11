@@ -25,12 +25,12 @@ export class Logger {
     return chalk.bold.bgWhite.black(`[${new Date().toLocaleTimeString()}]`);
   }
 
-  public print(log: string, ...optionalParams: any[]): void {
-    console.log(chalk.hex(this.color)(`  ${Logger.getCurrentMemoryHeap()}  ${this.time()} ${this.emoji}  ${log}`), ...optionalParams);
+  public print(log?: any, ...optionalParams: any[]): void {
+    console.log(chalk.hex(this.color)(`  ${Logger.getCurrentMemoryHeap()}  ${this.time()} ${this.emoji}  ${log}`), chalk.hex(this.color)(...optionalParams));
   }
 
-  public error(log: string, ...optionalParams: any[]): void {
-    console.log(chalk.hex(this.errorColor)(`  ${Logger.getCurrentMemoryHeap()}  ${this.time()} ${this.errorEmoji}  ${log}`), ...optionalParams);
+  public error(log?: any, ...optionalParams: any[]): void {
+    console.log(chalk.hex(this.errorColor)(`  ${Logger.getCurrentMemoryHeap()}  ${this.time()} ${this.errorEmoji}  ${log}`), chalk.hex(this.errorColor)(...optionalParams));
   }
 }
 
