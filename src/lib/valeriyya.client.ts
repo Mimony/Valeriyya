@@ -34,6 +34,7 @@ export class Valeriyya extends Client {
     }
 
     public async start(token: string): Promise<string> {
+        this.logger.print("Booting up....")
         return super.login(token)
     }
 

@@ -46,6 +46,7 @@ export abstract class Moderation {
 
     public async all() {
         try {
+            if (!this.permissions()) return;
             await this.execute();
             await this.db();
         } catch (err: any) {

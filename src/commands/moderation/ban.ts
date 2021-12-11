@@ -48,7 +48,6 @@ export default defineCommand({
             date
         });
 
-        if (!action.permissions()) return;
         await action.all();
 
         const embed = new ValeriyyaEmbed()
