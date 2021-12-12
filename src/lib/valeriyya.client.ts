@@ -10,6 +10,7 @@ declare module "discord.js" {
     interface Client {
         logger: Logger;
         commands: Collection<string, ICommand>;
+        db: ValeriyyaDB;
     }
 }
 
