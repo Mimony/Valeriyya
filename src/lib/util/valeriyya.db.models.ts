@@ -6,6 +6,12 @@ export class Guild {
     }
 }
 
+export interface IGuild {
+    id: string;
+}
+
+export type IGuildSearch = Pick<IGuild, "id">;
+
 export class Moderation {
     public constructor(public action: ActionData) {
 
