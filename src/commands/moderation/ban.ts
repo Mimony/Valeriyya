@@ -2,6 +2,7 @@ import { GuildMember } from "discord.js";
 import { Ban } from "../../lib/util/moderation/valeriyya.moderation.ban";
 import { ValeriyyaEmbed } from "../../lib/util/valeriyya.embed";
 import { defineCommand, type ICommandInteraction } from "../../lib/util/valeriyya.types";
+import { ApplicationCommandOptionTypes } from "discord.js/typings/enums";
 
 export default defineCommand({
     data: {
@@ -11,12 +12,12 @@ export default defineCommand({
             {
                 name: "member",
                 description: "The member to ban.",
-                type: "USER",
+                type: ApplicationCommandOptionTypes.USER,
             },
             {
                 name: "member-id",
                 description: "The member to ban. (Use this to provide an id instead of mention)",
-                type: "STRING"
+                type: ApplicationCommandOptionTypes.STRING,
             }
         ]
     },
