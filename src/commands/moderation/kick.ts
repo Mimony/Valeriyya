@@ -38,7 +38,8 @@ export default defineCommand({
             .setDescription(`${target} has been kicked from ${int.guild?.name}`);
 
         return {
-            embeds: [embed]
+            embeds: [embed],
+            ephemeral: true
         }
     }
 })

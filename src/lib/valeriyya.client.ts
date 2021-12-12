@@ -54,6 +54,7 @@ export class Valeriyya extends Client {
 
         try {
             var result = await command.execute(interaction)
+            this.logger.print(`${interaction.commandName}`)
         } catch (err: any) {
             interaction.replied ?
                 interaction.followUp({content: `There was an error ${err.message}`, ephemeral: true}) :

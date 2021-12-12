@@ -56,7 +56,8 @@ export default defineCommand({
             .setDescription(`${target} has been banned from ${int.guild?.name}`);
 
         return {
-            embeds: [embed]
+            embeds: [embed],
+            ephemeral: true
         }
     }
 })
