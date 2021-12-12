@@ -1,8 +1,7 @@
 import { GuildMember } from "discord.js";
 import { Kick } from "../../lib/util/moderation/valeriyya.moderation.kick";
 import { ValeriyyaEmbed } from "../../lib/util/valeriyya.embed";
-import { defineCommand, type ICommandInteraction } from "../../lib/util/valeriyya.types";
-import { ApplicationCommandOptionTypes } from "discord.js/typings/enums";
+import { defineCommand, type ICommandInteraction, OptionTypes } from "../../lib/util/valeriyya.types";
 
 export default defineCommand({
     data: {
@@ -12,7 +11,7 @@ export default defineCommand({
             {
                 name: "member",
                 description: "The member to kick.",
-                type: ApplicationCommandOptionTypes.USER,
+                type: OptionTypes.USER,
                 required: true
             }
         ]

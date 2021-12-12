@@ -1,7 +1,6 @@
 import { GuildMember } from "discord.js";
 import { ValeriyyaEmbed } from "../../lib/util/valeriyya.embed";
-import { defineCommand, ICommandInteraction } from "../../lib/util/valeriyya.types";
-import { ApplicationCommandOptionTypes } from "discord.js/typings/enums";
+import { defineCommand, ICommandInteraction, OptionTypes } from "../../lib/util/valeriyya.types";
 
 export default defineCommand({
     data: {
@@ -11,7 +10,7 @@ export default defineCommand({
             {
                 name: "user",
                 description: "Gets the information about this user.",
-                type: ApplicationCommandOptionTypes.USER,
+                type: OptionTypes.USER,
             },
         ],
     },
