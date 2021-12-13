@@ -26,7 +26,7 @@ export class ValeriyyaDB {
         let guild_db = await db?.findOne<IGuildSearch>({id: guild})
 
         if (!guild_db) {
-            await db?.insertOne(new Guild(guild))
+            await db?.insertOne(new Guild({id: guild, cases: []}))
         }
 
         return guild_db;
