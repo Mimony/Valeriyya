@@ -1,7 +1,7 @@
 import { BaseEntity, Column, Entity, ObjectID, ObjectIdColumn, PrimaryColumn } from "typeorm";
 import { Logger } from "./valeriyya.logger";
 
-const logger: Logger = new Logger()
+const logger: Logger = new Logger();
 @Entity("GuildEntity")
 export class GuildEntity extends BaseEntity {
     @ObjectIdColumn({ name: "_id" })
@@ -42,13 +42,13 @@ export class GuildEntity extends BaseEntity {
     public getCaseById(id: number) {
         const c = this.cases.find(c => c.id === id);
         if (c) return c;
-        else return logger.error(`There is no such case with the id: ${id}`)
+        else return logger.print`There is no such case with the id: ${id}`;
     }
 
     public getCasesByAction(action: "ban" | "kick" | "mute" | "unban" | "unmute") {
         const c = this.cases.filter(c => c.action === action);
         if (c.length > 0) return c;
-        else return logger.error(`There is no cases with a ${action} action.`)
+        else return logger.print`There is no cases with a ${action} action.`
     }
 
     public addCase({ message, id, action, guildId, staffId, targetId, date, reason, duration }: Case) {
@@ -68,8 +68,8 @@ export class GuildEntity extends BaseEntity {
     }
 
     public removeCase(id: number) {
-        const index = this.getCaseById(id)!;
-        this.cases.splice(this.cases.indexOf(index), 1);
+        const index = this.getCaseById(id);
+        this.cases.splice(this.cases.indexOf(index as Case), 1);
 
         return this.save();
     }

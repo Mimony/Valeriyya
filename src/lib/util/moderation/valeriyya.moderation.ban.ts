@@ -10,7 +10,7 @@ export class Ban extends Moderation {
 
     public permissions() {
         if (!this.int.memberPermissions?.has("BAN_MEMBERS", true)) {
-            const embed = new ValeriyyaEmbed("error")
+            const embed = new ValeriyyaEmbed(undefined, "error")
                 .setAuthor(`${this.int.user.tag} (${this.int.user.id})`, this.int.user.displayAvatarURL({dynamic: true}))
                 .setDescription("You are missing the `BAN_MEMBERS` permission");
             if (!this.int.replied) this.int.reply({embeds: [embed]})

@@ -1,4 +1,4 @@
-import type { GuildMember, TextBasedChannels, User } from "discord.js";
+import { GuildMember, MessageEmbed, TextBasedChannels, User } from "discord.js";
 import type { Valeriyya } from "../valeriyya.client";
 import type { Case } from "./valeriyya.db.models";
 import { ValeriyyaEmbed } from "./valeriyya.embed";
@@ -71,8 +71,35 @@ export class ValeriyyaCases {
             .setFooter(`Case: ${id}`)
             .setDescription(`Member: \`${target.tag}\`
             Action: \`${action}\`
-            Reason: ${reason}
-            ${duration ? `Duration: ${duration}` : ""}
+            Reason: \`${reason}\`
+            ${duration ? `Duration: \`${duration}\`` : ""}
             `);
+    }
+
+    public async edit({ guildId, id, reason }: { guildId: string, id: number, reason: string }) {
+        const db = await this.client.db(guildId);
+        const guild = await this.client.guilds.fetch(guildId);
+
+        const c = db.getCaseById(id);
+        if (!c) return `There is no such case with the id ${id}`;
+        c.reason = reason;
+        db.save();
+
+        if (!c.message) return;
+        const channel_id = db.channels.logs;
+        try {
+            const channel = await guild.channels.fetch(channel_id!) as TextBasedChannels;
+            const target = await this.client.users.fetch(c.targetId);
+
+            const message = await channel.messages.fetch(c.message);
+            return await message.edit({
+                embeds: [new MessageEmbed(message.embeds[0]).setDescription(`Member: \`${target.tag}\`
+            Action: \`${c.action}\`
+            Reason: \`${reason}\`
+            ${c.duration ? `Duration: \`${c.duration}\`` : ""}`)]
+            })
+        } catch (err: any) {
+            return this.client.logger.error`There was an error editing a cases reason with the id ${id}`
+        }
     }
 }
