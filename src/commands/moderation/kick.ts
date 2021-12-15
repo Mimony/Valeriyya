@@ -24,17 +24,17 @@ export default defineCommand({
     execute: async (int: ICommandInteraction) => {
         const staff = int.member;
         const target = int.options.getMember("member");
-        const reason = int.options.getString("reason");
+        const reason = int.options.getString("reason") ?? "";
 
         if (!(staff instanceof GuildMember) || !(target instanceof GuildMember)) return;
 
-        const date = new Date();
+        const date = Date.now();
         const action = new Kick({
             int,
             staff,
             target,
             date,
-            reason: reason!
+            reason
         });
 
         await action.all();

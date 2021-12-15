@@ -11,10 +11,10 @@ export class GuildEntity extends BaseEntity {
     public id!: string;
 
     @Column({ name: "cases", array: true, nullable: false, default: [] })
-    public cases!: Case[];
+    public cases: Case[] = [];
 
-    @Column({ name: "cases.number", type: "number", nullable: false, default: 0 })
-    public cases_number!: number;
+    @Column({ name: "cases_number", type: "number", nullable: false, default: 0 })
+    public cases_number: number = 0;
 
     @Column({ name: "roles" })
     public roles: {
@@ -63,7 +63,6 @@ export class GuildEntity extends BaseEntity {
             reason,
             duration
         });
-        this.cases_number ++;
 
         return this.save();
     }
@@ -71,7 +70,6 @@ export class GuildEntity extends BaseEntity {
     public removeCase(id: number) {
         const index = this.getCaseById(id)!;
         this.cases.splice(this.cases.indexOf(index), 1);
-        this.cases_number --;
 
         return this.save();
     }
@@ -84,7 +82,7 @@ export interface Case {
     guildId: string;
     staffId: string;
     targetId: string;
-    date: Date;
+    date: number;
     reason: string;
     duration: number | 0;
 }

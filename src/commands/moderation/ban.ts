@@ -28,7 +28,7 @@ export default defineCommand({
     execute: async (int: ICommandInteraction) => {
         const staff = int.member;
         const target_options = int.options.getMember("member") || int.options.getString("member-id");
-        const reason = int.options.getString("reason");
+        const reason = int.options.getString("reason") ?? "";
         let target;
 
         if (!(staff instanceof GuildMember)) return;
@@ -46,13 +46,13 @@ export default defineCommand({
             }
         }
 
-        const date = new Date();
+        const date = Date.now();
         const action = new Ban({
             int,
             staff,
             target,
             date,
-            reason: reason!
+            reason
         });
 
         await action.all();

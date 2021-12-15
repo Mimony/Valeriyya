@@ -21,15 +21,21 @@ export class Kick extends Moderation {
     }
 
     public async execute(): Promise<void> {
+        const db = await this.client.db(this.int.guild!)
+        const cases_number = db.cases_number + 1;
+
         try {
-            await this.int.guild?.members.kick(this.target)
+            await this.int.guild?.members.kick(this.target, `Case ${cases_number}`)
         } catch (e: any) {
             if (!this.int.replied) this.int.reply({
                 content: `There was an error kicking this member: ${e}`,
                 ephemeral: true
             });
-            else this.int.followUp({content: `There was an error kicking this member: ${e}`, ephemeral: true});
+            else this.int.followUp({ content: `There was an error kicking this member: ${e}`, ephemeral: true });
             this.client.logger.error(`There was an error with the moderation-KICK method: ${e}`);
         }
+
+        db.cases_number = cases_number;
+        await db.save();
     }
 }

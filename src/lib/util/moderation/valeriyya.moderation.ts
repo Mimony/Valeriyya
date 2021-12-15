@@ -14,7 +14,7 @@ export interface ActionData {
     int: ICommandInteraction;
     staff: GuildMember;
     target: GuildMember | User;
-    date: Date;
+    date: number;
     reason: string;
     duration?: number;
 }
@@ -25,7 +25,7 @@ export abstract class Moderation {
     protected staff: GuildMember;
     protected target: GuildMember | User;
     protected _reason: string;
-    protected date: Date;
+    protected date: number;
     protected duration: number;
 
     public constructor(protected action: Action, data: ActionData) {
@@ -42,11 +42,10 @@ export abstract class Moderation {
         if (this._reason) return this._reason;
         const db = await this.client.db(this.int.guild!);
         const cases = db.cases_number;
-        return `Use /reason ${cases} <...reason> to set a reason for this case.`.toString();
+        return `\`Use /reason ${cases} <...reason> to set a reason for this case.\``;
     }
 
     public abstract permissions(): boolean;
-
     public abstract execute(): Promise<any>;
 
     public async db(): Promise<void> {
@@ -55,8 +54,8 @@ export abstract class Moderation {
             staffId: this.staff.id,
             targetId: this.target.id,
             action: this.action,
-            date: new Date(),
-            reason: this.reason, // we need to get the reason here
+            date: this.date,
+            reason: await this.reason(),
             duration: this.duration
         });
     }

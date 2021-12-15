@@ -64,10 +64,7 @@ export class Valeriyya extends Client {
         await this.db_init.on(uri);
 
         await this.loadCommands();
-        this.logger.print(`${this.user?.tag} is ready to shine.`)
-        const db = await this.db("909850768947937290")
-        db.channels!.logs = "920719194360782849";
-        db.save();
+        this.logger.print(`${this.user?.tag} is ready to shine.`);
     }
 
     private async onInteraction(interaction: Interaction) {
