@@ -55,8 +55,8 @@ export abstract class Moderation {
             staffId: this.staff.id,
             targetId: this.target.id,
             action: this.action,
-            date: new Date(),
-            reason: this.reason, // we need to get the reason here
+            date: Date.now(),
+            reason: this._reason, // we need to get the reason here
             duration: this.duration
         });
     }
