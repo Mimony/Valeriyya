@@ -65,6 +65,9 @@ export class Valeriyya extends Client {
 
         await this.loadCommands();
         this.logger.print(`${this.user?.tag} is ready to shine.`)
+        const db = await this.db("909850768947937290")
+        db.channels!.logs = "920719194360782849";
+        db.save();
     }
 
     private async onInteraction(interaction: Interaction) {
@@ -75,7 +78,7 @@ export class Valeriyya extends Client {
 
         try {
             var result = await command.execute(interaction)
-            this.logger.print(`${interaction.commandName}`)
+            this.logger.print(`${interaction.user.tag} ran ${interaction.commandName}`)
         } catch (err: any) {
             interaction.replied ?
                 interaction.followUp({content: `There was an error ${err.message}`, ephemeral: true}) :

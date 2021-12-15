@@ -1,6 +1,7 @@
 import { BaseEntity, Column, Entity, ObjectID, ObjectIdColumn, PrimaryColumn } from "typeorm";
 import { Logger } from "./valeriyya.logger";
 
+const logger: Logger = new Logger()
 @Entity("GuildEntity")
 export class GuildEntity extends BaseEntity {
     @ObjectIdColumn({ name: "_id" })
@@ -15,19 +16,23 @@ export class GuildEntity extends BaseEntity {
     @Column({ name: "cases.number", type: "number", nullable: false, default: 0 })
     public cases_number!: number;
 
-    @Column({ name: "roles", nullable: true })
-    public roles?: {
-        staff?: string;
-        mute?: string;
-    };
-
-    @Column({ name: "channels", nullable: true })
-    public channels?: {
-        logs?: string;
-        welcome?: string;
+    @Column({ name: "roles" })
+    public roles: {
+        staff: string | null;
+        mute: string | null;
+    } = {
+        staff: null,
+        mute: null
     }
 
-    public logger: Logger = new Logger()
+    @Column({ name: "channels" })
+    public channels: {
+        logs: string | null;
+        welcome: string | null;
+    } = {
+        logs: null,
+        welcome: null
+    }
 
     public constructor(guild: string) {
         super();
@@ -37,13 +42,13 @@ export class GuildEntity extends BaseEntity {
     public getCaseById(id: number) {
         const c = this.cases.find(c => c.id === id);
         if (c) return c;
-        else return this.logger.error(`There is no such case with the id: ${id}`)
+        else return logger.error(`There is no such case with the id: ${id}`)
     }
 
     public getCasesByAction(action: "ban" | "kick" | "mute" | "unban" | "unmute") {
         const c = this.cases.filter(c => c.action === action);
         if (c.length > 0) return c;
-        else return this.logger.error(`There is no cases with a ${action} action.`)
+        else return logger.error(`There is no cases with a ${action} action.`)
     }
 
     public addCase({ message, id, action, guildId, staffId, targetId, date, reason, duration }: Case) {

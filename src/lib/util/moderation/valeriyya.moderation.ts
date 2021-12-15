@@ -42,7 +42,7 @@ export abstract class Moderation {
         if (this._reason) return this._reason;
         const db = await this.client.db(this.int.guild!);
         const cases = db.cases_number;
-        return `Use /reason ${cases} <...reason> to set a reason for this case.`;
+        return `Use /reason ${cases} <...reason> to set a reason for this case.`.toString();
     }
 
     public abstract permissions(): boolean;
@@ -56,7 +56,7 @@ export abstract class Moderation {
             targetId: this.target.id,
             action: this.action,
             date: new Date(),
-            reason: (await this.reason).toString(),
+            reason: this.reason, // we need to get the reason here
             duration: this.duration
         });
     }

@@ -16,6 +16,7 @@ export class ValeriyyaDB {
             url: uri,
             useNewUrlParser: true,
             useUnifiedTopology: true,
+            synchronize: true,
             entities: [GuildEntity]
         })
         if (connection.isConnected) this.client.logger.print(`Database is connected.`)
