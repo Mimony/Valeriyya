@@ -1,6 +1,7 @@
-import { BaseEntity, Column, ObjectID, ObjectIdColumn, PrimaryColumn } from "typeorm";
+import { BaseEntity, Column, Entity, ObjectID, ObjectIdColumn, PrimaryColumn } from "typeorm";
 import { Logger } from "./valeriyya.logger";
 
+@Entity("GuildEntity")
 export class GuildEntity extends BaseEntity {
     @ObjectIdColumn({ name: "_id" })
     public _id!: ObjectID;

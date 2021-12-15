@@ -67,7 +67,7 @@ export abstract class Moderation {
             await this.execute();
             await this.db();
         } catch (err: any) {
-            this.client.logger.error(`There was an error executing the moderation action: ${err}`);
+            this.client.logger.error(`There was an error executing the moderation action: ${err.stack}`);
         }
     }
 
