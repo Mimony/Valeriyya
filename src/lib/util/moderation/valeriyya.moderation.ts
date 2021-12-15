@@ -15,7 +15,7 @@ export interface ActionData {
     staff: GuildMember;
     target: GuildMember | User;
     date: Date;
-    reason?: string;
+    reason: string;
     duration?: number;
 }
 
@@ -24,7 +24,7 @@ export abstract class Moderation {
     protected int: ICommandInteraction;
     protected staff: GuildMember;
     protected target: GuildMember | User;
-    protected reason: string;
+    protected _reason: string;
     protected date: Date;
     protected duration: number;
 
@@ -33,23 +33,30 @@ export abstract class Moderation {
         this.client = this.int.client as Valeriyya;
         this.staff = data.staff;
         this.target = data.target;
-        this.reason = data.reason ?? "Unreasonable";
+        this._reason = data.reason;
         this.date = data.date;
         this.duration = data.duration ?? 0;
+    }
+
+    protected async reason() {
+        if (this._reason) return this._reason;
+        const db = await this.client.db(this.int.guild!);
+        const cases = db.cases_number;
+        return `Use /reason ${cases} <...reason> to set a reason for this case.`;
     }
 
     public abstract permissions(): boolean;
 
     public abstract execute(): Promise<any>;
 
-    public db(): Promise<void> {
+    public async db(): Promise<void> {
         return this.client.cases.add({
             guildId: this.int.guild!.id,
             staffId: this.staff.id,
             targetId: this.target.id,
             action: this.action,
             date: new Date(),
-            reason: this.reason,
+            reason: (await this.reason).toString(),
             duration: this.duration
         });
     }

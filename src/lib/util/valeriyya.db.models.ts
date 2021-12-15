@@ -79,6 +79,6 @@ export interface Case {
     staffId: string;
     targetId: string;
     date: Date;
-    reason: string | "No reason!";
+    reason: string;
     duration: number | 0;
 }
