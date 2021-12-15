@@ -10,7 +10,7 @@ export class ValeriyyaDB {
         this.client = client;
     }
 
-    public async init(uri: string): Promise<Connection> {
+    public async on(uri: string): Promise<Connection> {
         const connection = await createConnection({
             type: "mongodb",
             url: uri,

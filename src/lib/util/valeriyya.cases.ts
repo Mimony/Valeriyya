@@ -1,41 +1,78 @@
+import type { GuildMember, TextBasedChannels, User } from "discord.js";
 import type { Valeriyya } from "../valeriyya.client";
-import type { ValeriyyaDB } from "./valeriyya.db";
-import type { Cases } from "./valeriyya.db.models";
+import type { Case } from "./valeriyya.db.models";
+import { ValeriyyaEmbed } from "./valeriyya.embed";
 
-type Case = Omit<Cases, "id">;
+type CASE = Omit<Case, "id">;
 
 export class ValeriyyaCases {
     public client: Valeriyya;
-    public db: ValeriyyaDB;
 
     public constructor(client: Valeriyya) {
         this.client = client;
-        this.db = client.db;
     }
 
 
-    public async add({int, guildId, staffId, targetId, type, date, reason, duration}: Case) {
+    public async add({ guildId, staffId, targetId, action, date, reason, duration }: CASE) {
         const guild = await this.client.guilds.fetch(guildId);
         const staff = await guild.members.fetch(staffId);
         const target = await this.client.users.fetch(targetId);
 
-        const db = await this.db.get(guildId);
-        // const cases_number = db.case_number // get the cases_number number here
+        const db = await this.client.db(guild);
+        const id = db.cases_number;
+        const channelId = db.channels?.logs;
+        let message: string | undefined = undefined;
 
-        // const cases = db.cases // get the cases to push to this array later on
+        try {
+            if (!channelId) return;
+            const channel = await guild.channels.fetch(channelId) as TextBasedChannels;
 
-        let new_case: Cases = {
-            int,
+            message = (await channel.send({
+                embeds: [await this.log({
+                    action,
+                    staff,
+                    target,
+                    id,
+                    reason,
+                    duration
+                })]
+            })).id;
+        } catch (err: any) {
+            this.client.logger.error(`There was an error logging the case: ${err}`)
+        }
+
+
+        let new_case: Case = {
+            id,
+            message,
             guildId,
             staffId,
             targetId,
-            type,
+            action,
             date,
             reason,
             duration
         };
 
-        // cases.push(new_case); // push to the cases array of Cases
-        // save changes to db
+        await db.addCase(new_case)
+
+    }
+
+    public async log({
+                         action,
+                         staff,
+                         target,
+                         id,
+                         reason,
+                         duration
+                     }: { action: "ban" | "kick" | "mute" | "unban" | "unmute", staff: GuildMember, target: User, id: number, reason: string, duration?: number }): Promise<ValeriyyaEmbed> {
+        return new ValeriyyaEmbed()
+            .setAuthor(`${staff.user.tag} (${staff.user.id})`, staff.user.displayAvatarURL({ dynamic: true }))
+            .setFooter(`Case: ${id}`)
+            .setDescription(`Member: \`${target.tag}\`
+            Action: \`${action}\`
+            Reason: ${reason}
+            ${duration ? `Duration: ${duration}` : ""}
+            `);
     }
 }

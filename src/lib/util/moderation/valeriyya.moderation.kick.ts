@@ -32,8 +32,4 @@ export class Kick extends Moderation {
             this.client.logger.error(`There was an error with the moderation-KICK method: ${e}`);
         }
     }
-
-    public db(): Promise<void> {
-        throw new Error("Method not implemented.");
-    }
 }

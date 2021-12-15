@@ -24,7 +24,7 @@ export abstract class Moderation {
     protected int: ICommandInteraction;
     protected staff: GuildMember;
     protected target: GuildMember | User;
-    protected reason?: string;
+    protected reason: string;
     protected date: Date;
     protected duration: number;
 
@@ -42,7 +42,17 @@ export abstract class Moderation {
 
     public abstract execute(): Promise<any>;
 
-    public abstract db(): Promise<any>;
+    public db(): Promise<void> {
+        return this.client.cases.add({
+            guildId: this.int.guild!.id,
+            staffId: this.staff.id,
+            targetId: this.target.id,
+            action: this.action,
+            date: new Date(),
+            reason: this.reason,
+            duration: this.duration
+        });
+    }
 
     public async all() {
         try {

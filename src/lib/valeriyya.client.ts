@@ -4,6 +4,7 @@ import { Logger } from "./util/valeriyya.logger";
 import type { ICommand } from "./util/valeriyya.types";
 import { ValeriyyaDB } from "./util/valeriyya.db";
 import { GuildEntity } from "./util/valeriyya.db.models";
+import { ValeriyyaCases } from "./util/valeriyya.cases";
 
 const uri = "mongodb+srv://Client:MomsSpaghetti@cluster0.i1oux.mongodb.net/myFirstDatabase?retryWrites=true&w=majority"
 
@@ -14,6 +15,8 @@ declare module "discord.js" {
         db_init: ValeriyyaDB;
 
         db(guild: Guild | string): Promise<GuildEntity>;
+
+        cases: ValeriyyaCases;
     }
 }
 
@@ -21,6 +24,7 @@ export class Valeriyya extends Client {
     public commands: Collection<string, ICommand> = new Collection();
     public logger: Logger = new Logger();
     public db_init: ValeriyyaDB = new ValeriyyaDB(this);
+    public cases: ValeriyyaCases = new ValeriyyaCases(this);
 
     public constructor() {
         super({
@@ -57,7 +61,7 @@ export class Valeriyya extends Client {
     }
 
     private async onReady() {
-        await this.db_init.init(uri);
+        await this.db_init.on(uri);
 
         await this.loadCommands();
         this.logger.print(`${this.user?.tag} is ready to shine.`)
