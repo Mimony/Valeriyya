@@ -19,7 +19,7 @@ export class ValeriyyaCases {
         const target = await this.client.users.fetch(targetId);
 
         const db = await this.client.db(guild);
-        const id = db.cases_number + 1;
+        const id = db.cases_number;
         const channelId = db.channels?.logs;
         let message: string | undefined = undefined;
 
