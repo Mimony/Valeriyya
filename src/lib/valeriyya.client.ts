@@ -1,8 +1,9 @@
 import { Commands } from "../commands";
-import { Client, Collection, Interaction } from "discord.js";
+import { Client, Collection, Guild, Interaction } from "discord.js";
 import { Logger } from "./util/valeriyya.logger";
 import type { ICommand } from "./util/valeriyya.types";
 import { ValeriyyaDB } from "./util/valeriyya.db";
+import { GuildEntity } from "./util/valeriyya.db.models";
 
 const uri = "mongodb+srv://Client:MomsSpaghetti@cluster0.i1oux.mongodb.net/myFirstDatabase?retryWrites=true&w=majority"
 
@@ -10,14 +11,16 @@ declare module "discord.js" {
     interface Client {
         logger: Logger;
         commands: Collection<string, ICommand>;
-        db: ValeriyyaDB;
+        db_init: ValeriyyaDB;
+
+        db(guild: Guild | string): Promise<GuildEntity>;
     }
 }
 
 export class Valeriyya extends Client {
     public commands: Collection<string, ICommand> = new Collection();
     public logger: Logger = new Logger();
-    public db: ValeriyyaDB = new ValeriyyaDB(this);
+    public db_init: ValeriyyaDB = new ValeriyyaDB(this);
 
     public constructor() {
         super({
@@ -39,8 +42,22 @@ export class Valeriyya extends Client {
         return super.login(token)
     }
 
+    public async db(guild: Guild | string): Promise<GuildEntity> {
+        let g: string;
+        guild instanceof Guild ?
+            g = guild.id :
+            g = guild;
+
+        let db = await GuildEntity.findOne({id: g});
+        if (!db) {
+            db = new GuildEntity(g)
+            return db.save();
+        }
+        return db;
+    }
+
     private async onReady() {
-        await this.db.init(uri);
+        await this.db_init.init(uri);
 
         await this.loadCommands();
         this.logger.print(`${this.user?.tag} is ready to shine.`)

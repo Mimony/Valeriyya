@@ -10,7 +10,8 @@
     "chalk": "^4.1.2",
     "discord-api-types": "^0.25.2",
     "discord.js": "^13.3.1",
-    "mongodb": "^4.2.1"
+    "mongodb": "^4.2.1",
+    "typeorm": "^0.2.41"
   },
   "name": "valeriyya",
   "version": "1.2.1",
