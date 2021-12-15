@@ -17,12 +17,18 @@ export default defineCommand({
                 name: "member-id",
                 description: "The member to ban. (Use this to provide an id instead of mention)",
                 type: OptionTypes.STRING,
+            },
+            {
+                name: "reason",
+                description: "The reason for this ban.",
+                type: OptionTypes.STRING
             }
         ]
     },
     execute: async (int: ICommandInteraction) => {
         const staff = int.member;
         const target_options = int.options.getMember("member") || int.options.getString("member-id");
+        const reason = int.options.getString("reason");
         let target;
 
         if (!(staff instanceof GuildMember)) return;
@@ -45,7 +51,8 @@ export default defineCommand({
             int,
             staff,
             target,
-            date
+            date,
+            reason: reason!
         });
 
         await action.all();

@@ -13,12 +13,18 @@ export default defineCommand({
                 description: "The member to kick.",
                 type: OptionTypes.USER,
                 required: true
+            },
+            {
+                name: "reason",
+                description: "The reason for this ban.",
+                type: OptionTypes.STRING
             }
         ]
     },
     execute: async (int: ICommandInteraction) => {
         const staff = int.member;
         const target = int.options.getMember("member");
+        const reason = int.options.getString("reason");
 
         if (!(staff instanceof GuildMember) || !(target instanceof GuildMember)) return;
 
@@ -27,7 +33,8 @@ export default defineCommand({
             int,
             staff,
             target,
-            date
+            date,
+            reason: reason!
         });
 
         await action.all();
