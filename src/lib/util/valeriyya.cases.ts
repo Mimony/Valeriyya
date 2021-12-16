@@ -76,13 +76,14 @@ export class ValeriyyaCases {
             `);
     }
 
-    public async edit({ guildId, id, reason }: { guildId: string, id: number, reason: string }) {
+    public async edit({ guildId, id, reason, action }: { guildId: string, id: number, reason?: string, action?: "ban" | "kick" | "mute" | "unban" | "unmute" }) {
         const db = await this.client.db(guildId);
         const guild = await this.client.guilds.fetch(guildId);
 
         const c = db.getCaseById(id);
         if (!c) return `There is no such case with the id ${id}`;
-        c.reason = reason;
+        if (reason) c.reason = reason;
+        if (action) c.action = action;
         db.save();
 
         if (!c.message) return;
@@ -94,7 +95,7 @@ export class ValeriyyaCases {
             const message = await channel.messages.fetch(c.message);
             return await message.edit({
                 embeds: [new MessageEmbed(message.embeds[0]).setDescription(`Member: \`${target.tag}\`
-            Action: \`${c.action}\`
+            Action: \`${action}\`
             Reason: \`${reason}\`
             ${c.duration ? `Duration: \`${c.duration}\`` : ""}`)]
             })

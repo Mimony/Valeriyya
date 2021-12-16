@@ -23,8 +23,8 @@ export default defineCommand({
     },
     execute: async (int: ICommandInteraction) => {
         const member = int.member;
-        const id = int.options.getNumber("id", true);
-        const reason = int.options.getString("reason", true);
+        const id = int.options.getNumber("id")!;
+        const reason = int.options.getString("reason")!;
         const db = await int.client.db(int.guild!)
 
         if (!(member instanceof GuildMember)) return;
