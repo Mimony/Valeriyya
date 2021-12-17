@@ -1,4 +1,5 @@
 import chalk from "chalk";
+
 export class Logger {
   protected emoji: string;
   protected color: string;
@@ -12,23 +13,24 @@ export class Logger {
     this.errorColor = "#F03A17";
   }
 
-  public time() {
-    return chalk.bold.bgWhite.black(`[${new Date().toLocaleTimeString()}]`);
-  }
-
-  public print(log: string): void {
-    console.log(chalk.hex(this.color)(`  ${this.getCurrentMemoryHeap()}  ${this.time()} ${this.emoji}  ${log}`));
-  }
-
-  public error(log: string): void {
-    console.log(chalk.hex(this.errorColor)(`  ${this.getCurrentMemoryHeap()}  ${this.time()} ${this.errorEmoji}  ${log}`));
-  }
-  private getCurrentMemoryHeap() {
+  private static getCurrentMemoryHeap() {
     const mem = process.memoryUsage();
     const used = mem.heapUsed / 1000 / 1000;
     const total = mem.heapTotal / 1000 / 1000;
 
     return `${used.toFixed(2)}/${total.toFixed(2)}MB`;
+  }
+
+  public time() {
+    return chalk.bold.bgWhite.black(`[${new Date().toLocaleTimeString()}]`);
+  }
+
+  public print(log?: any, ...optionalParams: any[]): void {
+    console.log(chalk.hex(this.color)(`  ${Logger.getCurrentMemoryHeap()}  ${this.time()} ${this.emoji}  ${log}`), chalk.hex(this.color)(...optionalParams));
+  }
+
+  public error(log?: any, ...optionalParams: any[]): void {
+    console.log(chalk.hex(this.errorColor)(`  ${Logger.getCurrentMemoryHeap()}  ${this.time()} ${this.errorEmoji}  ${log}`), chalk.hex(this.errorColor)(...optionalParams));
   }
 }
 
