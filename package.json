@@ -1,5 +1,6 @@
 {
   "devDependencies": {
+    "nodemon": "^2.0.15",
     "ts-node": "10.4.0",
     "typescript": "4.5.4"
   },
@@ -11,6 +12,7 @@
     "discord-api-types": "^0.25.2",
     "discord.js": "^13.3.1",
     "mongodb": "^3.6.0",
+    "tslib": "^2.3.1",
     "typeorm": "^0.2.41"
   },
   "name": "valeriyya",
@@ -18,12 +20,11 @@
   "description": "Discord.js Bot",
   "main": "dist/index.js",
   "scripts": {
-    "load:guild": "node dist/commands.guild.load.js",
-    "load": "node dist/commands.load.js",
-    "prestart": "tsc",
+    "load:guild": "ts-node src/commands.guild.load.js",
+    "load": "ts-node src/commands.load.js",
     "start": "node dist/index.js",
     "build": "tsc",
-    "start:dev": "ts-node src/index.ts"
+    "start:dev": "nodemon --transpile-only src/index.ts"
   },
   "repository": {
     "type": "git",
