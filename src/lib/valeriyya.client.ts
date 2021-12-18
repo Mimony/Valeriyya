@@ -78,8 +78,8 @@ export class Valeriyya extends Client {
             this.logger.print(`${interaction.user.tag} ran ${interaction.commandName}`)
         } catch (err: any) {
             interaction.replied || interaction.deferred ?
-                interaction.followUp({content: `There was an error ${err.message}`, ephemeral: true}) :
-                interaction.reply({content: `There was an error ${err.message}`, ephemeral: true});
+                interaction.followUp({content: `There was an error ${err.stack}`, ephemeral: true}) :
+                interaction.reply({content: `There was an error ${err.stack}`, ephemeral: true});
         }
 
         if (!result) return;

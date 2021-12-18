@@ -1,34 +1,15 @@
 import { GuildMember, Message, MessageActionRow, MessageSelectMenu } from "discord.js";
-import { defineCommand, type ICommandInteraction, OptionTypes } from "../../lib/util/valeriyya.types";
+import { defineCommand, type ICommandInteraction } from "../../lib/util/valeriyya.types";
 import { ValeriyyaEmbed } from "../../lib/util/valeriyya.embed";
 
 export default defineCommand({
     data: {
         name: "settings",
-        description: "Changes the settings in this guild.",
-        options: [
-            {
-                name: "type",
-                description: "The settings type to change.",
-                type: OptionTypes.STRING,
-                required: true,
-                choices: [
-                    {
-                        name: "channels",
-                        value: "channels"
-                    },
-                    {
-                        name: "roles",
-                        value: "roles"
-                    }
-                ]
-            },
-        ]
+        description: "Changes the settings in this guild."
     },
     execute: async (int: ICommandInteraction) => {
         await int.deferReply({ ephemeral: true });
         const member = int.member;
-        const choice = int.options.getString("type", true);
         const db = await int.client.db(int.guild!);
 
         if (!(member instanceof GuildMember)) return;
@@ -42,46 +23,174 @@ export default defineCommand({
         }
         let row = new MessageActionRow()
 
-        if (choice === "roles") {
-            let roleMenu = new MessageSelectMenu()
-                .setCustomId("settings.roles")
-                .setPlaceholder("Provide a role for the selected type above.")
-            await int.guild!.roles.cache.filter(r => r.guild.id !== r.id).each(r => {
-                roleMenu.addOptions({
-                    label: r.name,
-                    description: "Select this role to set it as a staff role.",
-                    value: r.id
-                })
-            })
-            row.setComponents(roleMenu)
-        } else if (choice === "channels") {
-            let channelMenu = new MessageSelectMenu()
-                .setCustomId("settings.channels")
-                .setPlaceholder("Provide a channel for the selected type above.")
-            await int.guild!.channels.cache.filter(c => c.type === "GUILD_TEXT").each(r => {
-                channelMenu.addOptions({
-                    label: r.name,
-                    description: "Select this channel to set it as a log channel.",
-                    value: r.id
-                })
-            })
-            row.setComponents(channelMenu)
-        }
+            let settingsMenu = new MessageSelectMenu()
+                .setCustomId("settings")
+                .setPlaceholder("Select what setting to change.")
+                .addOptions(
+                    {
+                        value: "staff",
+                        description: "Choose a staff role.",
+                        label: "staff"
+                    },
+                    {
+                        value: "mute",
+                        description: "Choose a mute role.",
+                        label: "mute"
+                    },
+                    {
+                        value: "welcome",
+                        description: "Choose a welcome channel.",
+                        label: "welcome"
+                    },
+                    {
+                        value: "logs",
+                        description: "Choose a logs channel.",
+                        label: "logs"
+                    }
+                )
+            row.setComponents(settingsMenu)
 
-        const menu = await int.followUp({
-            content: `Select the ${choice} setting below.`,
+        let channelsMenu1 = new MessageSelectMenu()
+            .setCustomId("settings.channels.welcome")
+            .setPlaceholder("Provide a channel that will be used for welcome messages.")
+        int.guild!.channels.cache.filter(c => c.type === "GUILD_TEXT").each(c => {
+            channelsMenu1.addOptions(
+                {
+                    value: c.id,
+                    description: `Select this channel to set it as a welcome channel.`,
+                    label: c.name
+                }
+            )
+        })
+        let channelsMenu2 = new MessageSelectMenu()
+            .setCustomId("settings.channels.logs")
+            .setPlaceholder("Provide a channel that will be used for logs.")
+        int.guild!.channels.cache.filter(c => c.type === "GUILD_TEXT").each(c => {
+            channelsMenu2.addOptions(
+                {
+                    value: c.id,
+                    description: `Select this channel to set it as a logs channel.`,
+                    label: c.name
+                }
+            )
+        })
+
+        let rolesMenu1 = new MessageSelectMenu()
+            .setCustomId("settings.roles.staff")
+            .setPlaceholder("Provide a role that will be used for staff.")
+        int.guild!.roles.cache.filter(r => r.id !== r.guild.id).each(r => {
+            // TODO Divide Channels in more menus
+            rolesMenu1.addOptions(
+                {
+                    value: r.id,
+                    description: `Select this role to set it as a staff role.`,
+                    label: r.name
+                }
+            )
+        })
+        let rolesMenu2 = new MessageSelectMenu()
+            .setCustomId("settings.roles.mute")
+            .setPlaceholder("Provide a role that will be used for staff.")
+        int.guild!.roles.cache.filter(r => r.id !== r.guild.id).each(r => {
+            // TODO Divide Roles in more menus
+            rolesMenu2.addOptions(
+                {
+                    value: r.id,
+                    description: `Select this role to set it as a mute role.`,
+                    label: r.name
+                }
+            )
+        })
+
+        const settings_menu = await int.followUp({
+            content: `Select what role/channel to change.`,
             components: [row],
+            fetchReply: true
         });
 
-        const collector = await (menu as Message).awaitMessageComponent({ time: 15000, componentType: "SELECT_MENU" })
-        if (collector.customId === "settings.roles") {
-            db.roles.staff = collector.values[0];
-            db.save();
-            collector.reply({ content: `The staff role has been updated to ${int.guild!.roles.resolve(collector.values[0])}`, ephemeral: true })
-        } else if (collector.customId === "settings.channels") {
-            db.channels.logs = collector.values[0];
-            db.save();
-            collector.reply({ content: `The logs channel has been updated to ${int.guild!.channels.resolve(collector.values[0])}`, ephemeral: true })
+        let menu;
+
+        try {
+            const type_collector = await (settings_menu as Message).awaitMessageComponent({
+                time: 30000,
+                componentType: "SELECT_MENU"
+            });
+
+            if (type_collector.values[0] === "welcome") {
+                menu = await type_collector.update({
+                    content: `Select a ${type_collector.values[0]} channel`,
+                    components: [row.setComponents(channelsMenu1)],
+                    fetchReply: true
+                })
+            } else if (type_collector.values[0] === "logs") {
+                menu = await type_collector.update({
+                    content: `Select a ${type_collector.values[0]} channel`,
+                    components: [row.setComponents(channelsMenu2)],
+                    fetchReply: true
+                })
+            }
+            if (type_collector.values[0] === "staff") {
+                menu = await type_collector.update({
+                    content: `Select a ${type_collector.values[0]} role.`,
+                    components: [row.setComponents(rolesMenu1)],
+                    fetchReply: true
+                })
+            } else if (type_collector.values[0] === "mute") {
+                menu = await type_collector.update({
+                    content: `Select a ${type_collector.values[0]} role.`,
+                    components: [row.setComponents(rolesMenu2)],
+                    fetchReply: true
+                })
+            }
+        } catch (e: any) {
+            int.client.logger.error`The type collector has failed ${e.message}`
+            int.editReply({
+                content: `The 30 second period has passed.`,
+                components: []
+            })
+        }
+
+        try {
+            const collector = await (menu as Message).awaitMessageComponent({
+                time: 30000,
+                componentType: "SELECT_MENU"
+            })
+
+            if (collector.customId === "settings.roles.staff") {
+                db.roles.staff = collector.values[0];
+                db.save();
+                collector.update({
+                    content: `The staff role has been updated to ${int.guild!.roles.resolve(collector.values[0])}`,
+                    components: []
+                })
+            } else if (collector.customId === "settings.channels.logs") {
+                db.channels.logs = collector.values[0];
+                db.save();
+                collector.update({
+                    content: `The logs channel has been updated to ${int.guild!.channels.resolve(collector.values[0])}`,
+                    components: []
+                })
+            } else if (collector.customId === "settings.roles.mute") {
+                db.roles.mute = collector.values[0];
+                db.save();
+                collector.update({
+                    content: `The mute role has been updated to ${int.guild!.roles.resolve(collector.values[0])}`,
+                    components: []
+                })
+            } else if (collector.customId === "settings.channels.welcome") {
+                db.channels.welcome = collector.values[0];
+                db.save();
+                collector.update({
+                    content: `The welcome channel has been updated to ${int.guild!.channels.resolve(collector.values[0])}`,
+                    components: []
+                })
+            }
+        } catch (e: any) {
+            int.client.logger.error`The role | channel collector has failed ${e.message}`
+            int.editReply({
+                content: `The 30 second period has passed.`,
+                components: []
+            })
         }
         return;
     }
