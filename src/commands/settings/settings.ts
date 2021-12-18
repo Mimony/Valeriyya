@@ -53,11 +53,14 @@ export default defineCommand({
         let channelsMenu1 = new MessageSelectMenu()
             .setCustomId("settings.channels.welcome")
             .setPlaceholder("Provide a channel that will be used for welcome messages.")
-        int.guild!.channels.cache.filter(c => c.type === "GUILD_TEXT").each(c => {
+        int.guild!.channels.cache.filter(c => {
+            if (member.permissions.has("ADMINISTRATOR")) return c.type === "GUILD_TEXT";
+            return c.type === "GUILD_TEXT" && c.permissionsFor(member, true).has("VIEW_CHANNEL");
+        }).each(c => {
             channelsMenu1.addOptions(
                 {
                     value: c.id,
-                    description: `Select this channel to set it as a welcome channel.`,
+                    description: `Select a channel to set it as a welcome channel.`,
                     label: c.name
                 }
             )
@@ -65,11 +68,14 @@ export default defineCommand({
         let channelsMenu2 = new MessageSelectMenu()
             .setCustomId("settings.channels.logs")
             .setPlaceholder("Provide a channel that will be used for logs.")
-        int.guild!.channels.cache.filter(c => c.type === "GUILD_TEXT").each(c => {
+        int.guild!.channels.cache.filter(c => {
+            if (member.permissions.has("ADMINISTRATOR")) return c.type === "GUILD_TEXT";
+            return c.type === "GUILD_TEXT" && c.permissionsFor(member, true).has("VIEW_CHANNEL");
+        }).each(c => {
             channelsMenu2.addOptions(
                 {
                     value: c.id,
-                    description: `Select this channel to set it as a logs channel.`,
+                    description: `Select a channel to set it as a logs channel.`,
                     label: c.name
                 }
             )
@@ -83,7 +89,7 @@ export default defineCommand({
             rolesMenu1.addOptions(
                 {
                     value: r.id,
-                    description: `Select this role to set it as a staff role.`,
+                    description: `Select a role to set it as a staff role.`,
                     label: r.name
                 }
             )
@@ -96,7 +102,7 @@ export default defineCommand({
             rolesMenu2.addOptions(
                 {
                     value: r.id,
-                    description: `Select this role to set it as a mute role.`,
+                    description: `Select a role to set it as a mute role.`,
                     label: r.name
                 }
             )
@@ -145,7 +151,7 @@ export default defineCommand({
         } catch (e: any) {
             int.client.logger.error`The type collector has failed ${e.message}`
             int.editReply({
-                content: `The 30 second period has passed.`,
+                content: `Selection has been canceled.`,
                 components: []
             })
         }
@@ -188,7 +194,7 @@ export default defineCommand({
         } catch (e: any) {
             int.client.logger.error`The role | channel collector has failed ${e.message}`
             int.editReply({
-                content: `The 30 second period has passed.`,
+                content: `Selection has been canceled.`,
                 components: []
             })
         }
