@@ -1,4 +1,10 @@
-import type { ApplicationCommandData, CommandInteraction, InteractionReplyOptions, MessagePayload } from "discord.js";
+import type {
+    ApplicationCommandData,
+    CommandInteraction,
+    ContextMenuInteraction,
+    InteractionReplyOptions,
+    MessagePayload
+} from "discord.js";
 
 // read only array of any types
 type Arr = readonly any[];
@@ -23,9 +29,11 @@ export interface ICommandInteraction extends CommandInteraction {
 }
 
 export type ICommandExecute = (interaction: CommandInteraction) => Promise<string | MessagePayload | InteractionReplyOptions | void> | InteractionReplyOptions | string | void;
+export type IContextExecute = (interaction: ContextMenuInteraction) => Promise<string | MessagePayload | InteractionReplyOptions | void> | InteractionReplyOptions | string | void;
 
 export interface ICommand {
-    execute: ICommandExecute;
+    chat?: ICommandExecute;
+    context?: IContextExecute;
     data: ApplicationCommandData
 }
 

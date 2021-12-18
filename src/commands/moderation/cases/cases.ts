@@ -31,7 +31,7 @@ export default defineCommand({
             }
         ]
     },
-    execute: async (int: ICommandInteraction) => {
+    chat: async (int: ICommandInteraction) => {
         const member = int.member;
         const db = await int.client.db(int.guild!);
         const id = int.options.getNumber("id")!;

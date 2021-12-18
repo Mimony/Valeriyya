@@ -14,7 +14,7 @@ export default defineCommand({
             },
         ],
     },
-    execute: (int: ICommandInteraction) => {
+    chat: (int: ICommandInteraction) => {
         const member = int.options.getMember("user") || int.member;
 
         if (!(member instanceof GuildMember)) return;

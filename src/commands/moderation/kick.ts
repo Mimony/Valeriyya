@@ -21,7 +21,7 @@ export default defineCommand({
             }
         ]
     },
-    execute: async (int: ICommandInteraction) => {
+    chat: async (int: ICommandInteraction) => {
         const staff = int.member;
         const target = int.options.getMember("member");
         const reason = int.options.getString("reason") ?? "";
