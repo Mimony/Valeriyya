@@ -57,6 +57,7 @@ export default defineCommand({
             if (member.permissions.has("ADMINISTRATOR")) return c.type === "GUILD_TEXT";
             return c.type === "GUILD_TEXT" && c.permissionsFor(member, true).has("VIEW_CHANNEL");
         }).each(c => {
+            // TODO Divide Channels in more menus
             channelsMenu1.addOptions(
                 {
                     value: c.id,
@@ -68,10 +69,12 @@ export default defineCommand({
         let channelsMenu2 = new MessageSelectMenu()
             .setCustomId("settings.channels.logs")
             .setPlaceholder("Provide a channel that will be used for logs.")
+
         int.guild!.channels.cache.filter(c => {
             if (member.permissions.has("ADMINISTRATOR")) return c.type === "GUILD_TEXT";
             return c.type === "GUILD_TEXT" && c.permissionsFor(member, true).has("VIEW_CHANNEL");
         }).each(c => {
+            // TODO Divide Channels in more menus
             channelsMenu2.addOptions(
                 {
                     value: c.id,
@@ -83,9 +86,10 @@ export default defineCommand({
 
         let rolesMenu1 = new MessageSelectMenu()
             .setCustomId("settings.roles.staff")
-            .setPlaceholder("Provide a role that will be used for staff.")
+            .setPlaceholder("Provide a role that will be used as a staff role.")
+
         int.guild!.roles.cache.filter(r => r.id !== r.guild.id).each(r => {
-            // TODO Divide Channels in more menus
+            // TODO Divide Roles in more menus
             rolesMenu1.addOptions(
                 {
                     value: r.id,
@@ -94,9 +98,12 @@ export default defineCommand({
                 }
             )
         })
+
+
         let rolesMenu2 = new MessageSelectMenu()
             .setCustomId("settings.roles.mute")
-            .setPlaceholder("Provide a role that will be used for staff.")
+            .setPlaceholder("Provide a role that will be used as a mute role.")
+
         int.guild!.roles.cache.filter(r => r.id !== r.guild.id).each(r => {
             // TODO Divide Roles in more menus
             rolesMenu2.addOptions(
