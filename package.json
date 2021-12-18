@@ -20,11 +20,11 @@
   "description": "Discord.js Bot",
   "main": "dist/index.js",
   "scripts": {
-    "load:guild": "ts-node src/commands.guild.load.js",
-    "load": "ts-node src/commands.load.js",
+    "load:guild": "ts-node src/commands.guild.load.ts",
+    "load": "ts-node src/commands.load.ts",
     "start": "node dist/index.js",
     "build": "tsc",
-    "start:dev": "nodemon --transpile-only src/index.ts"
+    "start:dev": "npx nodemon --transpile-only src/index.ts"
   },
   "repository": {
     "type": "git",
