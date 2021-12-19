@@ -54,7 +54,8 @@ export class ValeriyyaCases {
             duration
         };
 
-        await db.addCase(new_case)
+        db.cases.push(new_case);
+        await db.save()
 
     }
 

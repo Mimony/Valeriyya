@@ -34,9 +34,31 @@ export class GuildEntity extends BaseEntity {
         welcome: null
     }
 
+    @Column({ name: "history", type: "array", array: true })
+    public history: {
+            id: string;
+            ban: number;
+            kick: number;
+            mute: number;
+    }[] = [];
+
     public constructor(guild: string) {
         super();
         this.id = guild
+    }
+
+    public async getUserHistory(id: string) {
+        let history = this.history.find(m => m.id === id);
+        if (!history) {
+            this.history.push({
+                id: id,
+                ban: 0,
+                kick: 0,
+                mute: 0
+            })
+            history = (await this.save()).history.find(m => m.id === id);
+        }
+        return history;
     }
 
     public getCaseById(id: number) {
