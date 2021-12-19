@@ -93,7 +93,7 @@ export class Valeriyya extends Client {
             if (!command) return;
 
             try {
-                var result = await command.context!(interaction)
+                var result = await command.menu!(interaction)
                 this.logger.print(`${interaction.user.tag} ran ${interaction.commandName}`)
             } catch (err: any) {
                 interaction.replied || interaction.deferred ?

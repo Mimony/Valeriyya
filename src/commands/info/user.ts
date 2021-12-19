@@ -1,4 +1,4 @@
-import { GuildMember } from "discord.js";
+import type { GuildMember } from "discord.js";
 import { ValeriyyaEmbed } from "../../lib/util/valeriyya.embed";
 import { defineCommand, ICommandInteraction, OptionTypes } from "../../lib/util/valeriyya.types";
 
@@ -15,10 +15,8 @@ export default defineCommand({
         ],
     },
     chat: (int: ICommandInteraction) => {
-        const member = int.options.getMember("user") || int.member;
-
-        if (!(member instanceof GuildMember)) return;
-        const {user} = member!;
+        const member = (int.options.getMember("user") || int.member) as GuildMember;
+        const { user } = member!;
 
         const embed = new ValeriyyaEmbed()
             .setAuthor(`${user.tag} (${user.id})`, user.displayAvatarURL({dynamic: true}))

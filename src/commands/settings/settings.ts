@@ -1,4 +1,4 @@
-import { GuildMember, Message, MessageActionRow, MessageSelectMenu } from "discord.js";
+import { type GuildMember, Message, MessageActionRow, MessageSelectMenu } from "discord.js";
 import { defineCommand, type ICommandInteraction, OptionTypes } from "../../lib/util/valeriyya.types";
 import { ValeriyyaEmbed } from "../../lib/util/valeriyya.embed";
 
@@ -25,13 +25,12 @@ export default defineCommand({
             },
         ]
     },
-    execute: async (int: ICommandInteraction) => {
+    chat: async (int: ICommandInteraction) => {
         await int.deferReply({ ephemeral: true });
-        const member = int.member;
+        const member = int.member as GuildMember;
         const choice = int.options.getString("type", true);
         const db = await int.client.db(int.guild!);
 
-        if (!(member instanceof GuildMember)) return;
 
         if (!member.permissions.has("MANAGE_GUILD", true)) return {
             embeds: [

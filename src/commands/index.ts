@@ -10,6 +10,9 @@ import cases from "../commands/moderation/cases/cases";
 // Setting Commands
 import settings from "../commands/settings/settings";
 
+// Owner Command
+import eval from "../commands/owner/eval"
+
 export const Commands = () => {
     return [
         user,
@@ -17,6 +20,7 @@ export const Commands = () => {
         kick,
         reason,
         settings,
-        cases
+        cases,
+        eval
     ];
 }
