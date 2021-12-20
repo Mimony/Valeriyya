@@ -37,6 +37,6 @@
   },
   "homepage": "https://github.com/Mimony/Valeriyya#readme",
   "engines": {
-    "node": ">= 17.1.0"
+    "node": ">= 16.4.12"
   }
 }
