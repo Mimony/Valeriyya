@@ -35,5 +35,8 @@
   "bugs": {
     "url": "https://github.com/Mimony/Valeriyya/issues"
   },
-  "homepage": "https://github.com/Mimony/Valeriyya#readme"
+  "homepage": "https://github.com/Mimony/Valeriyya#readme",
+  "engines": {
+    "node": ">= 17.1.0"
+  }
 }
