@@ -1,4 +1,4 @@
-import { GuildMember } from "discord.js";
+import type { GuildMember } from "discord.js";
 import { Kick } from "../../lib/util/moderation/valeriyya.moderation.kick";
 import { ValeriyyaEmbed } from "../../lib/util/valeriyya.embed";
 import { defineCommand, type ICommandInteraction, OptionTypes } from "../../lib/util/valeriyya.types";
@@ -21,12 +21,11 @@ export default defineCommand({
             }
         ]
     },
-    execute: async (int: ICommandInteraction) => {
-        const staff = int.member;
-        const target = int.options.getMember("member");
+    chat: async (int: ICommandInteraction) => {
+        const staff = int.member as GuildMember;
+        const target = int.options.getMember("member") as GuildMember;
         const reason = int.options.getString("reason") ?? "";
 
-        if (!(staff instanceof GuildMember) || !(target instanceof GuildMember)) return;
 
         const date = Date.now();
         const action = new Kick({

@@ -1,4 +1,10 @@
-import type { ApplicationCommandData, CommandInteraction, InteractionReplyOptions, MessagePayload } from "discord.js";
+import type {
+    ApplicationCommandData,
+    CommandInteraction,
+    ContextMenuInteraction,
+    InteractionReplyOptions,
+    MessagePayload
+} from "discord.js";
 
 // read only array of any types
 type Arr = readonly any[];
@@ -18,14 +24,15 @@ export type AbstractConstructor<T> = abstract new (...args: any[]) => T;
 // Some ppl say this is the biggest mistake in the Javascript ecosystem so will i so there it is
 export type Nullish = null | undefined;
 
-export interface ICommandInteraction extends CommandInteraction {
-    // db: GuildDb
-}
+export interface ICommandInteraction extends CommandInteraction {}
+export interface IContextInteraction extends ContextMenuInteraction {}
 
 export type ICommandExecute = (interaction: CommandInteraction) => Promise<string | MessagePayload | InteractionReplyOptions | void> | InteractionReplyOptions | string | void;
+export type IContextExecute = (interaction: ContextMenuInteraction) => Promise<string | MessagePayload | InteractionReplyOptions | void> | InteractionReplyOptions | string | void;
 
 export interface ICommand {
-    execute: ICommandExecute;
+    chat?: ICommandExecute;
+    menu?: IContextExecute;
     data: ApplicationCommandData
 }
 
@@ -40,6 +47,12 @@ export const OptionTypes = {
     ROLE: 8,
     MENTIONABLE: 9,
     NUMBER: 10,
+}
+
+export const AppOptionTypes = {
+    CHAT_INPUT: 1,
+    USER: 2,
+    MESSAGE: 3
 }
 
 export const defineCommand = (cmd: ICommand): ICommand => cmd;

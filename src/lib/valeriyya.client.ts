@@ -68,10 +68,11 @@ export class Valeriyya extends Client {
     }
 
     private async onInteraction(interaction: Interaction) {
-        if (!interaction.isCommand() || !interaction.inGuild() || !interaction.guild?.available) return;
+        if (!interaction.inGuild() || !interaction.guild?.available) return;
 
-        const command = this.commands.get(interaction.commandName);
-        if (!command) return;
+        if (interaction.isCommand()) {
+            const command = this.commands.get(interaction.commandName);
+            if (!command) return;
 
         try {
             var result = await command.execute(interaction)
@@ -82,11 +83,28 @@ export class Valeriyya extends Client {
                 interaction.reply({content: `There was an error ${err.stack}`, ephemeral: true});
         }
 
-        if (!result) return;
+            interaction.replied || interaction.deferred ?
+                interaction.followUp(result) :
+                interaction.reply(result);
+        } else if (interaction.isContextMenu()) {
+            const command = this.commands.get(interaction.commandName);
+            if (!command) return;
 
-        interaction.replied || interaction.deferred ?
-            interaction.followUp(result) :
-            interaction.reply(result);
+            try {
+                var result = await command.menu!(interaction)
+                this.logger.print(`${interaction.user.tag} ran ${interaction.commandName}`)
+            } catch (err: any) {
+                interaction.replied || interaction.deferred ?
+                    interaction.followUp({ content: `There was an error ${err.message}`, ephemeral: true }) :
+                    interaction.reply({ content: `There was an error ${err.message}`, ephemeral: true });
+            }
+
+            if (!result) return;
+
+            interaction.replied || interaction.deferred ?
+                interaction.followUp(result) :
+                interaction.reply(result);
+        }
 
     }
 

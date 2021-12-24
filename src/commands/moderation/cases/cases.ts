@@ -1,5 +1,5 @@
 import { defineCommand, type ICommandInteraction, OptionTypes } from "../../../lib/util/valeriyya.types";
-import { GuildMember } from "discord.js";
+import type { GuildMember } from "discord.js";
 import { ValeriyyaEmbed } from "../../../lib/util/valeriyya.embed";
 
 export default defineCommand({
@@ -31,13 +31,12 @@ export default defineCommand({
             }
         ]
     },
-    execute: async (int: ICommandInteraction) => {
-        const member = int.member;
+    chat: async (int: ICommandInteraction) => {
+        const member = int.member as GuildMember;
         const db = await int.client.db(int.guild!);
         const id = int.options.getNumber("id")!;
         const options = int.options.getString("option")!;
 
-        if (!(member instanceof GuildMember)) return;
 
         if (!member.permissions.has("MANAGE_GUILD", true)) {
             const embed = new ValeriyyaEmbed(undefined, "error")
