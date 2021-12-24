@@ -1,7 +1,6 @@
 {
   "devDependencies": {
-    "nodemon": "^2.0.15",
-    "ts-node": "10.4.0",
+    "tsc-watch": "^4.6.0",
     "typescript": "4.5.4"
   },
   "dependencies": {
@@ -20,11 +19,11 @@
   "description": "Discord.js Bot",
   "main": "dist/index.js",
   "scripts": {
-    "load:guild": "ts-node src/commands.guild.load.ts",
-    "load": "ts-node src/commands.load.ts",
+    "load:guild": "node dist/commands.guild.load.js",
+    "load": "node dist/commands.load.js",
     "start": "node dist/index.js",
     "build": "tsc",
-    "start:dev": "npx nodemon --transpile-only src/index.ts"
+    "start:dev": "tsc-watch --onSuccess \"node dist/index.js\""
   },
   "repository": {
     "type": "git",
