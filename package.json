@@ -9,7 +9,7 @@
     "@types/node": "^16.11.10",
     "chalk": "^4.1.2",
     "discord-api-types": "^0.25.2",
-    "discord.js": "^13.3.1",
+    "discord.js": "^13.4.0",
     "mongodb": "^3.6.0",
     "tslib": "^2.3.1",
     "typeorm": "^0.2.41"
