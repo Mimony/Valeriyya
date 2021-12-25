@@ -13,9 +13,7 @@ declare module "discord.js" {
         logger: Logger;
         commands: Collection<string, ICommand>;
         db_init: ValeriyyaDB;
-
         db(guild: Guild | string): Promise<GuildEntity>;
-
         cases: ValeriyyaCases;
     }
 }
@@ -31,8 +29,6 @@ export class Valeriyya extends Client {
             intents: [
                 "GUILDS",
                 "GUILD_MEMBERS",
-                "GUILD_MESSAGES",
-                "GUILD_MESSAGE_REACTIONS"
             ]
         })
 

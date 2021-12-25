@@ -14,17 +14,19 @@ export default defineCommand({
             },
         ],
     },
-    chat: (int: ICommandInteraction) => {
+    chat: async (int: ICommandInteraction) => {
         const member = (int.options.getMember("user") || int.member) as GuildMember;
+        const db = await int.client.db(int.guild!);
+        const history = (await db.getUserHistory(member.id))!
         const { user } = member!;
 
         const embed = new ValeriyyaEmbed()
-            .setAuthor(`${user.tag} (${user.id})`, user.displayAvatarURL({dynamic: true}))
+            .setAuthor(`${user.username}`, user.displayAvatarURL({dynamic: true}))
             .setDescription(`
     User Created at: ${timeFormat(user.createdAt)} ${user.bot ? "(User is a bot)" : ""}
     Member Joined At: ${timeFormat(member.joinedAt)}
-    Roles: ${member.roles.cache.filter(r => member.guild.roles.everyone !== r).map(r => r).slice(0, 10)}
-    Moderation History: __SOON__
+    ID: ${user.id}
+    Moderation History: \`\`\`bans: ${history.ban}\nkicks: ${history.kick}\nmutes: ${history.mute}\`\`\`
     `)
 
         return {
