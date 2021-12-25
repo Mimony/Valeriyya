@@ -1,4 +1,4 @@
-import { type GuildMember, Message, MessageActionRow, MessageSelectMenu } from "discord.js";
+import type { GuildMember, Role, TextBasedChannels } from "discord.js";
 import { defineCommand, type ICommandInteraction, OptionTypes } from "../../lib/util/valeriyya.types";
 import { ValeriyyaEmbed } from "../../lib/util/valeriyya.embed";
 
@@ -8,29 +8,74 @@ export default defineCommand({
         description: "Changes the settings in this guild.",
         options: [
             {
-                name: "type",
-                description: "The settings type to change.",
-                type: OptionTypes.STRING,
-                required: true,
-                choices: [
+                name: "channel",
+                description: "Select a channel setting.",
+                type: OptionTypes.SUB_COMMAND,
+                options: [
                     {
-                        name: "channels",
-                        value: "channels"
+                        name: "type",
+                        description: "Choose what the channel is for.",
+                        type: OptionTypes.STRING,
+                        choices: [
+                            {
+                                name: "logs",
+                                value: "logs"
+                            },
+                            {
+                                name: "welcome",
+                                value: "welcome"
+                            }
+                        ],
+                        required: true,
                     },
                     {
-                        name: "roles",
-                        value: "roles"
+                        name: "channel",
+                        description: "The channel that will be used for the previous type.",
+                        type: OptionTypes.CHANNEL,
+                        channelTypes: ["GUILD_TEXT", "GUILD_NEWS"],
+                        required: true
                     }
                 ]
             },
+            {
+                name: "role",
+                description: "Select a role setting.",
+                type: OptionTypes.SUB_COMMAND,
+                options: [
+                    {
+                        name: "type",
+                        description: "Choose what the role is for.",
+                        type: OptionTypes.STRING,
+                        choices: [
+                            {
+                                name: "staff",
+                                value: "staff"
+                            },
+                            {
+                                name: "mute",
+                                value: "mute"
+                            }
+                        ],
+                        required: true,
+                    },
+                    {
+                        name: "role",
+                        description: "The role that will be used for the previous type.",
+                        type: OptionTypes.ROLE,
+                        required: true
+                    }
+                ]
+            }
         ]
     },
     chat: async (int: ICommandInteraction) => {
-        await int.deferReply({ ephemeral: true });
         const member = int.member as GuildMember;
-        const choice = int.options.getString("type", true);
         const db = await int.client.db(int.guild!);
-
+        const cmd = int.options.getSubcommand();
+        const channel_type = int.options.getString("type") as "logs" | "welcome";
+        const role_type = int.options.getString("type") as "staff" | "mute";
+        const role = int.options.getRole("role") as Role;
+        const channel = int.options.getChannel("channel") as TextBasedChannels;
 
         if (!member.permissions.has("MANAGE_GUILD", true)) return {
             embeds: [
@@ -39,49 +84,23 @@ export default defineCommand({
                     .setDescription("You are missing the `MANAGE_GUILD` permission")
             ]
         }
-        let row = new MessageActionRow()
 
-        if (choice === "roles") {
-            let roleMenu = new MessageSelectMenu()
-                .setCustomId("settings.roles")
-                .setPlaceholder("Provide a role for the selected type above.")
-            await int.guild!.roles.cache.filter(r => r.guild.id !== r.id).each(r => {
-                roleMenu.addOptions({
-                    label: r.name,
-                    description: "Select this role to set it as a staff role.",
-                    value: r.id
-                })
-            })
-            row.setComponents(roleMenu)
-        } else if (choice === "channels") {
-            let channelMenu = new MessageSelectMenu()
-                .setCustomId("settings.channels")
-                .setPlaceholder("Provide a channel for the selected type above.")
-            await int.guild!.channels.cache.filter(c => c.type === "GUILD_TEXT").each(r => {
-                channelMenu.addOptions({
-                    label: r.name,
-                    description: "Select this channel to set it as a log channel.",
-                    value: r.id
-                })
-            })
-            row.setComponents(channelMenu)
+        if (cmd === "channel") {
+            db.channels[channel_type] = channel.id;
+            db.save();
+            return {
+                content: `The ${channel_type} channel has been updated to ${channel}.`,
+                ephemeral: true,
+            }
+        } else if (cmd === "role") {
+            db.roles[role_type] = role.id;
+            db.save();
+            return {
+                content: `The ${role_type} role has been updated to ${role}.`,
+                ephemeral: true
+            }
         }
 
-        const menu = await int.followUp({
-            content: `Select the ${choice} setting below.`,
-            components: [row],
-        });
-
-        const collector = await (menu as Message).awaitMessageComponent({ time: 15000, componentType: "SELECT_MENU" })
-        if (collector.customId === "settings.roles") {
-            db.roles.staff = collector.values[0];
-            db.save();
-            collector.reply({ content: `The staff role has been updated to ${int.guild!.roles.resolve(collector.values[0])}`, ephemeral: true })
-        } else if (collector.customId === "settings.channels") {
-            db.channels.logs = collector.values[0];
-            db.save();
-            collector.reply({ content: `The logs channel has been updated to ${int.guild!.channels.resolve(collector.values[0])}`, ephemeral: true })
-        }
-        return;
+        return "wtf"
     }
 })
