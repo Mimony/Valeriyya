@@ -68,7 +68,7 @@ export default defineCommand({
             }
         ]
     },
-    execute: async (int: ICommandInteraction) => {
+    chat: async (int: ICommandInteraction) => {
         const member = int.member as GuildMember;
         const db = await int.client.db(int.guild!);
         const cmd = int.options.getSubcommand();
@@ -101,6 +101,6 @@ export default defineCommand({
             }
         }
 
-        return;
+        return "wtf"
     }
 })

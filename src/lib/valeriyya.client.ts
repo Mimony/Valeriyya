@@ -75,13 +75,15 @@ export class Valeriyya extends Client {
             if (!command) return;
 
         try {
-            var result = await command.execute(interaction)
+            var result = await command.chat!(interaction);
             this.logger.print(`${interaction.user.tag} ran ${interaction.commandName}`)
         } catch (err: any) {
             interaction.replied || interaction.deferred ?
-                interaction.followUp({content: `There was an error ${err.stack}`, ephemeral: true}) :
-                interaction.reply({content: `There was an error ${err.stack}`, ephemeral: true});
+                interaction.followUp({content: `There was an error ${err.message}`, ephemeral: true}) :
+                interaction.reply({content: `There was an error ${err.message}`, ephemeral: true});
         }
+
+            if (!result) return;
 
             interaction.replied || interaction.deferred ?
                 interaction.followUp(result) :
