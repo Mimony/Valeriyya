@@ -21,10 +21,11 @@ export default defineCommand({
         const { user } = member!;
 
         const embed = new ValeriyyaEmbed()
-            .setAuthor(`${user.tag} (${user.id})`, user.displayAvatarURL({dynamic: true}))
+            .setAuthor(`${user.username}`, user.displayAvatarURL({dynamic: true}))
             .setDescription(`
     User Created at: ${timeFormat(user.createdAt)} ${user.bot ? "(User is a bot)" : ""}
     Member Joined At: ${timeFormat(member.joinedAt)}
+    ID: ${user.id}
     Moderation History: \`\`\`bans: ${history.ban}\nkicks: ${history.kick}\nmutes: ${history.mute}\`\`\`
     `)
 

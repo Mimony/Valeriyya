@@ -65,6 +65,7 @@ export default defineCommand({
                 target,
                 id: c.id,
                 reason: c.reason,
+                date: c.date
             })
 
             return {

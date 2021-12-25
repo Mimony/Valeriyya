@@ -6,6 +6,7 @@ import ban from "../commands/moderation/ban";
 import kick from "../commands/moderation/kick";
 import reason from "../commands/moderation/reason";
 import cases from "../commands/moderation/cases/cases";
+import history from "../commands/moderation/history";
 
 // Setting Commands
 import settings from "../commands/settings/settings";
@@ -21,6 +22,7 @@ export const Commands = () => {
         reason,
         settings,
         cases,
-        eval
+        eval,
+        history
     ];
 }

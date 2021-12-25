@@ -34,7 +34,8 @@ export class ValeriyyaCases {
                     target,
                     id,
                     reason,
-                    duration
+                    duration,
+                    date
                 })]
             })).id;
         } catch (err: any) {
@@ -65,8 +66,9 @@ export class ValeriyyaCases {
                          target,
                          id,
                          reason,
-                         duration
-                     }: { action: "ban" | "kick" | "mute" | "unban" | "unmute", staff: GuildMember, target: User, id: number, reason: string, duration?: number }): Promise<ValeriyyaEmbed> {
+                         duration,
+                        date
+                     }: { action: "ban" | "kick" | "mute" | "unban" | "unmute", staff: GuildMember, target: User, id: number, reason: string, duration?: number, date: number; }): Promise<ValeriyyaEmbed> {
         return new ValeriyyaEmbed()
             .setAuthor(`${staff.user.tag} (${staff.user.id})`, staff.user.displayAvatarURL({ dynamic: true }))
             .setFooter(`Case: ${id}`)
@@ -74,7 +76,8 @@ export class ValeriyyaCases {
             Action: \`${action}\`
             Reason: \`${reason}\`
             ${duration ? `Duration: \`${duration}\`` : ""}
-            `);
+            `)
+            .setTimestamp(date);
     }
 
     public async edit({ guildId, id, reason, action }: { guildId: string, id: number, reason?: string, action?: "ban" | "kick" | "mute" | "unban" | "unmute" }) {
