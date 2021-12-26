@@ -40,7 +40,7 @@ export default defineCommand({
 
         if (!member.permissions.has("MANAGE_GUILD", true)) {
             const embed = new ValeriyyaEmbed(undefined, "error")
-                .setAuthor(`${int.user.tag} (${int.user.id})`, int.user.displayAvatarURL({dynamic: true}))
+                .setAuthor({ name: `${int.user.tag} (${int.user.id})`, url: int.user.displayAvatarURL({dynamic: true}) })
                 .setDescription("You are missing the `MANAGE_GUILD` permission");
 
             return {

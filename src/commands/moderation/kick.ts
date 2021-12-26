@@ -39,7 +39,7 @@ export default defineCommand({
         await action.all();
 
         const embed = new ValeriyyaEmbed()
-            .setAuthor(`${int.user.tag} (${int.user.id})`, int.user.displayAvatarURL({dynamic: true}))
+            .setAuthor({ name: `${int.user.tag} (${int.user.id})`, url: int.user.displayAvatarURL({dynamic: true}) })
             .setThumbnail(int.guild?.iconURL({dynamic: true}) ?? '')
             .setDescription(`${target} has been kicked from ${int.guild?.name}`);
 

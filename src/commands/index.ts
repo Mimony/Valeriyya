@@ -4,6 +4,7 @@ import user from "../commands/info/user";
 // Moderation Commands
 import ban from "../commands/moderation/ban";
 import kick from "../commands/moderation/kick";
+import mute from "../commands/moderation/mute"
 import reason from "../commands/moderation/reason";
 import cases from "../commands/moderation/cases/cases";
 import history from "../commands/moderation/history";
@@ -19,6 +20,7 @@ export const Commands = () => {
         user,
         ban,
         kick,
+        mute,
         reason,
         settings,
         cases,

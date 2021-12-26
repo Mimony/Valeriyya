@@ -1,4 +1,4 @@
-import type { GuildMember, Role, TextBasedChannels } from "discord.js";
+import type { GuildMember, Role, TextBasedChannel } from "discord.js";
 import { defineCommand, type ICommandInteraction, OptionTypes } from "../../lib/util/valeriyya.types";
 import { ValeriyyaEmbed } from "../../lib/util/valeriyya.embed";
 
@@ -75,12 +75,12 @@ export default defineCommand({
         const channel_type = int.options.getString("type") as "logs" | "welcome";
         const role_type = int.options.getString("type") as "staff" | "mute";
         const role = int.options.getRole("role") as Role;
-        const channel = int.options.getChannel("channel") as TextBasedChannels;
+        const channel = int.options.getChannel("channel") as Omit<TextBasedChannel, "DMChannel" | "PartialDMChannel" | "ThreadChannel">;
 
         if (!member.permissions.has("MANAGE_GUILD", true)) return {
             embeds: [
                 new ValeriyyaEmbed(undefined, "error")
-                    .setAuthor(`${int.user.tag} (${int.user.id})`, int.user.displayAvatarURL({ dynamic: true }))
+                    .setAuthor({ name: `${int.user.tag} (${int.user.id})`, url: int.user.displayAvatarURL({ dynamic: true }) })
                     .setDescription("You are missing the `MANAGE_GUILD` permission")
             ]
         }
