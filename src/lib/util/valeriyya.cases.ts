@@ -1,7 +1,8 @@
-import { GuildMember, MessageEmbed, TextBasedChannels, User } from "discord.js";
+import { GuildMember, MessageEmbed, TextBasedChannel, User } from "discord.js";
 import type { Valeriyya } from "../valeriyya.client";
 import type { Case } from "./valeriyya.db.models";
 import { ValeriyyaEmbed } from "./valeriyya.embed";
+import ms from "./valeriyya.ms";
 
 type CASE = Omit<Case, "id">;
 
@@ -25,7 +26,7 @@ export class ValeriyyaCases {
 
         try {
             if (!channelId) return;
-            const channel = await guild.channels.fetch(channelId) as TextBasedChannels;
+            const channel = await guild.channels.fetch(channelId) as Omit<TextBasedChannel, "DMChannel" | "PartialDMChannel" | "ThreadChannel">;
 
             message = (await channel.send({
                 embeds: [await this.log({
@@ -70,12 +71,12 @@ export class ValeriyyaCases {
                         date
                      }: { action: "ban" | "kick" | "mute" | "unban" | "unmute", staff: GuildMember, target: User, id: number, reason: string, duration?: number, date: number; }): Promise<ValeriyyaEmbed> {
         return new ValeriyyaEmbed()
-            .setAuthor(`${staff.user.tag} (${staff.user.id})`, staff.user.displayAvatarURL({ dynamic: true }))
+            .setAuthor({ name: `${staff.user.tag} (${staff.user.id})`, url: staff.user.displayAvatarURL({ dynamic: true }) })
             .setFooter(`Case: ${id}`)
             .setDescription(`Member: \`${target.tag}\`
             Action: \`${action}\`
             Reason: \`${reason}\`
-            ${duration ? `Duration: \`${duration}\`` : ""}
+            ${duration ? `Duration: \`${ms(duration, true)}\`` : ""}
             `)
             .setTimestamp(date);
     }
@@ -93,7 +94,7 @@ export class ValeriyyaCases {
         if (!c.message) return;
         const channel_id = db.channels.logs;
         try {
-            const channel = await guild.channels.fetch(channel_id!) as TextBasedChannels;
+            const channel = await guild.channels.fetch(channel_id!) as Omit<TextBasedChannel, "DMChannel" | "PartialDMChannel" | "ThreadChannel">;
             const target = await this.client.users.fetch(c.targetId);
 
             const message = await channel.messages.fetch(c.message);
@@ -101,7 +102,7 @@ export class ValeriyyaCases {
                 embeds: [new MessageEmbed(message.embeds[0]).setDescription(`Member: \`${target.tag}\`
             Action: \`${action}\`
             Reason: \`${reason}\`
-            ${c.duration ? `Duration: \`${c.duration}\`` : ""}`)]
+            ${c.duration ? `Duration: \`${ms(c.duration, true)}\`` : ""}`)]
             })
         } catch (err: any) {
             return this.client.logger.error`There was an error editing a cases reason with the id ${id}`

@@ -15,7 +15,7 @@ export default defineCommand({
         return {
             embeds: [
                 new ValeriyyaEmbed()
-                    .setAuthor(`${target.user.tag}'s moderation history:`)
+                    .setAuthor({ name: `${target.user.tag}'s moderation history:` })
                     .setDescription(`\`\`\`bans: ${history.ban}\nkicks: ${history.kick}\nmutes: ${history.mute}\`\`\``)
             ]
         }
