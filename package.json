@@ -4,15 +4,21 @@
     "typescript": "4.5.4"
   },
   "dependencies": {
+    "@discordjs/opus": "^0.5.3",
     "@discordjs/rest": "^0.1.0-canary.0",
+    "@discordjs/voice": "^0.7.5",
     "@sapphire/pieces": "^3.2.0",
     "@types/node": "^16.11.10",
     "chalk": "^4.1.2",
     "discord-api-types": "^0.25.2",
     "discord.js": "^13.4.0",
+    "ffmpeg-static": "^4.4.0",
+    "libsodium-wrappers": "^0.7.9",
     "mongodb": "^3.6.0",
     "tslib": "^2.3.1",
-    "typeorm": "^0.2.41"
+    "typeorm": "^0.2.41",
+    "youtube-dl-exec": "^2.0.2",
+    "ytdl-core": "^4.9.2"
   },
   "name": "valeriyya",
   "version": "1.2.1",

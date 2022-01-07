@@ -21,7 +21,7 @@ export default defineCommand({
         const { user } = member!;
 
         const embed = new ValeriyyaEmbed()
-            .setAuthor({name: `${user.username}`, url: user.displayAvatarURL({dynamic: true}) })
+            .setAuthor({name: `${user.username}`, iconURL: user.displayAvatarURL({dynamic: true}) })
             .setDescription(`
     User Created at: ${timeFormat(user.createdAt)} ${user.bot ? "(User is a bot)" : ""}
     Member Joined At: ${timeFormat(member.joinedAt)}

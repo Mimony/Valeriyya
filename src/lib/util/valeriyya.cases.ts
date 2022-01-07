@@ -71,7 +71,7 @@ export class ValeriyyaCases {
                         date
                      }: { action: "ban" | "kick" | "mute" | "unban" | "unmute", staff: GuildMember, target: User, id: number, reason: string, duration?: number, date: number; }): Promise<ValeriyyaEmbed> {
         return new ValeriyyaEmbed()
-            .setAuthor({ name: `${staff.user.tag} (${staff.user.id})`, url: staff.user.displayAvatarURL({ dynamic: true }) })
+            .setAuthor({ name: `${staff.user.tag} (${staff.user.id})`, iconURL: staff.user.displayAvatarURL({ dynamic: true }) })
             .setFooter(`Case: ${id}`)
             .setDescription(`Member: \`${target.tag}\`
             Action: \`${action}\`
