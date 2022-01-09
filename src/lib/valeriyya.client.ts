@@ -32,7 +32,7 @@ export class Valeriyya extends Client {
 
     this.on("ready", () => this.onReady());
     this.on("interactionCreate", (interaction) => this.onInteraction(interaction));
-    this.on("messageCreate", async (message) => this.onMessageAnnoyFriend(message))
+    this.on("messageCreate", async (message) => this.onMessageAnnoyFriend(message));
   }
 
   public async start(token: string): Promise<string> {
@@ -70,12 +70,12 @@ export class Valeriyya extends Client {
         var result = await command.chat!(interaction);
         this.logger.print(`${interaction.user.tag} ran ${interaction.commandName}`);
       } catch (err: any) {
-          reply(interaction, { content: `There was an error ${err.message}`, ephemeral: true })
+        reply(interaction, { content: `There was an error ${err.message}`, ephemeral: true });
       }
 
       if (!result) return;
 
-      reply(interaction, result)
+      reply(interaction, result);
     } else if (interaction.isContextMenu()) {
       const command = this.commands.get(interaction.commandName);
       if (!command) return;
@@ -84,12 +84,12 @@ export class Valeriyya extends Client {
         var result = await command.menu!(interaction);
         this.logger.print(`${interaction.user.tag} ran ${interaction.commandName}`);
       } catch (err: any) {
-        replyC(interaction, { content: `There was an error ${err.message}`, ephemeral: true })
+        replyC(interaction, { content: `There was an error ${err.message}`, ephemeral: true });
       }
 
       if (!result) return;
 
-      replyC(interaction, result)
+      replyC(interaction, result);
     }
   }
 
