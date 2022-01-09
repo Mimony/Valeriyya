@@ -4,107 +4,107 @@ import { Logger } from "./valeriyya.logger";
 const logger: Logger = new Logger();
 @Entity("GuildEntity")
 export class GuildEntity extends BaseEntity {
-    @ObjectIdColumn({ name: "_id" })
-    public _id!: ObjectID;
+  @ObjectIdColumn({ name: "_id" })
+  public _id!: ObjectID;
 
-    @PrimaryColumn({ name: "id", type: "string", unique: true, update: false })
-    public id!: string;
+  @PrimaryColumn({ name: "id", type: "string", unique: true, update: false })
+  public id!: string;
 
-    @Column({ name: "cases", array: true, nullable: false, default: [] })
-    public cases: Case[] = [];
+  @Column({ name: "cases", array: true, nullable: false, default: [] })
+  public cases: Case[] = [];
 
-    @Column({ name: "cases_number", type: "number", nullable: false, default: 0 })
-    public cases_number: number = 0;
+  @Column({ name: "cases_number", type: "number", nullable: false, default: 0 })
+  public cases_number: number = 0;
 
-    @Column({ name: "roles" })
-    public roles: {
-        staff: string | null;
-        mute: string | null;
-    } = {
-        staff: null,
-        mute: null
+  @Column({ name: "roles" })
+  public roles: {
+    staff: string | null;
+    mute: string | null;
+  } = {
+    staff: null,
+    mute: null,
+  };
+
+  @Column({ name: "channels" })
+  public channels: {
+    logs: string | null;
+    welcome: string | null;
+  } = {
+    logs: null,
+    welcome: null,
+  };
+
+  @Column({ name: "history", type: "array", array: true })
+  public history: {
+    id: string;
+    ban: number;
+    kick: number;
+    mute: number;
+  }[] = [];
+
+  public constructor(guild: string) {
+    super();
+    this.id = guild;
+  }
+
+  public async getUserHistory(id: string) {
+    let history = this.history.find((m) => m.id === id);
+    if (!history) {
+      this.history.push({
+        id: id,
+        ban: 0,
+        kick: 0,
+        mute: 0,
+      });
+      history = (await this.save()).history.find((m) => m.id === id);
     }
+    return history;
+  }
 
-    @Column({ name: "channels" })
-    public channels: {
-        logs: string | null;
-        welcome: string | null;
-    } = {
-        logs: null,
-        welcome: null
-    }
+  public getCaseById(id: number) {
+    const c = this.cases.find((c) => c.id === id);
+    if (c) return c;
+    else return logger.print`There is no such case with the id: ${id}`;
+  }
 
-    @Column({ name: "history", type: "array", array: true })
-    public history: {
-            id: string;
-            ban: number;
-            kick: number;
-            mute: number;
-    }[] = [];
+  public getCasesByAction(action: "ban" | "kick" | "mute" | "unban" | "unmute") {
+    const c = this.cases.filter((c) => c.action === action);
+    if (c.length > 0) return c;
+    else return logger.print`There is no cases with a ${action} action.`;
+  }
 
-    public constructor(guild: string) {
-        super();
-        this.id = guild
-    }
+  public addCase({ message, id, action, guildId, staffId, targetId, date, reason, duration }: Case) {
+    this.cases.push({
+      message,
+      id,
+      action,
+      guildId,
+      staffId,
+      targetId,
+      date,
+      reason,
+      duration,
+    });
 
-    public async getUserHistory(id: string) {
-        let history = this.history.find(m => m.id === id);
-        if (!history) {
-            this.history.push({
-                id: id,
-                ban: 0,
-                kick: 0,
-                mute: 0
-            })
-            history = (await this.save()).history.find(m => m.id === id);
-        }
-        return history;
-    }
+    return this.save();
+  }
 
-    public getCaseById(id: number) {
-        const c = this.cases.find(c => c.id === id);
-        if (c) return c;
-        else return logger.print`There is no such case with the id: ${id}`;
-    }
+  public removeCase(id: number) {
+    const index = this.getCaseById(id);
+    this.cases.splice(this.cases.indexOf(index as Case), 1);
 
-    public getCasesByAction(action: "ban" | "kick" | "mute" | "unban" | "unmute") {
-        const c = this.cases.filter(c => c.action === action);
-        if (c.length > 0) return c;
-        else return logger.print`There is no cases with a ${action} action.`
-    }
-
-    public addCase({ message, id, action, guildId, staffId, targetId, date, reason, duration }: Case) {
-        this.cases.push({
-            message,
-            id,
-            action,
-            guildId,
-            staffId,
-            targetId,
-            date,
-            reason,
-            duration
-        });
-
-        return this.save();
-    }
-
-    public removeCase(id: number) {
-        const index = this.getCaseById(id);
-        this.cases.splice(this.cases.indexOf(index as Case), 1);
-
-        return this.save();
-    }
+    return this.save();
+  }
 }
 
 export interface Case {
-    message?: string;
-    id: number;
-    action: "ban" | "kick" | "mute" | "unban" | "unmute";
-    guildId: string;
-    staffId: string;
-    targetId: string;
-    date: number;
-    reason: string;
-    duration: number | 0;
+  message?: string;
+  id: number;
+  action: "ban" | "kick" | "mute" | "unban" | "unmute";
+  guildId: string;
+  staffId: string;
+  targetId: string;
+  date: number;
+  reason: string;
+  duration: number | 0;
 }

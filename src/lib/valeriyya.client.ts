@@ -5,10 +5,10 @@ import type { ICommand } from "./util/valeriyya.types";
 import { ValeriyyaDB } from "./util/valeriyya.db";
 import { GuildEntity } from "./util/valeriyya.db.models";
 import { ValeriyyaCases } from "./util/valeriyya.cases";
+import { reply, replyC } from "./util/valeriyya.util";
 
 const uri: string = "mongodb+srv://Client:MomsSpaghetti@cluster0.i1oux.mongodb.net/myFirstDatabase?retryWrites=true&w=majority";
 let count: number = 0;
-
 declare module "discord.js" {
   interface Client {
     logger: Logger;
@@ -70,14 +70,12 @@ export class Valeriyya extends Client {
         var result = await command.chat!(interaction);
         this.logger.print(`${interaction.user.tag} ran ${interaction.commandName}`);
       } catch (err: any) {
-        interaction.replied || interaction.deferred
-          ? interaction.followUp({ content: `There was an error ${err.message}`, ephemeral: true })
-          : interaction.reply({ content: `There was an error ${err.message}`, ephemeral: true });
+          reply(interaction, { content: `There was an error ${err.message}`, ephemeral: true })
       }
 
       if (!result) return;
 
-      interaction.replied || interaction.deferred ? interaction.followUp(result) : interaction.reply(result);
+      reply(interaction, result)
     } else if (interaction.isContextMenu()) {
       const command = this.commands.get(interaction.commandName);
       if (!command) return;
@@ -86,14 +84,12 @@ export class Valeriyya extends Client {
         var result = await command.menu!(interaction);
         this.logger.print(`${interaction.user.tag} ran ${interaction.commandName}`);
       } catch (err: any) {
-        interaction.replied || interaction.deferred
-          ? interaction.followUp({ content: `There was an error ${err.message}`, ephemeral: true })
-          : interaction.reply({ content: `There was an error ${err.message}`, ephemeral: true });
+        replyC(interaction, { content: `There was an error ${err.message}`, ephemeral: true })
       }
 
       if (!result) return;
 
-      interaction.replied || interaction.deferred ? interaction.followUp(result) : interaction.reply(result);
+      replyC(interaction, result)
     }
   }
 

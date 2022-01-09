@@ -22,7 +22,7 @@ const rest = new REST({version: "9"}).setToken("OTA5NzkxNDU0MDQwMzAxNTY4.YZJbUQ.
 
 (async () => {
     try {
-        await loadCommands();
+        loadCommands();
         logger.print("Loading Application Commands....");
 
         await rest.put(Routes.applicationCommands(clientID), {body: commands.map(c => c.data)});
