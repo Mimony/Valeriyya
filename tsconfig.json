@@ -1,7 +1,6 @@
 {
 	"compileOnSave": true,
 	"compilerOptions": {
-		"tsBuildInfoFile": "/dist/tsconfig.tsbuildinfo",
 		"allowSyntheticDefaultImports": true,
 		"alwaysStrict": true,
 		"declaration": true,
