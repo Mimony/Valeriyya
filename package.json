@@ -1,10 +1,10 @@
 {
   "devDependencies": {
+    "@types/yt-search": "^2.3.2",
     "tsc-watch": "4.6.0",
     "typescript": "4.5.4"
   },
   "dependencies": {
-    "@discordjs/opus": "^0.5.3",
     "@discordjs/rest": "^0.1.0-canary.0",
     "@discordjs/voice": "^0.7.5",
     "@sapphire/pieces": "^3.2.0",
@@ -15,10 +15,13 @@
     "ffmpeg-static": "^4.4.0",
     "libsodium-wrappers": "^0.7.9",
     "mongodb": "^3.6.0",
+    "opusscript": "^0.0.8",
     "tslib": "^2.3.1",
     "typeorm": "^0.2.41",
-    "youtube-dl-exec": "^2.0.2",
-    "ytdl-core": "^4.9.2"
+    "youtube-dl-exec": "^1.2.4",
+    "yt-search": "^2.10.3",
+    "ytdl": "^1.4.1",
+    "ytdl-core": "^4.10.0"
   },
   "name": "valeriyya",
   "version": "1.2.1",

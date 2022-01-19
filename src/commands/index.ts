@@ -1,19 +1,27 @@
 // Information Commands
-import user from "../commands/info/user";
+import user from "./info/user";
 
 // Moderation Commands
-import ban from "../commands/moderation/ban";
-import kick from "../commands/moderation/kick";
-import mute from "../commands/moderation/mute"
-import reason from "../commands/moderation/reason";
-import cases from "../commands/moderation/cases/cases";
-import history from "../commands/moderation/history";
+import ban from "./moderation/ban";
+import kick from "./moderation/kick";
+import mute from "./moderation/mute"
+import reason from "./moderation/reason";
+import cases from "./moderation/cases/cases";
+import history from "./moderation/history";
 
 // Setting Commands
-import settings from "../commands/settings/settings";
+import settings from "./settings/settings";
 
 // Owner Command
-import eval from "../commands/owner/eval"
+import eval from "./owner/eval"
+
+// Music Commands
+import play from "./music/play"
+import nowplaying from "./music/nowplaying";
+import disconnect from "./music/disconnect";
+import pause from "./music/pause";
+import resume from "./music/resume";
+import skip from "./music/skip";
 
 export const Commands = () => {
     return [
@@ -25,6 +33,12 @@ export const Commands = () => {
         settings,
         cases,
         eval,
-        history
+        history,
+        play,
+        nowplaying,
+        disconnect,
+        pause,
+        resume,
+        skip
     ];
 }

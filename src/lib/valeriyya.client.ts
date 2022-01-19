@@ -6,6 +6,7 @@ import { ValeriyyaDB } from "./util/valeriyya.db";
 import { GuildEntity } from "./util/valeriyya.db.models";
 import { ValeriyyaCases } from "./util/valeriyya.cases";
 import { reply, replyC } from "./util/valeriyya.util";
+import type { MusicSubscription } from "./util/valeriyya.music";
 
 const uri: string = "mongodb+srv://Client:MomsSpaghetti@cluster0.i1oux.mongodb.net/myFirstDatabase?retryWrites=true&w=majority";
 let count: number = 0;
@@ -16,6 +17,7 @@ declare module "discord.js" {
     db_init: ValeriyyaDB;
     db(guild: Guild | string): Promise<GuildEntity>;
     cases: ValeriyyaCases;
+    subscription: Collection<string, MusicSubscription>;
   }
 }
 
@@ -24,10 +26,11 @@ export class Valeriyya extends Client {
   public logger: Logger = new Logger();
   public db_init: ValeriyyaDB = new ValeriyyaDB(this);
   public cases: ValeriyyaCases = new ValeriyyaCases(this);
+  public subscription: Collection<string, MusicSubscription> = new Collection();
 
   public constructor() {
     super({
-      intents: ["GUILDS", "GUILD_MEMBERS"],
+      intents: ["GUILDS", "GUILD_MEMBERS", "GUILD_VOICE_STATES"],
     });
 
     this.on("ready", () => this.onReady());
