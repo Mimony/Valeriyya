@@ -1,8 +1,6 @@
-import { getInfo } from 'ytdl-core';
 import { 
     AudioResource, 
     createAudioResource, 
-    demuxProbe, 
     AudioPlayer,
 	AudioPlayerStatus,
 	createAudioPlayer,
@@ -10,9 +8,9 @@ import {
 	VoiceConnectionDisconnectReason,
 	VoiceConnectionStatus,
 	AudioPlayerState,
-	VoiceConnectionState
+	VoiceConnectionState,
 } from '@discordjs/voice';
-import { raw as ytdl } from 'youtube-dl-exec';
+import play from "play-dl"
 import type { TextBasedChannel, User } from 'discord.js';
 
 export interface TrackData {
@@ -26,9 +24,6 @@ export interface TrackData {
 	onFinish: () => void;
 	onError: (error: Error) => void;
 }
-
-// eslint-disable-next-line @typescript-eslint/no-empty-function
-const noop = () => {};
 
 export class Track implements TrackData {
 	public readonly url: string;
@@ -54,71 +49,36 @@ export class Track implements TrackData {
 	}
 
 
-	public createAudioResource(): Promise<AudioResource<Track>> {
-		return new Promise((resolve, reject) => {
-			const process = ytdl(
-				this.url,
-				{
-					o: '-',
-					q: '',
-					f: 'bestaudio[ext=webm+acodec=opus+asr=48000]/bestaudio',
-					r: '100K',
-				},
-				{ stdio: ['ignore', 'pipe', 'ignore'] },
-			);
-			if (!process.stdout) {
-				reject(new Error('No stdout'));
-				return;
-			}
-			const stream = process.stdout;
-			const onError = (error: Error) => {
-				if (!process.killed) process.kill();
-				stream.resume();
-				reject(error);
-			};
-			process.once('spawn', () => {
-					demuxProbe(stream)
-						.then((probe) => resolve(createAudioResource(probe.stream, { metadata: this, inputType: probe.type, inlineVolume: true })))
-						.catch(onError);
-				})
-				.catch(onError);
-		});
+	public async createAudioResource(): Promise<AudioResource<Track>> {
+		let { stream , type } = await play.stream(this.url);
+
+		return createAudioResource(stream, { inputType: type, metadata: this, inlineVolume: true })
 	}
 
-	/**
-	 * Creates a Track from a video URL and lifecycle callback methods.
-	 *
-	 * @param url The URL of the video
-	 * @param methods Lifecycle callbacks
-	 * @returns The created Track
-	 */
-	public static async from(url: string, requestedBy: User, channel: TextBasedChannel | null, guildid: string, looping: boolean = false, methods: Pick<Track, 'onStart' | 'onFinish' | 'onError'>): Promise<Track> {
-		const info = await getInfo(url);
 
-		// The methods are wrapped so that we can ensure that they are only called once.
-		const wrappedMethods = {
+	public static async from(url: string, requestedBy: User, channel: TextBasedChannel | null, guildid: string, looping: boolean = false, method: Pick<Track, 'onStart' | 'onFinish' | 'onError'>): Promise<Track> {
+		const info = await play.video_info(url);
+
+		const methods = {
 			onStart() {
-				wrappedMethods.onStart = noop;
-				methods.onStart();
+				method.onStart();
 			},
 			onFinish() {
-				wrappedMethods.onFinish = noop;
-				methods.onFinish();
+				method.onFinish();
 			},
 			onError(error: Error) {
-				wrappedMethods.onError = noop;
-				methods.onError(error);
+				method.onError(error);
 			},
 		};
 
 		return new Track({
-			title: info.videoDetails.title,
+			title: info.video_details.title!,
 			requestedBy,
 			channel,
 			guildid,
 			looping,
 			url,
-			...wrappedMethods,
+			...methods,
 		});
 	}
 }

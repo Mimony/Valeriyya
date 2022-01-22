@@ -22,6 +22,8 @@ import disconnect from "./music/disconnect";
 import pause from "./music/pause";
 import resume from "./music/resume";
 import skip from "./music/skip";
+import queue from "./music/queue";
+import remove from "./music/remove";
 
 export const Commands = () => {
     return [
@@ -35,10 +37,12 @@ export const Commands = () => {
         eval,
         history,
         play,
+        skip,
         nowplaying,
         disconnect,
         pause,
         resume,
-        skip
+        remove,
+        queue
     ];
 }

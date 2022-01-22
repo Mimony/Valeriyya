@@ -4,7 +4,7 @@ import { MusicSubscription, Track } from "../../lib/util/valeriyya.music";
 import { defineCommand, type ICommandInteraction, OptionTypes } from "../../lib/util/valeriyya.types";
 import { reply } from "../../lib/util/valeriyya.util";
 import { waitForResourceToEnterState } from "../../lib/util/valeriyya.music";
-import ytsearch from "yt-search";
+import play from "play-dl"
 import { validateURL } from "ytdl-core";
 
 export default defineCommand({
@@ -28,8 +28,15 @@ export default defineCommand({
 
         const validate = validateURL(url);
 
-        if (!validate) {
-            let { videos } = await ytsearch(url);
+
+        if (url.match("^(?:spotify:|https:\/\/[a-z]+\.spotify\.com\/(track\/|user\/(.*)\/playlist\/))(.*)$")) {
+			if (play.is_expired()) await play.refreshToken();
+
+			const spotify = await play.spotify(url);
+			const searched = await play.search(spotify.name, { limit: 1 });
+			song = searched[0].url
+        } else if (!validate) {
+            let videos = await play.search(url, { limit: 1 });
             if (videos.length === 0) return {
                 content: "I couldn't find the song you were looking for. Please try to search a more specific name."
             };
@@ -58,7 +65,7 @@ export default defineCommand({
 		}
 
         try {
-			await waitForResourceToEnterState(subscription.voiceConnection, VoiceConnectionStatus.Ready, 20e3);
+			await waitForResourceToEnterState(subscription.voiceConnection, VoiceConnectionStatus.Ready, 20000);
 		} catch (error) {
 			console.warn(error);
 			return 'Failed to join voice channel within 20 seconds, please try again later!'
@@ -74,7 +81,7 @@ export default defineCommand({
 					reply(int, { content: 'Now finished!' })
 				},
 				onError(error) {
-					console.warn(error);
+					console.warn(error);    
 					reply(int, { content: `Error: ${error.message}`, ephemeral: true})
 				},
 			});
