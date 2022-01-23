@@ -1,6 +1,4 @@
-import { AudioPlayerStatus, AudioResource } from "@discordjs/voice";
 import type { GuildMember } from "discord.js";
-import type { Track } from "../../lib/util/valeriyya.music";
 import { defineCommand, ICommandInteraction, OptionTypes } from "../../lib/util/valeriyya.types";
 
 export default defineCommand({
@@ -64,7 +62,7 @@ export default defineCommand({
             return `Queue Loop has been **Enabled**.`
         }
       }
-      
+
     } else {
       return "There is no music currently playing.";
     }
