@@ -24,6 +24,7 @@ import resume from "./music/resume";
 import skip from "./music/skip";
 import queue from "./music/queue";
 import remove from "./music/remove";
+import loop from "./music/loop";
 
 export const Commands = () => {
     return [
@@ -43,6 +44,7 @@ export const Commands = () => {
         pause,
         resume,
         remove,
-        queue
+        queue,
+        loop
     ];
 }
