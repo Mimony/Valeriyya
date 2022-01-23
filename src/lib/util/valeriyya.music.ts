@@ -91,6 +91,9 @@ export class MusicSubscription {
 	public readonly voiceConnection: VoiceConnection;
 	public readonly audioPlayer: AudioPlayer;
 	public queue: Track[];
+	public queueLoop: boolean;
+	public currentPlaying: Track | null;
+
 	public queueLock = false;
 	public readyLock = false;
 
@@ -98,6 +101,8 @@ export class MusicSubscription {
 		this.voiceConnection = voiceConnection;
 		this.audioPlayer = createAudioPlayer();
 		this.queue = [];
+		this.queueLoop = false;
+		this.currentPlaying = null;
 
 		this.voiceConnection.on('stateChange', async (_, newState) => {
 				if (newState.status === VoiceConnectionStatus.Disconnected) {
@@ -137,6 +142,7 @@ export class MusicSubscription {
 					void this.processQueue();
 				} else if (newState.status === AudioPlayerStatus.Playing) {
 					(newState.resource as AudioResource<Track>).metadata.onStart();
+					this.currentPlaying = (newState.resource as AudioResource<Track>).metadata
 				}
 			},
 		);
@@ -161,21 +167,44 @@ export class MusicSubscription {
 	}
 
 	private async processQueue(): Promise<void> {
-		if (this.queueLock || this.audioPlayer.state.status !== AudioPlayerStatus.Idle || this.queue.length === 0) {
+		if (this.queueLock || this.audioPlayer.state.status !== AudioPlayerStatus.Idle) {
 			return;
 		}
+		// Lock the queue to guarantee safe access
 		this.queueLock = true;
 
-		const nextTrack = this.queue.shift()!;
+		if (this.currentPlaying?.looping){
+			this.queue.unshift(this.currentPlaying);
+		}
+
+		if (this.queueEmpty()) return;
+
+		let nextTrack;
+		if (this.queueLoop){
+			this.queue.splice(this.queue.length, 0, this.currentPlaying as Track);
+			nextTrack = this.queue.shift();
+		} else {
+			nextTrack = this.queue.shift();
+		}
+		
+		if (nextTrack == null || nextTrack == undefined) return;
+
 		try {
-			const resource = await nextTrack.createAudioResource();
+			// Attempt to convert the Track into an AudioResource (i.e. start streaming the video)
+			const resource = await nextTrack!.createAudioResource();
 			this.audioPlayer.play(resource);
 			this.queueLock = false;
 		} catch (error) {
-			nextTrack.onError(error as Error);
+			// If an error occurred, try the next item of the queue instead
+			nextTrack!.onError(error as Error);
 			this.queueLock = false;
 			return this.processQueue();
 		}
+	}
+
+	public queueEmpty():boolean {
+		if (this.currentPlaying?.looping) return false;
+		return !this.queue.length;
 	}
 }
 
