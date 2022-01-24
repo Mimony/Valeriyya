@@ -28,22 +28,7 @@ export default defineCommand({
         const validate = play.yt_validate(url);
 
         await int.deferReply();
-
-        if (!subscription) {
-            if (int.member instanceof GuildMember && int.member.voice.channel) {
-                const channel = int.member.voice.channel;
-                subscription = new MusicSubscription(
-                    joinVoiceChannel({
-                        channelId: channel.id,
-                        guildId: channel.guild.id,
-                        adapterCreator: int.guild!.voiceAdapterCreator as DiscordGatewayAdapterCreator,
-                    })
-                );
-                subscription.voiceConnection.on("error", console.warn);
-                int.client.subscription.set(int.guildId!, subscription);
-            }
-        }
-
+        
         if (url.match("^(?:spotify:|https://[a-z]+.spotify.com/(track/|user/(.*)/playlist/))(.*)$")) {
             if (play.is_expired()) await play.refreshToken();
 
@@ -62,7 +47,23 @@ export default defineCommand({
             // @DecrepitHuman this needs your attention
             const videos = await (await play.playlist_info(url)).all_videos();
             song = videos[0].url;
-        } else if (validate === "video") song = url;
+        } else song = url;
+
+        if (!subscription) {
+            if (int.member instanceof GuildMember && int.member.voice.channel) {
+                const channel = int.member.voice.channel;
+                subscription = new MusicSubscription(
+                    joinVoiceChannel({
+                        channelId: channel.id,
+                        guildId: channel.guild.id,
+                        adapterCreator: int.guild!.voiceAdapterCreator as DiscordGatewayAdapterCreator,
+                    })
+                );
+                subscription.voiceConnection.on("error", console.warn);
+                int.client.subscription.set(int.guildId!, subscription);
+            }
+        }
+
 
         if (!subscription) {
             return "Join a voice channel and then try that again!";
