@@ -27,24 +27,12 @@ export default defineCommand({
         let song: string;
 
         const validate = validateURL(url);
-
-
-        if (url.match("^(?:spotify:|https:\/\/[a-z]+\.spotify\.com\/(track\/|user\/(.*)\/playlist\/))(.*)$")) {
-			if (play.is_expired()) await play.refreshToken();
-
-			const spotify = await play.spotify(url);
-			const searched = await play.search(spotify.name, { limit: 1 });
-			song = searched[0].url
-        } else if (!validate) {
-            let videos = await play.search(url, { limit: 1 });
-            if (videos.length === 0) return {
-                content: "I couldn't find the song you were looking for. Please try to search a more specific name."
-            };
-            song = videos[0].url;
-        } else song = url;
-
+        // @ts-ignore
+        // @DecrepitHuman this needs your attention
+        const videos = await (await play.playlist_info(url)).all_videos();
+        
         await int.deferReply();
-
+        
         if (!subscription) {
             if (int.member instanceof GuildMember && int.member.voice.channel){
                 const channel = int.member.voice.channel;
@@ -54,11 +42,25 @@ export default defineCommand({
                         guildId: channel.guild.id,
                         adapterCreator: int.guild!.voiceAdapterCreator as DiscordGatewayAdapterCreator,
                     }),
-                );
-                subscription.voiceConnection.on('error', console.warn);
-                int.client.subscription.set(int.guildId!, subscription);
+                    );
+                    subscription.voiceConnection.on('error', console.warn);
+                    int.client.subscription.set(int.guildId!, subscription);
+                }
             }
-        }
+    
+            if (url.match("^(?:spotify:|https:\/\/[a-z]+\.spotify\.com\/(track\/|user\/(.*)\/playlist\/))(.*)$")) {
+                if (play.is_expired()) await play.refreshToken();
+    
+                const spotify = await play.spotify(url);
+                const searched = await play.search(spotify.name, { limit: 1 });
+                song = searched[0].url
+            } else if (!validate) {
+                let videos = await play.search(url, { limit: 1 });
+                if (videos.length === 0) return {
+                    content: "I couldn't find the song you were looking for. Please try to search a more specific name."
+                };
+                song = videos[0].url;
+            } else song = url;
 
         if (!subscription) {
             return 'Join a voice channel and then try that again!';

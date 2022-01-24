@@ -170,7 +170,6 @@ export class MusicSubscription {
 		if (this.queueLock || this.audioPlayer.state.status !== AudioPlayerStatus.Idle) {
 			return;
 		}
-		// Lock the queue to guarantee safe access
 		this.queueLock = true;
 
 		if (this.currentPlaying?.looping){
@@ -190,12 +189,10 @@ export class MusicSubscription {
 		if (nextTrack == null || nextTrack == undefined) return;
 
 		try {
-			// Attempt to convert the Track into an AudioResource (i.e. start streaming the video)
 			const resource = await nextTrack!.createAudioResource();
 			this.audioPlayer.play(resource);
 			this.queueLock = false;
 		} catch (error) {
-			// If an error occurred, try the next item of the queue instead
 			nextTrack!.onError(error as Error);
 			this.queueLock = false;
 			return this.processQueue();

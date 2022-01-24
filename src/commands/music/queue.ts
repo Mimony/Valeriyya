@@ -16,9 +16,10 @@ export default defineCommand({
                 ephemeral: true
             }
         
+            
             return subscription.queue
 				.slice(0, 5)
-				.map((track, index) => `${index + 1}) ${track.title}`)
+				.map((track, index) => `${index + 1}) [${track.title}](${track.url})`)
 				.join('\n');
 
         } else {
