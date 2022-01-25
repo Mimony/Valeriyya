@@ -29,7 +29,7 @@ export default defineCommand({
             }
 
             let toRemoveInArray = subscription!.queue[songID - 1];
-            let toRemove = `[${toRemoveInArray.title}](${toRemoveInArray.url})`;
+            let toRemove = `[${toRemoveInArray.title}](<${toRemoveInArray.url}>)`;
             subscription!.queue.splice(songID - 1, 1);
 
             return `${toRemove} has been removed from the queue`

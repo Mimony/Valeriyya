@@ -19,7 +19,7 @@ export default defineCommand({
             
             return subscription.queue
 				.slice(0, 5)
-				.map((track, index) => `${index + 1}) [${track.title}](${track.url})`)
+				.map((track, index) => `${index + 1}) [${track.title}](<${track.url}>)`)
 				.join('\n');
 
         } else {

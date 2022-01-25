@@ -20,7 +20,7 @@ export default defineCommand({
 
             const currentPlaying = subscription.audioPlayer.state.status === AudioPlayerStatus.Idle ?
             `There is no song currently playing!`:
-            `Currently playing: **[${(subscription?.audioPlayer.state.resource as AudioResource<Track>).metadata.title}](${(subscription?.audioPlayer.state.resource as AudioResource<Track>).metadata.url})**`;
+            `Currently playing: **[${(subscription?.audioPlayer.state.resource as AudioResource<Track>).metadata.title}](<${(subscription?.audioPlayer.state.resource as AudioResource<Track>).metadata.url}>)**`;
             
             return currentPlaying;
         } else {

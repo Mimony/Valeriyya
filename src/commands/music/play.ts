@@ -5,6 +5,7 @@ import { defineCommand, type ICommandInteraction, OptionTypes } from "../../lib/
 import { reply } from "../../lib/util/valeriyya.util";
 import { waitForResourceToEnterState } from "../../lib/util/valeriyya.music";
 import play from "play-dl";
+import type { Valeriyya } from "../../lib/valeriyya.client";
 
 export default defineCommand({
     data: {
@@ -23,7 +24,7 @@ export default defineCommand({
     chat: async (int: ICommandInteraction) => {
         let subscription = int.client.subscription.get(int.guildId!);
         const url = int.options.getString("song")!;
-        let song: string;
+        let song: string | string[];
 
         const validate = play.yt_validate(url);
 
@@ -46,13 +47,14 @@ export default defineCommand({
             // @ts-ignore
             // @DecrepitHuman this needs your attention
             const videos = await (await play.playlist_info(url)).all_videos();
-            song = videos[0].url;
+            song = videos.map(v => v.url);
+            console.log(videos.map(v => v.title))
         } else song = url;
 
         if (!subscription) {
             if (int.member instanceof GuildMember && int.member.voice.channel) {
                 const channel = int.member.voice.channel;
-                subscription = new MusicSubscription(
+                subscription = new MusicSubscription(int.client as Valeriyya, 
                     joinVoiceChannel({
                         channelId: channel.id,
                         guildId: channel.guild.id,
@@ -78,12 +80,25 @@ export default defineCommand({
 
         let loop = false;
         try {
+            if (song instanceof Array) {
+                let track: Track;
+                song.forEach(async s => {
+                track = await Track.from(s, int.user, int.channel, int.guildId!, loop, {
+                    onStart () {
+                        reply(int, { content: `Now playing: ${s}` });
+                    },
+                    onError (error) {
+                        console.warn(error);
+                        reply(int, { content: `Error: ${error.message}`, ephemeral: true });
+                    },
+                });
+                subscription!.enqueue(track);
+            })
+                reply(int, `Queued ${url} playlist.`);
+            } else {
             const track = await Track.from(song, int.user, int.channel, int.guildId!, loop, {
                 onStart () {
                     reply(int, { content: "Now playing!" });
-                },
-                onFinish () {
-                    reply(int, { content: "Now finished!" });
                 },
                 onError (error) {
                     console.warn(error);
@@ -92,6 +107,7 @@ export default defineCommand({
             });
             subscription.enqueue(track);
             reply(int, `Queued **${track.title}**`);
+        }
         } catch (error) {
             console.warn(error);
             reply(int, "Failed to play track, please try again later!");

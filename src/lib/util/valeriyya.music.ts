@@ -21,7 +21,6 @@ export interface TrackData {
 	channel: TextBasedChannel | null;
 	guildid: string|null;
 	onStart: () => void;
-	onFinish: () => void;
 	onError: (error: Error) => void;
 }
 
@@ -31,20 +30,18 @@ export class Track implements TrackData {
 	public readonly requestedBy: User;
 	public looping: boolean;
 	public channel: TextBasedChannel | null
-	public guildid: string | null;
+	public guildid: string;
 	public readonly onStart: () => void;
-	public readonly onFinish: () => void;
 	public readonly onError: (error: Error) => void;
 
-	public constructor({ url, title, requestedBy, looping, channel, guildid, onStart, onFinish, onError }: TrackData) {
+	public constructor({ url, title, requestedBy, looping, channel, guildid, onStart, onError }: TrackData) {
 		this.url = url;
 		this.title = title;
 		this.requestedBy = requestedBy;
 		this.looping = looping;
 		this.channel = channel;
-		this.guildid = guildid;
+		this.guildid = guildid!;
 		this.onStart = onStart;
-		this.onFinish = onFinish;
 		this.onError = onError;
 	}
 
@@ -56,15 +53,12 @@ export class Track implements TrackData {
 	}
 
 
-	public static async from(url: string, requestedBy: User, channel: TextBasedChannel | null, guildid: string, looping: boolean = false, method: Pick<Track, 'onStart' | 'onFinish' | 'onError'>): Promise<Track> {
+	public static async from(url: string, requestedBy: User, channel: TextBasedChannel | null, guildid: string, looping: boolean = false, method: Pick<Track, 'onStart' | 'onError'>): Promise<Track> {
 		const info = await play.video_info(url);
 
 		const methods = {
 			onStart() {
 				method.onStart();
-			},
-			onFinish() {
-				method.onFinish();
 			},
 			onError(error: Error) {
 				method.onError(error);
@@ -84,10 +78,12 @@ export class Track implements TrackData {
 }
 
 import { promisify } from 'node:util';
+import type { Valeriyya } from '../valeriyya.client';
 
 const wait = promisify(setTimeout);
 
 export class MusicSubscription {
+	public client: Valeriyya;
 	public readonly voiceConnection: VoiceConnection;
 	public readonly audioPlayer: AudioPlayer;
 	public queue: Track[];
@@ -97,18 +93,23 @@ export class MusicSubscription {
 	public queueLock = false;
 	public readyLock = false;
 
-	public constructor(voiceConnection: VoiceConnection) {
+	public constructor(client: Valeriyya, voiceConnection: VoiceConnection) {
+		this.client = client;
 		this.voiceConnection = voiceConnection;
 		this.audioPlayer = createAudioPlayer();
 		this.queue = [];
 		this.queueLoop = false;
 		this.currentPlaying = null;
 
-		this.voiceConnection.on('stateChange', async (_, newState) => {
+		this.voiceConnection.on('stateChange', async (_, newState: VoiceConnectionState) => {
+			console.log(newState.status)
 				if (newState.status === VoiceConnectionStatus.Disconnected) {
 					if (newState.reason === VoiceConnectionDisconnectReason.WebSocketClose && newState.closeCode === 4014) {
 						try {
-							await waitForResourceToEnterState(this.voiceConnection, VoiceConnectionStatus.Connecting, 5_000);
+							await Promise.race([
+								waitForResourceToEnterState(this.voiceConnection, VoiceConnectionStatus.Signalling, 5000),
+								waitForResourceToEnterState(this.voiceConnection, VoiceConnectionStatus.Connecting, 5000)
+							]);
 						} catch {
 							this.voiceConnection.destroy();
 						}
@@ -126,9 +127,12 @@ export class MusicSubscription {
 				) {
 					this.readyLock = true;
 					try {
-						await waitForResourceToEnterState(this.voiceConnection, VoiceConnectionStatus.Ready, 20_000);
+						await waitForResourceToEnterState(this.voiceConnection, VoiceConnectionStatus.Ready, 20000);
 					} catch {
-						if (this.voiceConnection.state.status !== VoiceConnectionStatus.Destroyed) this.voiceConnection.destroy();
+						if (this.voiceConnection.state.status !== VoiceConnectionStatus.Destroyed) {
+							this.voiceConnection.destroy();
+							this.stop();
+						}
 					} finally {
 						this.readyLock = false;
 					}
@@ -138,21 +142,20 @@ export class MusicSubscription {
 
 		this.audioPlayer.on('stateChange', async (oldState: AudioPlayerState, newState: AudioPlayerState) => {
 				if (newState.status === AudioPlayerStatus.Idle && oldState.status !== AudioPlayerStatus.Idle) {
-					(oldState.resource as AudioResource<Track>).metadata.onFinish();
 					void this.processQueue();
 				} else if (newState.status === AudioPlayerStatus.Playing) {
+					if (this.currentPlaying?.url === (newState.resource as AudioResource<Track>).metadata.url) return;
 					(newState.resource as AudioResource<Track>).metadata.onStart();
 					this.currentPlaying = (newState.resource as AudioResource<Track>).metadata
 				}
 			},
 		);
 
-		this.audioPlayer.on('error', (error: { resource: any }) =>
-		// @ts-ignore
-			(error.resource as AudioResource<Track>).metadata.onError(error),
+		this.audioPlayer.on('error', (error: Error) =>
+			(error as unknown as AudioResource<Track>).metadata.onError(error),
 		);
 
-		voiceConnection.subscribe(this.audioPlayer);
+		this.voiceConnection.subscribe(this.audioPlayer);
 	}
 
 	public enqueue(track: Track) {
