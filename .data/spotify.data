@@ -1,0 +1,11 @@
+{
+    "client_id": "15fdd20340ff417ba4b7bf2c8bdca07b",
+    "client_secret": "04421c834d5d42efb122db7b69cbc108",
+    "redirect_url": "http://127.0.0.1/index.html",
+    "access_token": "BQCGy1uIJJ-9cgeAbsN8MoUTlIVJ2qIFxdxG3E4QdXEO6_DOUJ2z_Zyv7N4E8YkKAMsi6EsZVCziX9jfazLZmo4Ps5UWXok8_8te8zEO-pdXto7B50b0tias6eRHS7e561Kaoi3hgTZPX59mYjL4reOJwi-f3326mw",
+    "refresh_token": "AQBN-7v23aiWf339Pe0BbRY966oba-V_GuucfaYNUapr5a-d1u0qfNC1vXW7GLPrt0Va9eU0He14R1LVq2LOCHeV95e7Y3gdjvii-MeM1OkUXv3LynxGS4IznbWWw2c3f70",
+    "expires_in": 3600,
+    "expiry": 1643280683035,
+    "token_type": "Bearer",
+    "market": "MK"
+}
