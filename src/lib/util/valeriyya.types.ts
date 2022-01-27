@@ -24,6 +24,10 @@ export type AbstractConstructor<T> = abstract new (...args: any[]) => T;
 // Some ppl say this is the biggest mistake in the Javascript ecosystem so will i so there it is
 export type Nullish = null | undefined;
 
+export function isNullish(value: unknown): value is Nullish {
+    return value === undefined || value === null;
+}
+
 export interface ICommandInteraction extends CommandInteraction {}
 export interface IContextInteraction extends ContextMenuInteraction {}
 

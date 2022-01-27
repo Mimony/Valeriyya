@@ -16,7 +16,7 @@
     "libsodium-wrappers": "^0.7.9",
     "mongodb": "^3.6.0",
     "opusscript": "^0.0.8",
-    "play-dl": "^1.8.1",
+    "play-dl": "^1.8.2",
     "tslib": "^2.3.1",
     "typeorm": "^0.2.41"
   },

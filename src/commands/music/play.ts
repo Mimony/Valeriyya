@@ -23,14 +23,16 @@ export default defineCommand({
     // @ts-ignore
     chat: async (int: ICommandInteraction) => {
         let subscription = int.client.subscription.get(int.guildId!);
+        console.log(subscription)
         const url = int.options.getString("song")!;
         let song: string | string[];
 
         const validate = play.yt_validate(url);
+        const sp_validate = play.sp_validate(url);
 
         await int.deferReply();
         
-        if (url.match("^(?:spotify:|https://[a-z]+.spotify.com/(track/|user/(.*)/playlist/))(.*)$")) {
+        if (sp_validate === "track") {
             if (play.is_expired()) await play.refreshToken();
 
             const spotify = await play.spotify(url);
@@ -44,8 +46,6 @@ export default defineCommand({
                 };
             song = videos[0].url;
         } else if (validate === "playlist") {
-            // @ts-ignore
-            // @DecrepitHuman this needs your attention
             const videos = await (await play.playlist_info(url)).all_videos();
             song = videos.map(v => v.url);
             console.log(videos.map(v => v.title))
@@ -54,7 +54,7 @@ export default defineCommand({
         if (!subscription) {
             if (int.member instanceof GuildMember && int.member.voice.channel) {
                 const channel = int.member.voice.channel;
-                subscription = new MusicSubscription(int.client as Valeriyya, 
+                subscription = new MusicSubscription({ client: int.client as Valeriyya, guildId: int.guildId! },
                     joinVoiceChannel({
                         channelId: channel.id,
                         guildId: channel.guild.id,
@@ -89,7 +89,7 @@ export default defineCommand({
                     },
                     onError (error) {
                         console.warn(error);
-                        reply(int, { content: `Error: ${error.message}`, ephemeral: true });
+                        reply(int, { content: `Error: ${error.message}....`, ephemeral: true });
                     },
                 });
                 subscription!.enqueue(track);
@@ -102,7 +102,7 @@ export default defineCommand({
                 },
                 onError (error) {
                     console.warn(error);
-                    reply(int, { content: `Error: ${error.message}`, ephemeral: true });
+                    reply(int, { content: `Error: ${error.message}...`, ephemeral: true });
                 },
             });
             subscription.enqueue(track);
