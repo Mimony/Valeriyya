@@ -39,6 +39,8 @@ export default defineCommand({
             const searched = await play.search(spotify.name, { limit: 1 });
             song = searched[0].url;
         } else if (sp_validate === "album") {
+            if (play.is_expired()) await play.refreshToken();
+
             const videos_spotify = await (await play.spotify(url) as SpotifyAlbum).all_tracks();
             const videos: string[] = [];
             videos_spotify.forEach(async (vs) => {
@@ -47,6 +49,8 @@ export default defineCommand({
             })
             song = videos;
         } else if (sp_validate === "playlist") {
+            if (play.is_expired()) await play.refreshToken();
+
             const videos_spotify = await (await play.spotify(url) as SpotifyPlaylist).all_tracks();
             const videos: string[] = [];
             videos_spotify.forEach(async (vs) => {
