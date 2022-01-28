@@ -10,7 +10,7 @@ import {
 	AudioPlayerState,
 	VoiceConnectionState,
 } from '@discordjs/voice';
-import play from "play-dl";
+import yt from "play-dl";
 import { isNullish } from './valeriyya.types';
 import type { TextBasedChannel, User } from 'discord.js';
 
@@ -48,14 +48,14 @@ export class Track implements TrackData {
 
 
 	public async createAudioResource (): Promise<AudioResource<Track>> {
-		let { stream, type } = await play.stream(this.url);
+		let { stream, type } = await yt.stream(this.url);
 
 		return createAudioResource(stream, { inputType: type, metadata: this, inlineVolume: true });
 	}
 
 
 	public static async from (url: string, requestedBy: User, channel: TextBasedChannel | null, guildid: string, looping: boolean = false, method: Pick<Track, 'onStart' | 'onError'>): Promise<Track> {
-		const info = await play.video_info(url);
+		const info = await yt.video_info(url);
 
 		const methods = {
 			onStart () {
@@ -96,7 +96,7 @@ export class MusicSubscription {
 	public readyLock: boolean = false;
 	public disconnected: boolean = false;
 
-	public constructor({ client, guildId }: { client: Valeriyya, guildId: string } ,voiceConnection: VoiceConnection) {
+	public constructor({ client, guildId }: { client: Valeriyya, guildId: string; }, voiceConnection: VoiceConnection) {
 		this.client = client;
 		this.guildId = guildId;
 		this.voiceConnection = voiceConnection;
@@ -145,7 +145,7 @@ export class MusicSubscription {
 				}
 			}
 			if (this.disconnected) {
-				this.client.subscription.delete(this.guildId)
+				this.client.subscription.delete(this.guildId);
 			}
 		});
 

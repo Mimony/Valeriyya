@@ -4,7 +4,7 @@ import { MusicSubscription, Track } from "../../lib/util/valeriyya.music";
 import { defineCommand, type ICommandInteraction, OptionTypes } from "../../lib/util/valeriyya.types";
 import { reply } from "../../lib/util/valeriyya.util";
 import { waitForResourceToEnterState } from "../../lib/util/valeriyya.music";
-import play from "play-dl";
+import play, { SpotifyAlbum, SpotifyPlaylist } from "play-dl";
 import type { Valeriyya } from "../../lib/valeriyya.client";
 
 export default defineCommand({
@@ -38,6 +38,22 @@ export default defineCommand({
             const spotify = await play.spotify(url);
             const searched = await play.search(spotify.name, { limit: 1 });
             song = searched[0].url;
+        } else if (sp_validate === "album") {
+            const videos_spotify = await (await play.spotify(url) as SpotifyAlbum).all_tracks();
+            const videos: string[] = [];
+            videos_spotify.forEach(async (vs) => {
+                let searched = await play.search(vs.name, { limit: 1 })
+                videos.push(searched[0].url)
+            })
+            song = videos;
+        } else if (sp_validate === "playlist") {
+            const videos_spotify = await (await play.spotify(url) as SpotifyPlaylist).all_tracks();
+            const videos: string[] = [];
+            videos_spotify.forEach(async (vs) => {
+                let searched = await play.search(vs.name, { limit: 1 })
+                videos.push(searched[0].url)
+            })
+            song = videos;
         } else if (validate === "search") {
             let videos = await play.search(url, { limit: 1 });
             if (videos.length === 0)
