@@ -49,6 +49,7 @@ export abstract class Moderation {
     public abstract execute(): Promise<any>;
 
     public async db(): Promise<void> {
+        this.client.logger.print("Database inserted with action %d", this.action)
         return this.client.cases.add({
             guildId: this.int.guild!.id,
             staffId: this.staff.id,
