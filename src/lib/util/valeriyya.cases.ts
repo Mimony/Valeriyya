@@ -59,7 +59,7 @@ export class ValeriyyaCases {
     };
 
     db.cases.push(new_case);
-    await db.save();
+    return db.save();
   }
 
   public async log({

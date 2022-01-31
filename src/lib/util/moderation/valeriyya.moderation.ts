@@ -1,5 +1,6 @@
 import type { GuildMember, User } from "discord.js";
 import type { Valeriyya } from "../../valeriyya.client";
+import type { GuildEntity } from "../valeriyya.db.models";
 import type { ICommandInteraction } from "../valeriyya.types";
 
 export enum Action {
@@ -48,9 +49,9 @@ export abstract class Moderation {
     public abstract permissions(): boolean;
     public abstract execute(): Promise<any>;
 
-    public async db(): Promise<void> {
-        this.client.logger.print("Database inserted with action %d", this.action)
-        return this.client.cases.add({
+    public async db(): Promise<GuildEntity | undefined> {
+        this.client.logger.print`Database inserted with action ${this.action}`;
+        let db = await this.client.cases.add({
             guildId: this.int.guild!.id,
             staffId: this.staff.id,
             targetId: this.target.id,
@@ -59,6 +60,8 @@ export abstract class Moderation {
             reason: await this.reason(),
             duration: this.duration
         });
+        this.client.logger.print(db);
+        return db
     }
 
     public async all() {
