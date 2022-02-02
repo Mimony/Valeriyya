@@ -8,6 +8,7 @@
     "@discordjs/opus": "^0.7.0",
     "@discordjs/rest": "^0.3.0",
     "@discordjs/voice": "^0.8.0",
+    "@prisma/client": "^3.9.1",
     "@sapphire/pieces": "^3.2.0",
     "@types/node": "^16.11.10",
     "chalk": "^4.1.2",
@@ -44,5 +45,8 @@
   "homepage": "https://github.com/Mimony/Valeriyya#readme",
   "engines": {
     "node": ">= 16.4.12"
+  },
+  "prisma": {
+    "schema": "database/valeriyya.prisma"
   }
 }
