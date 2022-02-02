@@ -11,7 +11,7 @@ datasource db {
 model guild {
   id    String @id @default(dbgenerated()) @map("_id") @db.ObjectId
   gid   String @unique
-  cases Cases  @relation(fields: [caseId], references: [id])
+  cases Cases?  @relation(fields: [caseId], references: [id])
 
   caseId String @db.ObjectId
 }
