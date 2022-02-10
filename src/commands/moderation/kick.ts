@@ -26,6 +26,15 @@ export default defineCommand({
         const target = int.options.getMember("member") as GuildMember;
         const reason = int.options.getString("reason") ?? "";
 
+        if (!target.kickable) return {
+            embeds: [
+                new ValeriyyaEmbed({
+                    "description": "I can't kick this person due to me being unable to manage him. (They have a higher role than me or they are the owner).",
+                    "author": { name: `${int.user.tag} (${int.user.id})`, url: int.user.displayAvatarURL({ dynamic: true }) }
+                }, "error")
+            ],
+            ephemeral: true
+        }
 
         const date = Date.now();
         const action = new Kick({

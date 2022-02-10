@@ -1,8 +1,9 @@
 import { GuildMember, MessageEmbed, TextBasedChannel, User } from "discord.js";
-import type { Valeriyya } from "../valeriyya.client";
-import type { Case } from "./valeriyya.db.models";
 import { ValeriyyaEmbed } from "./valeriyya.embed";
+import type { Valeriyya } from "../valeriyya.client";
+import type { Case } from "./valeriyya.types";
 import ms from "./valeriyya.ms";
+import { getCaseById } from "./moderation/valeriyya.moderation";
 
 type CASE = Omit<Case, "id">;
 
@@ -18,7 +19,7 @@ export class ValeriyyaCases {
     const staff = await guild.members.fetch(staffId);
     const target = await this.client.users.fetch(targetId);
 
-    const db = await this.client.db(guild);
+    const db = await this.client.guild.get(guild.id);
     const id = db.cases_number;
     const channelId = db.channels?.logs;
     let message: string | undefined = undefined;
@@ -59,7 +60,7 @@ export class ValeriyyaCases {
     };
 
     db.cases.push(new_case);
-    await db.save();
+    return this.client.guild.set(guild.id, db)
   }
 
   public async log({
@@ -93,17 +94,19 @@ export class ValeriyyaCases {
   }
 
   public async edit({ guildId, id, reason, action }: { guildId: string; id: number; reason?: string; action?: "ban" | "kick" | "mute" | "unban" | "unmute" }) {
-    const db = await this.client.db(guildId);
+    const db = await this.client.guild.get(guildId);
     const guild = await this.client.guilds.fetch(guildId);
 
-    const c = db.getCaseById(id);
+
+
+    const c = getCaseById({ id, db, client: this.client });
     if (!c) return `There is no such case with the id ${id}`;
     if (reason) c.reason = reason;
     if (action) c.action = action;
-    db.save();
+    this.client.guild.set(guildId, db)
 
     if (!c.message) return;
-    const channel_id = db.channels.logs;
+    const channel_id = db.channels?.logs;
     try {
       const channel = (await guild.channels.fetch(channel_id!)) as Omit<TextBasedChannel, "DMChannel" | "PartialDMChannel" | "ThreadChannel">;
       const target = await this.client.users.fetch(c.targetId);

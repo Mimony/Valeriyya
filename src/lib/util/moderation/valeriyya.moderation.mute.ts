@@ -1,4 +1,4 @@
-import { Action, ActionData, Moderation } from "./valeriyya.moderation";
+import { Action, ActionData, getUserHistory, Moderation } from "./valeriyya.moderation";
 import { ValeriyyaEmbed } from "../valeriyya.embed";
 import { User } from "discord.js";
 import { reply } from "../valeriyya.util";
@@ -21,10 +21,11 @@ export class Mute extends Moderation {
     return true;
   }
 
-  public async execute(): Promise<void> {
-    if (this.target instanceof User) return;
-    const db = await this.client.db(this.int.guild!);
-    const history_number = (await db.getUserHistory(this.target.id))!.mute + 1;
+  public async execute(): Promise<boolean> {
+    if (this.target instanceof User) return false;
+    
+    const db = await this.client.guild.get(this.int.guildId!);
+    const history_number = getUserHistory({ client: this.client, db, id: this.target.id })!.mute + 1;
     const cases_number = db.cases_number + 1;
 
     try {
@@ -32,10 +33,14 @@ export class Mute extends Moderation {
     } catch (e: any) {
       reply(this.int, { content: `There was an error muting this member: ${e}`, ephemeral: true });
       this.client.logger.error(`There was an error with the moderation-MUTE method: ${e}`);
+
+      return false;
     }
 
     db.cases_number = cases_number;
     db.history.find((m) => m.id === this.target.id)!.mute = history_number;
-    await db.save();
+    this.client.guild.set(this.int.guildId!, db)
+
+    return true;
   }
 }

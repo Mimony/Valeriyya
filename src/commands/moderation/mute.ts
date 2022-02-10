@@ -35,6 +35,16 @@ export default defineCommand({
         const reason = int.options.getString("reason") ?? "";
         const time = int.options.getString("time")!;
 
+        if (!target.moderatable) return {
+            embeds: [
+                new ValeriyyaEmbed({
+                    "description": "I can't mute this person due to me being unable to manage him. (They have a higher role than me or they are the owner).",
+                    "author": { name: `${int.user.tag} (${int.user.id})`, url: int.user.displayAvatarURL({ dynamic: true }) }
+                }, "error")
+            ],
+            ephemeral: true
+        }
+        
         const duration = ms(time);
 
         const date = Date.now();

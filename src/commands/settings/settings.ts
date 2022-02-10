@@ -70,7 +70,7 @@ export default defineCommand({
     },
     chat: async (int: ICommandInteraction) => {
         const member = int.member as GuildMember;
-        const db = await int.client.db(int.guild!);
+        const db = await int.client.guild.get(int.guildId!);
         const cmd = int.options.getSubcommand();
         const channel_type = int.options.getString("type") as "logs" | "welcome";
         const role_type = int.options.getString("type") as "staff" | "mute";
@@ -86,15 +86,17 @@ export default defineCommand({
         }
 
         if (cmd === "channel") {
-            db.channels[channel_type] = channel.id;
-            db.save();
+            // db.channels[channel_type] = channel.id;
+            // db.save();
             return {
                 content: `The ${channel_type} channel has been updated to ${channel}.`,
                 ephemeral: true,
             }
         } else if (cmd === "role") {
-            db.roles[role_type] = role.id;
-            db.save();
+            // db.roles[role_type] = role.id;
+            // db.save();
+
+            db.channels
             return {
                 content: `The ${role_type} role has been updated to ${role}.`,
                 ephemeral: true

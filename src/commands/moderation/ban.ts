@@ -37,6 +37,16 @@ export default defineCommand({
             target = await int.client.users.fetch(int.options.getString("member-id")!)
         } else {
             target = int.options.getMember("member")! as GuildMember;
+
+            if (!target.bannable) return {
+                embeds: [
+                    new ValeriyyaEmbed({
+                        "description": "I can't ban this person due to me being unable to manage him. (They have a higher role than me or they are the owner).",
+                        "author": { name: `${int.user.tag} (${int.user.id})`, url: int.user.displayAvatarURL({ dynamic: true }) }
+                    }, "error")
+                ],
+                ephemeral: true
+            }
         }
 
         if (int.guild?.bans.cache.has(target.id)) {

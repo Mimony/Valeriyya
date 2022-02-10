@@ -1,0 +1,19 @@
+generator client {
+  provider        = "prisma-client-js"
+  previewFeatures = ["mongoDb"]
+}
+
+datasource db {
+  provider = "mongodb"
+  url      = "mongodb+srv://Client:MomsSpaghetti@cluster0.i1oux.mongodb.net/myFirstDatabase?retryWrites=true&w=majority"
+}
+
+model guild {
+  id           String @id @default(dbgenerated()) @map("_id") @db.ObjectId
+  gid          String @unique
+  cases        Json[]
+  cases_number Int
+  channels     Json
+  history      Json[]
+  roles        Json
+}

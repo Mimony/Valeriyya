@@ -24,8 +24,8 @@ export type AbstractConstructor<T> = abstract new (...args: any[]) => T;
 // Some ppl say this is the biggest mistake in the Javascript ecosystem so will i so there it is
 export type Nullish = null | undefined;
 
-export interface ICommandInteraction extends CommandInteraction {}
-export interface IContextInteraction extends ContextMenuInteraction {}
+export interface ICommandInteraction extends CommandInteraction { }
+export interface IContextInteraction extends ContextMenuInteraction { }
 
 export type ICommandExecute = (interaction: CommandInteraction) => Promise<string | MessagePayload | InteractionReplyOptions | void> | InteractionReplyOptions | string | void;
 export type IContextExecute = (interaction: ContextMenuInteraction) => Promise<string | MessagePayload | InteractionReplyOptions | void> | InteractionReplyOptions | string | void;
@@ -33,7 +33,7 @@ export type IContextExecute = (interaction: ContextMenuInteraction) => Promise<s
 export interface ICommand {
     chat?: ICommandExecute;
     menu?: IContextExecute;
-    data: ApplicationCommandData
+    data: ApplicationCommandData;
 }
 
 export const OptionTypes = {
@@ -47,12 +47,57 @@ export const OptionTypes = {
     ROLE: 8,
     MENTIONABLE: 9,
     NUMBER: 10,
-}
+};
 
 export const AppOptionTypes = {
     CHAT_INPUT: 1,
     USER: 2,
     MESSAGE: 3
-}
+};
 
 export const defineCommand = (cmd: ICommand): ICommand => cmd;
+export interface Case {
+    message?: string;
+    id: number;
+    action: "ban" | "kick" | "mute" | "unban" | "unmute";
+    guildId: string;
+    staffId: string;
+    targetId: string;
+    date: number;
+    reason: string;
+    duration: number | 0;
+};
+
+export interface Channels {
+    logs: string;
+    welcome: string;
+};
+
+export interface Roles {
+    staff: string;
+};
+
+export interface History {
+    id: string;
+    ban: number;
+    kick: number;
+    mute: number;
+}
+
+export type IGuildDb = {
+    gid: string;
+    cases: {}[];
+    cases_number: number;
+    channels: {};
+    roles: {};
+    history: {}[];
+};
+
+export type GuildDb = {
+    gid: string;
+    cases: Case[];
+    cases_number: number;
+    channels: Channels;
+    roles: Roles;
+    history: History[];
+};
