@@ -106,6 +106,7 @@ export class MusicSubscription {
 		this.currentPlaying = null;
 		this.disconnected = false;
 
+		// @ts-ignore
 		this.voiceConnection.on('stateChange', async (_: VoiceConnectionState, newState: VoiceConnectionState) => {
 			if (newState.status === VoiceConnectionStatus.Disconnected) {
 				if (newState.reason === VoiceConnectionDisconnectReason.WebSocketClose && newState.closeCode === 4014) {
@@ -150,6 +151,7 @@ export class MusicSubscription {
 		});
 
 
+		// @ts-ignore
 		this.audioPlayer.on('stateChange', async (oldState: AudioPlayerState, newState: AudioPlayerState) => {
 			if (newState.status === AudioPlayerStatus.Idle && oldState.status !== AudioPlayerStatus.Idle) {
 				void this.processQueue();
@@ -236,4 +238,4 @@ export function waitForResourceToEnterState (resource: VoiceConnection | AudioPl
 			rej(new Error("Didn't enter state in time"));
 		}, timeoutMS);
 	});
-}
+} 

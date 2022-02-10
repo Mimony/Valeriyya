@@ -1,11 +1,13 @@
 import { Commands } from "../commands";
 import { Client, Collection, Interaction, Message } from "discord.js";
 import { Logger } from "./util/valeriyya.logger";
-import type { ICommand } from "./util/valeriyya.types";
 import { ValeriyyaDB } from "./util/database/valeriyya.db";
 import { ValeriyyaCases } from "./util/valeriyya.cases";
 import { reply, replyC } from "./util/valeriyya.util";
 import { ValeriyyaGuildDb } from "./util/database/valeriyya.db.guild";
+import play from "play-dl";
+import type { ICommand } from "./util/valeriyya.types";
+import type { MusicSubscription } from "./util/valeriyya.music";
 
 let count: number = 0;
 declare module "discord.js" {
@@ -15,6 +17,7 @@ declare module "discord.js" {
     db: ValeriyyaDB;
     cases: ValeriyyaCases;
     guild: ValeriyyaGuildDb;
+    subscription: Collection<string, MusicSubscription>;
   }
 
   interface Message {
@@ -40,7 +43,7 @@ export class Valeriyya extends Client {
 
   public constructor() {
     super({
-      intents: ["GUILDS", "GUILD_MEMBERS"],
+      intents: ["GUILDS", "GUILD_MEMBERS", "GUILD_VOICE_STATES"],
     });
 
     this.on("ready", () => this.onReady());
@@ -55,6 +58,13 @@ export class Valeriyya extends Client {
 
   private async onReady() {
     await this.db.on().catch()
+    await play.setToken({ spotify: {
+      client_id: "15fdd20340ff417ba4b7bf2c8bdca07b",
+      client_secret: "04421c834d5d42efb122db7b69cbc108",
+      refresh_token: "AQBN-7v23aiWf339Pe0BbRY966oba-V_GuucfaYNUapr5a-d1u0qfNC1vXW7GLPrt0Va9eU0He14R1LVq2LOCHeV95e7Y3gdjvii-MeM1OkUXv3LynxGS4IznbWWw2c3f70",
+      market: "MK"
+    }
+  })
 
     await this.loadCommands();
     this.logger.print(`${this.user?.tag} is ready to shine.`);

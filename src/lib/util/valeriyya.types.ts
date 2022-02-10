@@ -30,6 +30,10 @@ export interface IContextInteraction extends ContextMenuInteraction { }
 export type ICommandExecute = (interaction: CommandInteraction) => Promise<string | MessagePayload | InteractionReplyOptions | void> | InteractionReplyOptions | string | void;
 export type IContextExecute = (interaction: ContextMenuInteraction) => Promise<string | MessagePayload | InteractionReplyOptions | void> | InteractionReplyOptions | string | void;
 
+export function isNullish(value: unknown): value is Nullish {
+    return value === undefined || value === null;
+}
+
 export interface ICommand {
     chat?: ICommandExecute;
     menu?: IContextExecute;
