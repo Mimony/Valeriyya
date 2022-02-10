@@ -40,10 +40,9 @@ export default defineCommand({
 
             if (!target.bannable) return {
                 embeds: [
-                    new ValeriyyaEmbed({
-                        "description": "I can't ban this person due to me being unable to manage him. (They have a higher role than me or they are the owner).",
-                        "author": { name: `${int.user.tag} (${int.user.id})`, url: int.user.displayAvatarURL({ dynamic: true }) }
-                    }, "error")
+                    new ValeriyyaEmbed(undefined, "error")
+                    .setDescription("I can't ban this person due to me being unable to manage him. (They have a higher role than me or they are the owner).",)
+                    .setAuthor({ name: `${int.user.tag} (${int.user.id})`, url: int.user.displayAvatarURL({ dynamic: true }) })
                 ],
                 ephemeral: true
             }
