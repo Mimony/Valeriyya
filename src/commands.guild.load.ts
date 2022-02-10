@@ -6,7 +6,7 @@ import { Logger } from "./lib/util/valeriyya.logger";
 import { Commands } from "./commands";
 
 const clientID = "909791454040301568";
-const guildID = "909850768947937290";
+const guildID = "528308400824647681";
 const logger: Logger = new Logger();
 
 const commands: Collection<string, ICommand> = new Collection();

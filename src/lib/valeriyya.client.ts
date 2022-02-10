@@ -1,11 +1,13 @@
 import { Commands } from "../commands";
 import { Client, Collection, Guild, Interaction, Message } from "discord.js";
 import { Logger } from "./util/valeriyya.logger";
-import type { ICommand } from "./util/valeriyya.types";
 import { ValeriyyaDB } from "./util/valeriyya.db";
 import { GuildEntity } from "./util/valeriyya.db.models";
 import { ValeriyyaCases } from "./util/valeriyya.cases";
 import { reply, replyC } from "./util/valeriyya.util";
+import play from "play-dl";
+import type { ICommand } from "./util/valeriyya.types";
+import type { MusicSubscription } from "./util/valeriyya.music";
 
 const uri: string = "mongodb+srv://Client:MomsSpaghetti@cluster0.i1oux.mongodb.net/myFirstDatabase?retryWrites=true&w=majority";
 let count: number = 0;
@@ -16,6 +18,7 @@ declare module "discord.js" {
     db_init: ValeriyyaDB;
     db(guild: Guild | string): Promise<GuildEntity>;
     cases: ValeriyyaCases;
+    subscription: Collection<string, MusicSubscription>;
   }
 }
 
@@ -24,10 +27,11 @@ export class Valeriyya extends Client {
   public logger: Logger = new Logger();
   public db_init: ValeriyyaDB = new ValeriyyaDB(this);
   public cases: ValeriyyaCases = new ValeriyyaCases(this);
+  public subscription: Collection<string, MusicSubscription> = new Collection();
 
   public constructor() {
     super({
-      intents: ["GUILDS", "GUILD_MEMBERS"],
+      intents: ["GUILDS", "GUILD_MEMBERS", "GUILD_VOICE_STATES"],
     });
 
     this.on("ready", () => this.onReady());
@@ -54,6 +58,13 @@ export class Valeriyya extends Client {
 
   private async onReady() {
     await this.db_init.on(uri);
+    await play.setToken({ spotify: {
+      client_id: "15fdd20340ff417ba4b7bf2c8bdca07b",
+      client_secret: "04421c834d5d42efb122db7b69cbc108",
+      refresh_token: "AQBN-7v23aiWf339Pe0BbRY966oba-V_GuucfaYNUapr5a-d1u0qfNC1vXW7GLPrt0Va9eU0He14R1LVq2LOCHeV95e7Y3gdjvii-MeM1OkUXv3LynxGS4IznbWWw2c3f70",
+      market: "MK"
+    }
+  })
 
     await this.loadCommands();
     this.logger.print(`${this.user?.tag} is ready to shine.`);
