@@ -43,8 +43,25 @@ export default defineCommand({
             ],
             ephemeral: true
         }
-        
+
+        if (!time.match(/(?<amount>\d+)\s?(?<unit>s|sec|second|seconds|m|min|minute|minutes|h|hour|hours|d|day|days|w|week|weeks)/)) return {
+            embeds: [new ValeriyyaEmbed(undefined, "error")
+            .setDescription(`Please provide the right syntax for the time paramater!
+            Example: 1m, 2d, 3w (1 min, 2 days, 3 weeks)`)
+            .setAuthor({ name: `${int.user.tag} (${int.user.id})`, url: int.user.displayAvatarURL({ dynamic: true }) })
+            ],
+            ephemeral: true,
+        }
+
         const duration = ms(time);
+
+        if (duration >= 2.419e+9) return {
+            embeds: [new ValeriyyaEmbed(undefined, "error")
+            .setDescription("The amount of duration you can assign a mute is 28 days!")
+            .setAuthor({ name: `${int.user.tag} (${int.user.id})`, url: int.user.displayAvatarURL({ dynamic: true }) })
+            ],
+            ephemeral: true,
+        }
 
         const date = Date.now();
         const action = new Mute({
