@@ -26,7 +26,7 @@ export default defineCommand({
         const member = int.member;
         const id = int.options.getNumber("id")!;
         const reason = int.options.getString("reason")!;
-        const db = await int.client.guild.get(int.guildId!)
+        const db = int.client.settings
 
         if (!(member instanceof GuildMember)) return;
 
@@ -38,7 +38,7 @@ export default defineCommand({
             ]
         }
 
-        const c = getCaseById({ id, db, client: int.client });
+        const c = getCaseById({ gid: int.guildId!, id, db, client: int.client });
         if (!c) return { context: c, ephemeral: true }
 
         await int.client.cases.edit({

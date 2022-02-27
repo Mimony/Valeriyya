@@ -79,6 +79,7 @@ export interface Channels {
 
 export interface Roles {
     staff: string;
+    mute: string;
 };
 
 export interface History {
@@ -90,11 +91,11 @@ export interface History {
 
 export type IGuildDb = {
     gid: string;
-    cases: {}[];
+    cases: object[];
     cases_number: number;
-    channels: {};
-    roles: {};
-    history: {}[];
+    channels: object;
+    roles: object;
+    history: object[];
 };
 
 export type GuildDb = {

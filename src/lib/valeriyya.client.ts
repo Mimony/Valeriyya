@@ -4,19 +4,19 @@ import { Logger } from "./util/valeriyya.logger";
 import { ValeriyyaDB } from "./util/database/valeriyya.db";
 import { ValeriyyaCases } from "./util/valeriyya.cases";
 import { reply, replyC } from "./util/valeriyya.util";
-import { ValeriyyaGuildDb } from "./util/database/valeriyya.db.guild";
 import play from "play-dl";
 import type { ICommand } from "./util/valeriyya.types";
 import type { MusicSubscription } from "./util/valeriyya.music";
+import { ValeriyyaSettings } from "./util/database/valeriyya.db.settings";
 
 let count: number = 0;
 declare module "discord.js" {
   interface Client {
     logger: Logger;
     commands: Collection<string, ICommand>;
-    db: ValeriyyaDB;
+    prisma: ValeriyyaDB;
+    settings: ValeriyyaSettings;
     cases: ValeriyyaCases;
-    guild: ValeriyyaGuildDb;
     subscription: Collection<string, MusicSubscription>;
   }
 
@@ -36,8 +36,8 @@ declare module "discord.js" {
 export class Valeriyya extends Client {
   public commands: Collection<string, ICommand> = new Collection();
   public logger: Logger = new Logger();
-  public db: ValeriyyaDB = new ValeriyyaDB(this);
-  public guild: ValeriyyaGuildDb = new ValeriyyaGuildDb(this.db.dbClient["guild"]);
+  public prisma: ValeriyyaDB = new ValeriyyaDB(this);
+  public settings: ValeriyyaSettings = new ValeriyyaSettings(this);
   public cases: ValeriyyaCases = new ValeriyyaCases(this);
 
 
@@ -57,7 +57,7 @@ export class Valeriyya extends Client {
   }
 
   private async onReady() {
-    await this.db.on().catch()
+    await this.prisma.on().catch()
     await play.setToken({ spotify: {
       client_id: "15fdd20340ff417ba4b7bf2c8bdca07b",
       client_secret: "04421c834d5d42efb122db7b69cbc108",

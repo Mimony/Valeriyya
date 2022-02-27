@@ -5,8 +5,8 @@ import type { ICommand } from "./lib/util/valeriyya.types";
 import { Logger } from "./lib/util/valeriyya.logger";
 import { Commands } from "./commands";
 
-const clientID = "909791454040301568";
-const guildID = "528308400824647681";
+const clientID = "830130301535649853";
+const guildID = "525322311826669569";
 const logger: Logger = new Logger();
 
 const commands: Collection<string, ICommand> = new Collection();
@@ -19,7 +19,7 @@ function loadCommands() {
     }
 }
 
-const rest = new REST({version: "9"}).setToken("OTA5NzkxNDU0MDQwMzAxNTY4.YZJbUQ.c8PIUM_EftouBg9KKV9bDG6IWCY");
+const rest = new REST({version: "9"}).setToken("ODMwMTMwMzAxNTM1NjQ5ODUz.YHCNFg.RkSaienjc7hLaWpRx-XjzCST4pk");
 
 (async () => {
     try {

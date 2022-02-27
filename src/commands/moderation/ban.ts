@@ -34,26 +34,24 @@ export default defineCommand({
         if (!(staff instanceof GuildMember)) return;
 
         if (target_options instanceof String) {
-            target = await int.client.users.fetch(int.options.getString("member-id")!)
+            target = await int.client.users.fetch(int.options.getString("member-id")!);
         } else {
             target = int.options.getMember("member")! as GuildMember;
 
             if (!target.bannable) return {
                 embeds: [
                     new ValeriyyaEmbed(undefined, "error")
-                    .setDescription("I can't ban this person due to me being unable to manage him. (They have a higher role than me or they are the owner).",)
-                    .setAuthor({ name: `${int.user.tag} (${int.user.id})`, url: int.user.displayAvatarURL({ dynamic: true }) })
+                        .setDescription("I can't ban this person due to me being unable to manage him. (They have a higher role than me or they are the owner).",)
+                        .setAuthor({ name: `${int.user.tag} (${int.user.id})`, url: int.user.displayAvatarURL({ dynamic: true }) })
                 ],
                 ephemeral: true
-            }
+            };
         }
 
-        if (int.guild?.bans.cache.has(target.id)) {
-            return {
-                ephemeral: true,
-                content: `This member is already banned from this guild.`
-            }
-        }
+        if (int.guild?.bans.cache.has(target.id)) return {
+            ephemeral: true,
+            content: `This member is already banned from this guild.`
+        };
 
         const date = Date.now();
         const action = new Ban({
@@ -67,13 +65,13 @@ export default defineCommand({
         await action.all();
 
         const embed = new ValeriyyaEmbed()
-            .setAuthor({ name: `${int.user.tag} (${int.user.id})`, iconURL: int.user.displayAvatarURL({dynamic: true}) })
-            .setThumbnail(int.guild?.iconURL({dynamic: true}) ?? '')
+            .setAuthor({ name: `${int.user.tag} (${int.user.id})`, iconURL: int.user.displayAvatarURL({ dynamic: true }) })
+            .setThumbnail(int.guild?.iconURL({ dynamic: true }) ?? '')
             .setDescription(`${target} has been banned from ${int.guild?.name}`);
 
         return {
             embeds: [embed],
             ephemeral: true
-        }
+        };
     }
-})
+});

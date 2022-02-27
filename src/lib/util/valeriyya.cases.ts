@@ -19,9 +19,9 @@ export class ValeriyyaCases {
     const staff = await guild.members.fetch(staffId);
     const target = await this.client.users.fetch(targetId);
 
-    const db = await this.client.guild.get(guild.id);
-    const id = db.cases_number;
-    const channelId = db.channels?.logs;
+    const db = this.client.settings
+    const id = await db.get(guild, "cases.total");
+    const channelId = await db.get(guild, "channel.mod");
     let message: string | undefined = undefined;
 
     try {
@@ -59,8 +59,7 @@ export class ValeriyyaCases {
       duration,
     };
 
-    db.cases.push(new_case);
-    return this.client.guild.set(guild.id, db)
+    return this.client.settings.set(guild.id, "cases", new_case)
   }
 
   public async log({
@@ -94,19 +93,19 @@ export class ValeriyyaCases {
   }
 
   public async edit({ guildId, id, reason, action }: { guildId: string; id: number; reason?: string; action?: "ban" | "kick" | "mute" | "unban" | "unmute" }) {
-    const db = await this.client.guild.get(guildId);
+    const db = this.client.settings
     const guild = await this.client.guilds.fetch(guildId);
 
 
 
-    const c = getCaseById({ id, db, client: this.client });
+    const c = await getCaseById({ gid: guildId, id, db, client: this.client });
     if (!c) return `There is no such case with the id ${id}`;
     if (reason) c.reason = reason;
     if (action) c.action = action;
-    this.client.guild.set(guildId, db)
+    this.client.settings.set(guildId, "cases", c)
 
     if (!c.message) return;
-    const channel_id = db.channels?.logs;
+    const channel_id = await db.get(guildId, "channel.mod");
     try {
       const channel = (await guild.channels.fetch(channel_id!)) as Omit<TextBasedChannel, "DMChannel" | "PartialDMChannel" | "ThreadChannel">;
       const target = await this.client.users.fetch(c.targetId);

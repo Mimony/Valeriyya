@@ -9,11 +9,7 @@ datasource db {
 }
 
 model guild {
-  id           String @id @default(dbgenerated()) @map("_id") @db.ObjectId
-  gid          String @unique
-  cases        Json[]
-  cases_number Int
-  channels     Json
-  history      Json[]
-  roles        Json
+  id       String @id @default(auto()) @map("_id") @db.ObjectId
+  guildID  String @unique()
+  settings Json?
 }

@@ -34,7 +34,7 @@ export default defineCommand({
     },
     chat: async (int: ICommandInteraction) => {
         const member = int.member as GuildMember;
-        const db = await int.client.guild.get(int.guildId!);
+        const db = int.client.settings
         const id = int.options.getNumber("id")!;
         const options = int.options.getString("option")!;
 
@@ -51,7 +51,7 @@ export default defineCommand({
         }
 
         if (options === "show") {
-            const c = getCaseById({ id, db, client: int.client });
+            const c = await getCaseById({ gid: int.guildId!, id, db, client: int.client });
             if (!c) return {
                 content: `There is no such case with the id ${id}`,
                 ephemeral: true,
@@ -75,13 +75,13 @@ export default defineCommand({
             }
         }
         else if (options === "delete") {
-            const c = getCaseById({ id, db, client: int.client });
+            const c = getCaseById({ gid: int.guildId!, id, db, client: int.client });
             if (!c) return {
                 content: `There is no such case with the id ${id}`,
                 ephemeral: true,
             }
 
-            await deleteCaseById({ id, db, client: int.client })
+            deleteCaseById({ gid: int.guildId!, id, db, client: int.client })
 
             const embed = new ValeriyyaEmbed()
                 .setDescription(`Successfully removed case with the id ${id}`)

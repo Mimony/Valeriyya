@@ -1,6 +1,7 @@
 import type { GuildMember, User } from "discord.js";
 import type { Valeriyya } from "../../valeriyya.client";
-import type { GuildDb, ICommandInteraction } from "../valeriyya.types";
+import type { ValeriyyaSettings } from "../database/valeriyya.db.settings";
+import { Case, History, ICommandInteraction, isNullish } from "../valeriyya.types";
 
 export enum Action {
     BAN = "ban",
@@ -19,33 +20,38 @@ export interface ActionData {
     duration?: number;
 }
 
-export function getUserHistory ({ id, db, client }: { id: string; db: GuildDb; client: Valeriyya; }) {
-    let history = db.history.find((m) => m.id === id);
-    if (!history) {
-        db.history.push({
-            id: id,
+export async function getUserHistory ({ gid, id, db }: { gid: string; id: string; db: ValeriyyaSettings; }) {
+    const db_history = await db.get(gid, "history") as History[];
+
+    let history: History;
+    let history_find = db_history.find((m) => m.id === id);
+
+    if (isNullish(history_find)) {
+        db.set(gid, "history", {
+            id,
             ban: 0,
             kick: 0,
-            mute: 0,
+            mute: 0
         });
-        client.guild.set(db.gid, db);
-        history = db.history.find((m) => m.id === id);
+        history = db_history.find((m) => m.id === id)!;
     }
-    return history;
+
+    return history!;
 }
 
-export function getCaseById ({ id, db, client }: { id: number; db: GuildDb; client: Valeriyya; }) {
-    const c = db.cases.find((c) => c.id === id);
+export async function getCaseById ({ gid, id, db, client }: { gid: string; id: number; db: ValeriyyaSettings; client: Valeriyya; }) {
+    const cases = await db.get(gid, "cases") as Case[];
+    const c = cases.find((c) => c.id === id);
     if (!c) return client.logger.print`There is no such case with the id: ${id}`;
     return c;
 }
 
-export function deleteCaseById({ id, db, client }: { id: number; db: GuildDb; client: Valeriyya }) {
-    const c = db.cases.find((c) => c.id === id);
+export async function deleteCaseById ({ gid, id, db, client }: { gid: string; id: number; db: ValeriyyaSettings; client: Valeriyya; }) {
+    const cases = await db.get(gid, "cases") as Case[];
+    const c = cases.find((c) => c.id === id);
     if (!c) return client.logger.print`There is no such case with the id ${id}`;
-    
-    db.cases.splice(db.cases.indexOf(c), 1);
-    client.guild.set(db.gid, db)
+
+    client.settings.delete(gid, "cases", c);
 }
 
 
@@ -70,15 +76,14 @@ export abstract class Moderation {
 
     protected async reason () {
         if (this._reason) return this._reason;
-        const db = await this.client.guild.get(this.int.guildId!);
-        const cases = db.cases_number;
+        const cases = await this.client.settings.get(this.int.guildId!, "cases.total");
         return `\`Use /reason ${cases} <...reason> to set a reason for this case.\``;
     }
 
     public abstract permissions (): boolean;
     public abstract execute (): Promise<boolean>;
 
-    public async db (): Promise<void> {
+    public async db (): Promise<any> {
         return this.client.cases.add({
             guildId: this.int.guild!.id,
             staffId: this.staff.id,
@@ -94,7 +99,7 @@ export abstract class Moderation {
         try {
             if (!this.permissions()) return;
             if (!this.execute()) return;
-            else this.execute()
+            else this.execute();
             await this.db();
         } catch (err: any) {
             this.client.logger.error(`There was an error executing the moderation action: ${err.stack}`);

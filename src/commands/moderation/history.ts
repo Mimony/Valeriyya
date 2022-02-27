@@ -10,8 +10,15 @@ export default defineCommand({
     },
     menu: async (int: IContextInteraction) => {
         const target = int.options.getMember("user") as GuildMember;
-        const db = await int.client.guild.get(int.guildId!);
-        const history = getUserHistory({ id: target.id, db, client: int.client })!;
+        const db = int.client.settings
+        const history = await getUserHistory({ id: target.id, db, gid: int.guildId! });
+
+        if (!history) return {
+            embeds: [
+                new ValeriyyaEmbed()
+                    .setDescription("There is no past moderation actions for this user.")
+            ]
+        }
 
         return {
             embeds: [
