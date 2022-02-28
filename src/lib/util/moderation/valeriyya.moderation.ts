@@ -23,20 +23,20 @@ export interface ActionData {
 export async function getUserHistory ({ gid, id, db }: { gid: string; id: string; db: ValeriyyaSettings; }) {
     const db_history = await db.get(gid, "history") as History[];
 
-    let history: History;
+    let history;
     let history_find = db_history.find((m) => m.id === id);
 
     if (isNullish(history_find)) {
-        db.set(gid, "history", {
+        await db.set(gid, "history", [{
             id,
             ban: 0,
             kick: 0,
             mute: 0
-        });
-        history = db_history.find((m) => m.id === id)!;
+        }]);
+        history = db_history.find((m) => m.id === id);
     }
-
-    return history!;
+    console.log(history);
+    return history;
 }
 
 export async function getCaseById ({ gid, id, db, client }: { gid: string; id: number; db: ValeriyyaSettings; client: Valeriyya; }) {

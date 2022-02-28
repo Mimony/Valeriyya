@@ -34,9 +34,8 @@ export class ValeriyyaSettings {
         });
         
 
-        let settingsObj = guildDB as Prisma.JsonObject;
+        let settingsObj = guildDB.settings as Prisma.JsonObject;
         if (settingsObj[settingToGet] instanceof Array) {
-            if (!settingsObj[settingToGet]) return null;
             if (settingToGet === "cases" || settingToGet === "history") return (settingsObj[settingToGet] as Array<Object>);
             return settingsObj[settingToGet] as any;
         }
