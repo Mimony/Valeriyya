@@ -14,7 +14,7 @@
     "chalk": "^4.1.2",
     "discord-api-types": "^0.25.2",
     "discord.js": "^13.4.0",
-    "ffmpeg-static": "^4.4.0",
+    "ffmpeg-static": "^5.0.0",
     "libsodium-wrappers": "^0.7.9",
     "mongodb": "^4.3.1",
     "play-dl": "^1.8.7",
