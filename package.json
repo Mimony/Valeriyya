@@ -11,7 +11,7 @@
     "@prisma/client": "^3.9.2",
     "@sapphire/pieces": "^3.2.0",
     "@types/node": "^16.11.10",
-    "chalk": "^4.1.2",
+    "chalk": "^5.0.0",
     "discord-api-types": "^0.25.2",
     "discord.js": "^13.4.0",
     "ffmpeg-static": "^5.0.0",
