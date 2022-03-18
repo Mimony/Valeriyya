@@ -30,7 +30,7 @@ export class Logger {
   }
 
   public error(log?: any, ...optionalParams: any[]): void {
-    console.error(
+    console.log(
       chalk.hex(this.errorColor)(`  ${Logger.getCurrentMemoryHeap()}  ${this.time()} ${this.errorEmoji}  ${log}`),
       chalk.hex(this.errorColor)(...optionalParams)
     );

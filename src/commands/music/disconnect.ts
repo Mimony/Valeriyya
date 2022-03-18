@@ -10,18 +10,19 @@ export default defineCommand({
     const subscription = int.client.subscription.get(int.guildId!);
     const member = int.member as GuildMember;
 
-    if (!subscription) return "I'm not playing any music in this server.";
+    if (subscription) {
+      if (member.voice.channelId !== int.guild!.me?.voice.channelId)
+        return {
+          content: "You must be in the same voice channel as me to use this command! <3",
+          ephemeral: true,
+        };
 
-    if (member.voice.channelId !== int.guild!.me?.voice.channelId)
-      return {
-        content: "You must be in the same voice channel as me to use this command! <3",
-        ephemeral: true,
-      };
+      subscription.voiceConnection.destroy();
+      int.client.subscription.delete(int.guildId!);
 
-    subscription.voiceConnection.destroy();
-    int.client.subscription.delete(int.guildId!);
-
-    return `${int.user} has disconnected the bot.`;
-
+      return `${int.user} has disconnected the bot.`;
+    } else {
+        return "I'm not playing any music in this server."
+    }
   }
 });

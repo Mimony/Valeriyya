@@ -2,4 +2,4 @@ import { Valeriyya } from "./lib/valeriyya.client"
 
 const client: Valeriyya = new Valeriyya();
 
-client.start("ODMwMTMwMzAxNTM1NjQ5ODUz.YHCNFg.RkSaienjc7hLaWpRx-XjzCST4pk");
+client.start("OTA5NzkxNDU0MDQwMzAxNTY4.YZJbUQ.c8PIUM_EftouBg9KKV9bDG6IWCY");

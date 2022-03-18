@@ -3,7 +3,6 @@ import { ValeriyyaEmbed } from "./valeriyya.embed";
 import type { Valeriyya } from "../valeriyya.client";
 import type { Case } from "./valeriyya.types";
 import ms from "./valeriyya.ms";
-import { getCaseById } from "./moderation/valeriyya.moderation";
 
 type CASE = Omit<Case, "id">;
 
@@ -19,9 +18,9 @@ export class ValeriyyaCases {
     const staff = await guild.members.fetch(staffId);
     const target = await this.client.users.fetch(targetId);
 
-    const db = this.client.settings
-    const id = await db.get(guild, "cases.total");
-    const channelId = await db.get(guild, "channel.mod");
+    const db = await this.client.settings(guild);
+    const id = db.cases.total
+    const channelId = db.channels.logs
     let message: string | undefined = undefined;
 
     try {
@@ -59,7 +58,8 @@ export class ValeriyyaCases {
       duration,
     };
 
-    return this.client.settings.set(guild.id, "cases", new_case)
+    db.cases.case.push(new_case);
+    return void db.save();
   }
 
   public async log({
@@ -93,19 +93,19 @@ export class ValeriyyaCases {
   }
 
   public async edit({ guildId, id, reason, action }: { guildId: string; id: number; reason?: string; action?: "ban" | "kick" | "mute" | "unban" | "unmute" }) {
-    const db = this.client.settings
     const guild = await this.client.guilds.fetch(guildId);
+    const db = await this.client.settings(guild);
 
 
 
-    const c = await getCaseById({ gid: guildId, id, db, client: this.client });
+    const c = db.getCase(id)
     if (!c) return `There is no such case with the id ${id}`;
     if (reason) c.reason = reason;
     if (action) c.action = action;
-    this.client.settings.set(guildId, "cases", c)
+    db.save();
 
     if (!c.message) return;
-    const channel_id = await db.get(guildId, "channel.mod");
+    const channel_id = db.channels.logs;
     try {
       const channel = (await guild.channels.fetch(channel_id!)) as Omit<TextBasedChannel, "DMChannel" | "PartialDMChannel" | "ThreadChannel">;
       const target = await this.client.users.fetch(c.targetId);

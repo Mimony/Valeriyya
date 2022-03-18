@@ -70,10 +70,10 @@ export default defineCommand({
     },
     chat: async (int: ICommandInteraction) => {
         const member = int.member as GuildMember;
-        const db = int.client.settings
+        const db = await int.client.settings(int);
         const cmd = int.options.getSubcommand();
-        const channel_type = int.options.getString("type") as "channel.mod" | "channel.welcome";
-        const role_type = int.options.getString("type") as "role.mod" | "role.mute";
+        const channel_type = int.options.getString("type") as "logs" | "welcome";
+        const role_type = int.options.getString("type") as "staff" | "mute";
         const role = int.options.getRole("role") as Role;
         const channel = int.options.getChannel("channel") as Omit<TextBasedChannel, "DMChannel" | "PartialDMChannel" | "ThreadChannel">;
 
@@ -86,14 +86,15 @@ export default defineCommand({
         }
 
         if (cmd === "channel") {
-            db.set(int.guild!, channel_type, channel.id)
-
+            db.channels[channel_type] = channel.id;
+            db.save();
             return {
                 content: `The ${channel_type} channel has been updated to ${channel}.`,
                 ephemeral: true,
             }
         } else if (cmd === "role") {
-            db.set(int.guild!, role_type, role.id)
+            db.roles[role_type] = role.id;
+            db.save();
 
             return {
                 content: `The ${role_type} role has been updated to ${role}.`,
@@ -101,6 +102,6 @@ export default defineCommand({
             }
         }
 
-        return "This is not ment to happen."
+        return "wtf"
     }
 })

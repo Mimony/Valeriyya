@@ -1,8 +1,7 @@
-import { Action, ActionData, getUserHistory, Moderation } from "./valeriyya.moderation";
+import { Action, ActionData, Moderation } from "./valeriyya.moderation";
 import { ValeriyyaEmbed } from "../valeriyya.embed";
 import { User } from "discord.js";
 import { reply } from "../valeriyya.util";
-import type { History } from "../valeriyya.types";
 
 type MuteData = ActionData;
 
@@ -11,7 +10,7 @@ export class Mute extends Moderation {
     super(Action.MUTE, data);
   }
 
-  public permissions() {
+  public permissions () {
     if (!this.int.memberPermissions?.has("MODERATE_MEMBERS", true)) {
       const embed = new ValeriyyaEmbed(undefined, "error")
         .setAuthor({ name: `${this.int.user.tag} (${this.int.user.id})`, url: this.int.user.displayAvatarURL({ dynamic: true }) })
@@ -22,12 +21,12 @@ export class Mute extends Moderation {
     return true;
   }
 
-  public async execute(): Promise<boolean> {
+  public async execute (): Promise<boolean> {
     if (this.target instanceof User) return false;
-    
-    const db = this.client.settings
-    const history_number = (await getUserHistory({ gid: this.int.guildId!, db, id: this.target.id }))!.mute + 1;
-    const cases_number = await db.get(this.int.guildId!, "cases.total") + 1;
+
+    const db = await this.client.settings(this.int);
+    const history = db.getUserHistory(this.target.id);
+    const cases_number = db.cases.total + 1;
 
     try {
       await this.target.timeout(this.duration, `Case ${cases_number}`);
@@ -38,11 +37,8 @@ export class Mute extends Moderation {
       return false;
     }
 
-    db.set(this.int.guildId!, "cases.total", cases_number)
-
-    let db_history = await db.get(this.int.guildId!, "history") as History[];
-    db_history.find((m) => m.id === this.target.id)!.mute = history_number;
-    this.client.settings.set(this.int.guildId!, "history", db_history)
+    history.mute += 1;
+    db.save();
 
     return true;
   }

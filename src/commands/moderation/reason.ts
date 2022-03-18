@@ -1,7 +1,6 @@
 import { GuildMember } from "discord.js";
 import { defineCommand, type ICommandInteraction, OptionTypes } from "../../lib/util/valeriyya.types";
 import { ValeriyyaEmbed } from "../../lib/util/valeriyya.embed";
-import { getCaseById } from "../../lib/util/moderation/valeriyya.moderation";
 
 export default defineCommand({
     data: {
@@ -26,7 +25,7 @@ export default defineCommand({
         const member = int.member;
         const id = int.options.getNumber("id")!;
         const reason = int.options.getString("reason")!;
-        const db = int.client.settings
+        const db = await int.client.settings(int);
 
         if (!(member instanceof GuildMember)) return;
 
@@ -38,7 +37,7 @@ export default defineCommand({
             ]
         }
 
-        const c = getCaseById({ gid: int.guildId!, id, db, client: int.client });
+        const c = db.getCase(id)
         if (!c) return { context: c, ephemeral: true }
 
         await int.client.cases.edit({

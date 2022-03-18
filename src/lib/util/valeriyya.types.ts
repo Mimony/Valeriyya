@@ -73,13 +73,13 @@ export interface Case {
 };
 
 export interface Channels {
-    logs: string;
-    welcome: string;
+    logs?: string;
+    welcome?: string;
 };
 
 export interface Roles {
-    staff: string;
-    mute: string;
+    staff?: string;
+    mute?: string;
 };
 
 export interface History {
@@ -88,21 +88,3 @@ export interface History {
     kick: number;
     mute: number;
 }
-
-export type IGuildDb = {
-    gid: string;
-    cases: object[];
-    cases_number: number;
-    channels: object;
-    roles: object;
-    history: object[];
-};
-
-export type GuildDb = {
-    gid: string;
-    cases: Case[];
-    cases_number: number;
-    channels: Channels;
-    roles: Roles;
-    history: History[];
-};

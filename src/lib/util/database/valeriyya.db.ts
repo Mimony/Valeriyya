@@ -1,17 +1,27 @@
 import type { Valeriyya } from "../../valeriyya.client";
-import { PrismaClient } from "@prisma/client";
+import { DataSource } from "typeorm";
+import { GuildDb } from "./entities/Guild";
 
 export class ValeriyyaDB {
   public client: Valeriyya;
-  public dbClient: PrismaClient;
 
   public constructor(client: Valeriyya) {
     this.client = client;
-    this.dbClient = new PrismaClient();
   }
 
   public async on() {
-    return this.dbClient.$connect()
+    const connection = new DataSource({
+      url: "mongodb+srv://Client:MomsSpaghetti@cluster0.i1oux.mongodb.net/myFirstDatabase?retryWrites=true&w=majority",
+      type: "mongodb",
+      useUnifiedTopology: true,
+      entities: [GuildDb],
+    })
+
+    await connection.initialize();
+
+    console.log(connection.getRepository("guild"))
+    if(connection.isInitialized) this.client.logger.print`The connection to the database has been established.`
+    else this.client.logger.print`The database connection has failed!`
   }
 
 }

@@ -1,22 +1,23 @@
 import { Commands } from "../commands";
-import { Client, Collection, Interaction, Message } from "discord.js";
+import { Client, Collection, Guild, Interaction, Message } from "discord.js";
 import { Logger } from "./util/valeriyya.logger";
 import { ValeriyyaDB } from "./util/database/valeriyya.db";
 import { ValeriyyaCases } from "./util/valeriyya.cases";
 import { reply, replyC } from "./util/valeriyya.util";
 import play from "play-dl";
-import type { ICommand } from "./util/valeriyya.types";
+import type { ICommand, ICommandInteraction, IContextInteraction } from "./util/valeriyya.types";
 import type { MusicSubscription } from "./util/valeriyya.music";
-import { ValeriyyaSettings } from "./util/database/valeriyya.db.settings";
+import { GuildDb } from "./util/database/entities/Guild";
+import { DataSource } from "typeorm";
 
 let count: number = 0;
 declare module "discord.js" {
   interface Client {
     logger: Logger;
     commands: Collection<string, ICommand>;
-    prisma: ValeriyyaDB;
-    settings: ValeriyyaSettings;
+    db: ValeriyyaDB;
     cases: ValeriyyaCases;
+    settings(int: ICommandInteraction | IContextInteraction | Guild): Promise<GuildDb>;
     subscription: Collection<string, MusicSubscription>;
   }
 
@@ -35,11 +36,14 @@ declare module "discord.js" {
 
 export class Valeriyya extends Client {
   public commands: Collection<string, ICommand> = new Collection();
-  public logger: Logger = new Logger();
-  public prisma: ValeriyyaDB = new ValeriyyaDB(this);
-  public settings: ValeriyyaSettings = new ValeriyyaSettings(this);
+  public db: ValeriyyaDB = new ValeriyyaDB(this);
   public cases: ValeriyyaCases = new ValeriyyaCases(this);
 
+  public static initLogger(): Logger {
+    return new Logger();
+  }
+
+  public logger: Logger = new Logger();
 
   public constructor() {
     super({
@@ -52,19 +56,48 @@ export class Valeriyya extends Client {
   }
 
   public async start(token: string): Promise<string> {
+    // await this.db.on();
+    const connection = new DataSource({
+      url: "mongodb+srv://Client:MomsSpaghetti@cluster0.i1oux.mongodb.net/myFirstDatabase?retryWrites=true&w=majority",
+      type: "mongodb",
+      // useUnifiedTopology: true,
+      entities: [GuildDb],
+    })
+
+    await connection.initialize();
+
+    console.log(connection.getRepository("guild"))
+    if(connection.isInitialized) this.logger.print`The connection to the database has been established.`
+    else this.logger.print`The database connection has failed!`;
+    
     this.logger.print("Booting up....");
     return super.login(token);
   }
 
-  private async onReady() {
-    await this.prisma.on().catch()
-    await play.setToken({ spotify: {
-      client_id: "15fdd20340ff417ba4b7bf2c8bdca07b",
-      client_secret: "04421c834d5d42efb122db7b69cbc108",
-      refresh_token: "AQBN-7v23aiWf339Pe0BbRY966oba-V_GuucfaYNUapr5a-d1u0qfNC1vXW7GLPrt0Va9eU0He14R1LVq2LOCHeV95e7Y3gdjvii-MeM1OkUXv3LynxGS4IznbWWw2c3f70",
-      market: "MK"
+  public async settings(argument: ICommandInteraction | IContextInteraction | Guild): Promise<GuildDb> {
+    let id: string;
+    if (argument instanceof Guild) id = argument.id;
+    else id = argument.guildId!;
+
+    let db = await GuildDb.findOne({ where: { id: id } })
+
+    if (!db) {
+      db = new GuildDb(id);
+      db.save();
     }
-  })
+
+    return db;
+  }
+
+  private async onReady() {
+    await play.setToken({
+      spotify: {
+        client_id: "15fdd20340ff417ba4b7bf2c8bdca07b",
+        client_secret: "04421c834d5d42efb122db7b69cbc108",
+        refresh_token: "AQBN-7v23aiWf339Pe0BbRY966oba-V_GuucfaYNUapr5a-d1u0qfNC1vXW7GLPrt0Va9eU0He14R1LVq2LOCHeV95e7Y3gdjvii-MeM1OkUXv3LynxGS4IznbWWw2c3f70",
+        market: "MK",
+      },
+    });
 
     await this.loadCommands();
     this.logger.print(`${this.user?.tag} is ready to shine.`);

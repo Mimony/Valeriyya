@@ -10,17 +10,21 @@ export default defineCommand({
         const subscription = int.client.subscription.get(int.guildId!);
         const member = int.member as GuildMember;
 
-        if (!subscription) return "There is no music currently playing.";
-        if (member.voice.channelId !== int.guild!.me?.voice.channelId) return {
-            content: "You must be in the same voice channel as me to use this command! <3",
-            ephemeral: true
-        };
+        if (subscription) {
+            if (member.voice.channelId !== int.guild!.me?.voice.channelId) return {
+                content: "You must be in the same voice channel as me to use this command! <3",
+                ephemeral: true
+            }
+        
+            
+            return subscription.queue
+				.slice(0, 5)
+				.map((track, index) => `${index + 1}) [${track.title}](<${track.url}>)`)
+				.join('\n');
 
-
-        return subscription.queue
-            .slice(0, 5)
-            .map((track, index) => `${index + 1}) [${track.title}](<${track.url}>)`)
-            .join('\n');
+        } else {
+            return "There is no music currently playing."
+        }
 
     }
-});
+})
