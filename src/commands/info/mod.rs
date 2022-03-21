@@ -8,10 +8,14 @@ pub async fn user(
     ctx: Context<'_>,
     #[description = "Gets the information about a user."] user: Option<serenity::User>,
 ) -> Result<(), Error> {
-    ctx.send(|f| {
-        f
-        .content(format!("{:?}", user))
-        .ephemeral(true)
-    }).await?;
-    Ok(())
+        ctx.send(|f| {
+            f
+            .content(format!("{}", match user {
+                Some(u) => u.name,
+                None => "Please provide a user (test)".to_string(),
+            }))
+            .ephemeral(true)
+        }).await?;
+    
+Ok(())
 }

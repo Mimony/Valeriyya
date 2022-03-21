@@ -20,7 +20,7 @@ pub struct Data {
 }
 
 async fn app() -> Result<(), Error> {
-    let discord_token = "OTA5NzkxNDU0MDQwMzAxNTY4.YZJbUQ.c8PIUM_EftouBg9KKV9bDG6IWCY";
+    let discord_token = "ODMwMTMwMzAxNTM1NjQ5ODUz.YHCNFg.FwlkE2je_AAfw5gIn2qn0EO3Vuc";
 
     let options = poise::FrameworkOptions {
         commands: vec![
