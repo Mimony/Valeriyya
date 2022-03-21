@@ -12,6 +12,7 @@ type Error = Box<dyn std::error::Error + Send + Sync>;
 type Context<'a> = poise::Context<'a, Data, Error>;
 
 #[derive(Debug)]
+#[allow(dead_code)]
 pub struct Data {
     bot_user_id: serenity::UserId,
     bot_start_time: std::time::Instant,
