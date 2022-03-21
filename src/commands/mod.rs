@@ -1,2 +1,1 @@
-pub mod ping;
-pub mod user;
+pub mod info;

@@ -4,5 +4,7 @@ version = "0.1.1"
 edition = "2021"
 
 [dependencies]
-tokio = { version = "1.13.0", features = ["rt-multi-thread"] }
-serenity = { version = "0.10.0", default-features = false, features = ["builder", "cache", "client", "gateway", "http", "model", "utils", "rustls_backend", "unstable_discord_api"] }
+tokio = { version = "1.17.0", features = ["rt-multi-thread"] }
+serenity = { version = "0.10.10", default-features = false, features = ["builder", "cache", "client", "gateway", "http", "model", "utils", "rustls_backend", "unstable_discord_api"] }
+poise = { git = "https://github.com/kangalioo/poise", branch = "develop", features = ["collector"] }
+sqlx = { version = "0.5.7", features = ["runtime-tokio-rustls", "postgres", "offline"] }
