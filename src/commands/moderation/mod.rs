@@ -1,3 +1,3 @@
 import![
-    user
+    ban
 ];

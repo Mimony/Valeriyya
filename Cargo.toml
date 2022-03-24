@@ -7,4 +7,7 @@ edition = "2021"
 tokio = { version = "1.17.0", features = ["rt-multi-thread"] }
 serenity = { version = "0.10.10", default-features = false, features = ["builder", "cache", "client", "gateway", "http", "model", "utils", "rustls_backend", "unstable_discord_api"] }
 poise = { git = "https://github.com/kangalioo/poise", branch = "develop", features = ["collector"] }
-sqlx = { version = "0.5.7", features = ["runtime-tokio-rustls", "postgres", "offline"] }
+mongodb = { version = "2.1.0", features = ["tokio-runtime", "bson-chrono-0_4"] }
+bson = { version = "2.1.0", features = ["chrono-0_4"] }
+chrono = "0.4.19"
+serde = "1.0.136"
