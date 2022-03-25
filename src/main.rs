@@ -10,12 +10,21 @@ macro_rules! import {
     }
 }
 
+macro_rules! ternary {
+    ($condition:expr => { $true_condition:expr; $false_condition:expr; }) => {
+        if $condition {
+            $true_condition
+        }
+        else {
+            $false_condition
+        }
+    }
+}
 
 mod commands;
 
-
 use mongodb::{options::{ClientOptions, ResolverConfig}, Client};
-use poise::serenity_prelude as serenity;
+use poise::serenity_prelude::{self as serenity, RoleId};
 
 pub async fn get_guild_member(ctx: Context<'_>) -> Result<Option<serenity::Member>, Error> {
 	Ok(match ctx.guild_id() {
@@ -69,9 +78,21 @@ pub async fn member_managable(ctx: Context<'_> ,member: &serenity::Member) -> bo
     }
 
     let me = guild.member(ctx.discord(), ctx.discord().cache.current_user_id()).await.unwrap();
-    let highest_me_role = me.highest_role_info(&ctx.discord().cache).unwrap().0;
 
-    if compare_role_position(ctx, highest_me_role, member.highest_role_info(&ctx.discord().cache).unwrap().0) > 0 {
+    let highest_me_role: RoleId;
+    let member_highest_role: RoleId;
+
+    ternary!(me.roles.len() == 0 => {
+        highest_me_role = RoleId(guild.id.0);
+        highest_me_role = me.highest_role_info(&ctx.discord().cache).unwrap().0; 
+    });
+
+    ternary!(member.roles.len() == 0 => {
+        member_highest_role = RoleId(guild.id.0);
+        member_highest_role = member.highest_role_info(&ctx.discord().cache).unwrap().0;
+    });
+
+    if compare_role_position(ctx, highest_me_role, member_highest_role) > 0 {
         return true;
     } else {
         return false;
