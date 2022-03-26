@@ -1,7 +1,5 @@
 use poise::serenity_prelude::{UserId};
-
 use crate::{serenity, Context, Error, member_managable};
-
 
 #[poise::command(slash_command, category = "Moderation")]
 pub async fn ban(ctx: Context<'_>, 

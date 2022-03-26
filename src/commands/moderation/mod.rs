@@ -1,3 +1,4 @@
 import![
-    ban
+    ban,
+    kick
 ];
