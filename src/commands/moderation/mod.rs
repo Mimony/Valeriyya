@@ -1,4 +1,5 @@
 import![
     ban,
-    kick
+    kick,
+    mute
 ];

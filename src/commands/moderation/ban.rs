@@ -12,10 +12,17 @@ pub async fn ban(ctx: Context<'_>,
 
     if let Some(m) = &member {
 
-        if member_managable(ctx, m).await {            
-            m.ban_with_reason(ctx.discord(), 7, &reason).await;
+        if member_managable(ctx, m).await {      
+            if ctx.guild().unwrap().bans(&ctx.discord().http).await?.iter().any(|ban| ban.user.id == m.user.id) {
+                ctx.send(|int| {
+                    int.content("This member is already banned from this guild.");
+                    int.ephemeral(true)
+                }).await;
+            }      
+            m.ban_with_reason(ctx.discord(), 7, &reason).await?;
             ctx.send(|s| {
                 s.embed(|e| {
+                    e.color(serenity::Color::from_rgb(82, 66, 100));
                     e.author(|a| {
                         a.name(format!("{} ({})", m.user.tag(), m.user.id));
                         a.icon_url(ctx.author().avatar_url().unwrap_or_else(|| String::from("")))
@@ -35,7 +42,7 @@ pub async fn ban(ctx: Context<'_>,
             }).await;
         }
         let user_id = UserId(*m_id);
-        ctx.guild().unwrap().ban_with_reason(ctx.discord(), user_id, 7, &reason).await;
+        ctx.guild().unwrap().ban_with_reason(ctx.discord(), user_id, 7, &reason).await?;
         ctx.send(|s| {
             s.embed(|e| {
                 e.author(|a| {

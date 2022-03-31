@@ -1,6 +1,7 @@
 #![feature(fn_traits)]
+#![feature(once_cell)]
 #![allow(unused_must_use)]
-#![allow(unused_macros)]
+
 macro_rules! import {
     [ $($cmd:ident), * ] => {
       $(
@@ -22,9 +23,49 @@ macro_rules! ternary {
 }
 
 mod commands;
+mod database;
 
 use mongodb::{options::{ClientOptions, ResolverConfig}, Client};
 use poise::serenity_prelude::{self as serenity, RoleId};
+use regex::Regex;
+
+pub fn string_to_sec(raw_text: impl ToString) -> i64 {
+    let re = Regex::new(r"((?P<years>\d+?)Y|y|years)?((?P<months>\d+?)months)?((?P<weeks>\d+?)W|w|weeks)?((?P<days>\d+?)D|d|days)?((?P<hours>\d+?)H|h|hr|hours)?((?P<minutes>\d+?)m|min|minutes)?((?P<seconds>\d+?)S|s|sec|seconds)?").unwrap();
+
+    let text = raw_text.to_string();
+
+    let captures = if let Some(caps) = re.captures(&text) {
+        caps
+    } else {
+        return 0;
+    };
+
+    let mut seconds = 0;
+    for name in [
+        "years", "months", "weeks", "days", "hours", "minutes", "seconds",
+    ] {
+        if let Some(time) = captures.name(name) {
+            let time: i64 = time.as_str().parse().unwrap();
+
+            seconds += match name {
+                "years" => time * 31_557_600,
+                "months" => time * 2_592_000,
+                "weeks" => time * 604_800,
+                "days" => time * 86_400,
+                "hours" => time * 3_600,
+                "minutes" => time * 60,    
+                "seconds" => time,
+                _ => 0,
+            };
+
+        } else {
+            continue;
+        }
+    }
+
+    seconds
+}
+
 
 pub async fn get_guild_member(ctx: Context<'_>) -> Result<Option<serenity::Member>, Error> {
 	Ok(match ctx.guild_id() {
@@ -82,6 +123,7 @@ pub async fn member_managable(ctx: Context<'_> ,member: &serenity::Member) -> bo
     let highest_me_role: RoleId;
     let member_highest_role: RoleId;
 
+
     ternary!(me.roles.len() == 0 => {
         highest_me_role = RoleId(guild.id.0);
         highest_me_role = me.highest_role_info(&ctx.discord().cache).unwrap().0; 
@@ -123,20 +165,22 @@ pub struct Data {
 }
 
 async fn init() -> Result<(), Error> {
-    let discord_token = "ODMwMTMwMzAxNTM1NjQ5ODUz.YHCNFg.FwlkE2je_AAfw5gIn2qn0EO3Vuc";
-    let database_url = "mongodb+srv://Client:MomsSpaghetti@cluster0.i1oux.mongodb.net/myFirstDatabase?retryWrites=true&w=majority";
+    let discord_token = "PROVIDE TOKEN HERE";
+    let database_url = "PROVIDE MONGODB URL";
 
     let options = poise::FrameworkOptions {
         commands: vec![
             commands::info::user(),
             commands::moderation::ban(),
+            commands::moderation::kick(),
+            commands::moderation::mute(),
         ],
         ..Default::default()
     };
 
     let database_options = ClientOptions::parse_with_resolver_config(&database_url, ResolverConfig::cloudflare()).await?;
     let database = Client::with_options(database_options)?;
-
+    
     poise::Framework::build()
         .token(discord_token)
         .user_data_setup(move |ctx, client, _framework| {
@@ -158,7 +202,6 @@ async fn init() -> Result<(), Error> {
         })
         .run()
         .await?;
-
     Ok(())
 }
 #[tokio::main]
