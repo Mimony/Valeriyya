@@ -1,5 +1,5 @@
 #![allow(dead_code)]
-use bson::{doc, Array, oid::ObjectId};
+use bson::{doc, oid::ObjectId};
 use mongodb::{Client, error::Error};
 use serde::{Serialize, Deserialize};
 
@@ -9,27 +9,23 @@ pub struct ChannelStruct {
     welcome: String
 }
 
-impl ChannelStruct {
-    pub fn set_logs(&mut self, value: &str) {
-        self.logs = value.to_string();
-    }
+#[derive(Debug, Serialize, Deserialize)]
+pub struct Case {
+    id: u32,
+    action: String,
+    guild_id: String,
+    staff_id: String,
+    target_id: String,
+    date: u64,
+    reason: String
+}
 
-    pub fn set_welcome(&mut self, value: &str) {
-        self.welcome = value.to_string();
-    }
-
-    pub fn delete_logs(&mut self) {
-        self.logs = "".to_string();
-    }
-
-    pub fn delete_welcome(&mut self) {
-        self.welcome = "".to_string();
-    }
-
-    pub fn delete_everything(&mut self) {
-        self.delete_welcome();
-        self.delete_logs();
-    }
+#[derive(Debug, Serialize, Deserialize)]
+pub struct History {
+    id: String,
+    ban: u16,
+    kick: u16,
+    mute: u16
 }
 
 
@@ -37,14 +33,14 @@ impl ChannelStruct {
 pub struct GuildDb {
     _id: ObjectId,
     gid: String,
-    cases: Array,
+    cases: Vec<Case>,
     cases_number: u32,
-    history: Array,
+    history: Vec<History>,
     channels: ChannelStruct
 }
 
 
-pub async fn access_guild(client: &Client) -> Result<Option<GuildDb>, Error>{
+pub async fn access_guild(client: &Client) -> Result<Option<GuildDb>, Error> {
     let collection = client.database("myFirstDatabase").collection::<GuildDb>("guild");
     collection.find_one(
         doc! {
@@ -53,3 +49,4 @@ pub async fn access_guild(client: &Client) -> Result<Option<GuildDb>, Error>{
         None
     ).await
 }
+
