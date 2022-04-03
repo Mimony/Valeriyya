@@ -17,7 +17,8 @@ pub struct Case {
     staff_id: String,
     target_id: String,
     date: u64,
-    reason: String
+    reason: String,
+    expiration: u64
 }
 
 #[derive(Debug, Serialize, Deserialize)]
@@ -40,11 +41,11 @@ pub struct GuildDb {
 }
 
 
-pub async fn access_guild(client: &Client) -> Result<Option<GuildDb>, Error> {
+pub async fn access_guild(client: &Client, gid: String) -> Result<Option<GuildDb>, Error> {
     let collection = client.database("myFirstDatabase").collection::<GuildDb>("guild");
     collection.find_one(
         doc! {
-            "gid": "909850768947937290"
+            "gid": gid
         },
         None
     ).await
