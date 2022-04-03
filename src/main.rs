@@ -25,12 +25,15 @@ macro_rules! ternary {
 mod commands;
 mod database;
 
+use std::lazy::Lazy;
 use mongodb::{options::{ClientOptions, ResolverConfig}, Client};
 use poise::serenity_prelude::{self as serenity, RoleId};
 use regex::Regex;
 
 pub fn string_to_sec(raw_text: impl ToString) -> i64 {
-    let re = Regex::new(r"((?P<years>\d+?)Y|y|years)?((?P<months>\d+?)months)?((?P<weeks>\d+?)W|w|weeks)?((?P<days>\d+?)D|d|days)?((?P<hours>\d+?)H|h|hr|hours)?((?P<minutes>\d+?)m|min|minutes)?((?P<seconds>\d+?)S|s|sec|seconds)?").unwrap();
+    let re = Lazy::new(|| {
+        Regex::new(r"((?P<years>\d+?)\s??y|year|years)?((?P<months>\d+?)\s??month|months)?((?P<weeks>\d+?)\s??w|week|weeks)?((?P<days>\d+?)\s??d|day|days)?((?P<hours>\d+?\s??)h|hour|hours)?((?P<minutes>\d+?)\s??m|min|minutes)?((?P<seconds>\d+?)\s??s|sec|second|seconds)?").unwrap()
+    });
 
     let text = raw_text.to_string();
 
@@ -62,7 +65,6 @@ pub fn string_to_sec(raw_text: impl ToString) -> i64 {
             continue;
         }
     }
-
     seconds
 }
 
@@ -160,13 +162,29 @@ type Context<'a> = poise::Context<'a, Data, Error>;
 #[allow(dead_code)]
 #[derive(Debug)]
 pub struct Data {
-    database: Client,
-    client_id: serenity::UserId
+    db_client: Client,
+    client_id: serenity::UserId,
+}
+
+async fn event_listeners(
+    _ctx: &serenity::Context,
+    event: &poise::Event<'_>,
+    _framework: &poise::Framework<Data, Error>,
+    _user_data: &Data,
+) -> Result<(), Error> {
+    match event {
+        poise::Event::Ready { data_about_bot: bot } => {
+            println!("{} is connected!", bot.user.name)
+        }
+        _ => {}
+    }
+
+    Ok(())
 }
 
 async fn init() -> Result<(), Error> {
-    let discord_token = "PROVIDE TOKEN HERE";
-    let database_url = "PROVIDE MONGODB URL";
+    let discord_token = "ODMwMTMwMzAxNTM1NjQ5ODUz.YHCNFg.mYuhKgA5WQWAP71BsCxT8pMjJCQ";
+    let database_url = "mongodb+srv://Client:MomsSpaghetti@cluster0.i1oux.mongodb.net/myFirstDatabase?retryWrites=true&w=majority";
 
     let options = poise::FrameworkOptions {
         commands: vec![
@@ -175,11 +193,14 @@ async fn init() -> Result<(), Error> {
             commands::moderation::kick(),
             commands::moderation::mute(),
         ],
+        listener: |ctx, event, framework, user_data| {
+            Box::pin(event_listeners(ctx, event, framework, user_data))
+        },
         ..Default::default()
     };
 
     let database_options = ClientOptions::parse_with_resolver_config(&database_url, ResolverConfig::cloudflare()).await?;
-    let database = Client::with_options(database_options)?;
+    let db_client = Client::with_options(database_options)?;
     
     poise::Framework::build()
         .token(discord_token)
@@ -187,7 +208,7 @@ async fn init() -> Result<(), Error> {
             Box::pin(async move {
                 ctx.set_activity(serenity::Activity::watching("the lovely moon")).await;
                 Ok(Data {
-                    database,
+                    db_client,
                     client_id: client.user.id
                 })
             })
