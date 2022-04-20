@@ -1,10 +1,11 @@
-use crate::{serenity, Context, Error, get_guild_member};
+use crate::{serenity, Context, Error, utils::get_guild_member, ternary};
 
 #[poise::command(slash_command, category = "Information")]
 pub async fn user(
     ctx: Context<'_>,
     #[description = "Gets the information about a user."] user: Option<serenity::Member>,
 ) -> Result<(), Error> {
+    // poise::builtins::register_application_commands(ctx, false).await?;
 
     let member = get_guild_member(ctx).await?.unwrap();
 

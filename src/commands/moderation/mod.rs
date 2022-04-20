@@ -1,6 +1,3 @@
-import![
-    ban,
-    kick,
-    mute,
-    cases
-];
+use crate::import;
+
+import![ban, kick, mute, cases];

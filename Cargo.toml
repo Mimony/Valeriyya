@@ -5,13 +5,12 @@ edition = "2021"
 
 [dependencies]
 tokio = { version = "1.17.0", features = ["rt-multi-thread"] }
-mongodb = { version = "2.1.0", features = ["tokio-runtime", "bson-chrono-0_4"] }
-bson = { version = "2.1.0", features = ["chrono-0_4"] }
 chrono = "0.4.19"
 serde = "1.0.136"
 regex = "1.5.5"
 dotenv = "0.15.0"
-dotenv_codegen = "0.15.0"
+bson = "2.2.0"
+quote = "1.0.18"
 
 [dependencies.serenity]
 git = "https://github.com/serenity-rs/serenity"
@@ -21,5 +20,9 @@ features = ["builder", "cache", "client", "gateway", "http", "model", "utils", "
 
 [dependencies.poise]
 git = "https://github.com/kangalioo/poise"
-branch = "develop"
-features = ["collector"]
+branch = "master"
+
+[dependencies.mongodb]
+version = "2.2.0"
+default-features = false
+features = ["async-std-runtime"]

@@ -1,3 +1,3 @@
-import![
-    user
-];
+use crate::import;
+
+import![user];
