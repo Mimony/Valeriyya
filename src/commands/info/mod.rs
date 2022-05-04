@@ -1,3 +1,3 @@
 use crate::import;
 
-import![user];
+import![user, help, register];

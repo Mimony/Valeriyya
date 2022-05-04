@@ -5,13 +5,14 @@ use crate::{
 };
 use poise::serenity_prelude::{Timestamp, UserId};
 
-#[poise::command(slash_command, category = "Moderation")]
+/// Bans a member from the guild.
+#[poise::command(prefix_command, slash_command, category = "Moderation")]
 pub async fn ban(
     ctx: Context<'_>,
     #[description = "The member to ban"] member: Option<serenity::Member>,
     #[description = "The member to ban (Use this to provide an id instead of mention)"]
-    member_id: Option<u64>,
-    #[description = "The reason for this ban."] reason: Option<String>,
+    member_id: Option<String>,
+    #[description = "The reason for this ban."] #[rest] reason: Option<String>,
 ) -> Result<(), Error> {
     let reason_default = reason.unwrap_or(String::from("Default reason"));
     let database = &ctx.data().database;
@@ -22,7 +23,7 @@ pub async fn ban(
     if let Some(m) = &member {
         if !member_managable(ctx, m).await {
             ctx.send(|m| {
-                m.content("The member can't be managed so you can't kick them!")
+                m.content("The member can't be managed so you can't ban them!")
                     .ephemeral(true)
             })
             .await;
@@ -55,6 +56,7 @@ pub async fn ban(
                 date: Timestamp::unix_timestamp(&Timestamp::now()),
                 reason: reason_default.to_string(),
                 expiration: None,
+                reference: None, 
             },
         )
         .await;
@@ -79,13 +81,14 @@ pub async fn ban(
         .await;
     }
     if let Some(m_id) = &member_id {
+        let user_id = UserId(m_id.parse().unwrap());
         if ctx
             .guild()
             .unwrap()
             .bans(&ctx.discord().http)
             .await?
             .iter()
-            .any(|ban| ban.user.id == *m_id)
+            .any(|ban| ban.user.id == user_id)
         {
             ctx.send(|int| {
                 int.content("This member is already banned from this guild.");
@@ -93,7 +96,6 @@ pub async fn ban(
             })
             .await;
         }
-        let user_id = UserId(*m_id);
         ctx.guild()
             .unwrap()
             .ban_with_reason(ctx.discord(), user_id, 7, &reason_default)
@@ -110,7 +112,8 @@ pub async fn ban(
                 target_id: user_id.0.to_string(),
                 date: Timestamp::unix_timestamp(&Timestamp::now()),
                 reason: reason_default.to_string(),
-                expiration: None,   
+                expiration: None,  
+                reference: None, 
             },
         )
         .await;

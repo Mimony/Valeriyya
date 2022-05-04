@@ -40,10 +40,23 @@ macro_rules! ternary {
     };
 }
 
+#[macro_export]
+macro_rules! regex {
+    ($re:literal $(,)?) => {{
+        static RE: ::once_cell::sync::OnceCell<::regex::Regex> = ::once_cell::sync::OnceCell::new();
+        RE.get_or_init(|| ::regex::Regex::new($re).unwrap())
+    }};
+}
+
+#[macro_export]
+macro_rules! regex_lazy {
+    ($re:literal $(,)?) => {
+        ::once_cell::sync::Lazy::<::regex::Regex>::new(|| regex::Regex::new($re).unwrap())
+    };
+}
+
 pub fn string_to_sec(raw_text: impl ToString) -> i64 {
-    let re = Lazy::new(|| {
-        Regex::new(r"((?P<years>\d+?)\s??y|year|years)?((?P<months>\d+?)\s??month|months)?((?P<weeks>\d+?)\s??w|week|weeks)?((?P<days>\d+?)\s??d|day|days)?((?P<hours>\d+?\s??)h|hour|hours)?((?P<minutes>\d+?)\s??m|min|minutes)?((?P<seconds>\d+?)\s??s|sec|second|seconds)?").unwrap()
-    });
+    let re = regex_lazy!(r"((?P<years>\d+?)\s??y|year|years)?((?P<months>\d+?)\s??month|months)?((?P<weeks>\d+?)\s??w|week|weeks)?((?P<days>\d+?)\s??d|day|days)?((?P<hours>\d+?\s??)h|hour|hours)?((?P<minutes>\d+?)\s??m|min|minutes)?((?P<seconds>\d+?)\s??s|sec|second|seconds)?");
 
     let text = raw_text.to_string();
 
@@ -199,6 +212,7 @@ pub struct Case {
     pub target_id: String,
     pub date: i64,
     pub reason: String,
+    pub reference: Option<u32>,
     pub expiration: Option<i64>,
 }
 
@@ -275,5 +289,35 @@ pub async fn create_case(database: &Database, gid: impl ToString, case: Case) {
 
     db.cases.push(case);
     db.cases_number += 1;
+    update_guild_db(database, gid, &db).await;
+}
+
+#[allow(non_camel_case_types)]
+pub enum CaseUpdateAction {
+    reason,
+    reference
+}
+
+pub struct CaseUpdateValue {
+    pub reason: Option<String>,
+    pub reference: Option<u32>
+}
+
+pub async fn update_case(database: &Database, gid: impl ToString, id: u32, action: CaseUpdateAction, value: CaseUpdateValue) {
+    let mut db = get_guild_db(database, gid.to_string()).await;
+
+    let mut c = db
+    .cases
+    .iter_mut()
+    .find(|c| c.id == id)
+    .unwrap();
+
+    if let CaseUpdateAction::reason = action {
+        // println!("{}", value.reason.unwrap());
+        c.reason = value.reason.unwrap();
+    } else {
+        c.reference = Some(value.reference.unwrap());
+    }
+
     update_guild_db(database, gid, &db).await;
 }

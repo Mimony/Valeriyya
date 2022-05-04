@@ -6,10 +6,11 @@ mod commands;
 mod utils;
 use mongodb::options::{ClientOptions, ResolverConfig};
 use mongodb::{Client, Database};
-use poise;
 use poise::serenity_prelude::{self as serenity, Action, MemberAction, Timestamp};
 
 use crate::utils::{get_guild_db, Case, create_case, ActionTypes};
+use songbird::SerenityInit;
+
 
 type Error = Box<dyn std::error::Error + Send + Sync>;
 type Context<'a> = poise::Context<'a, Data, Error>;
@@ -28,10 +29,14 @@ async fn event_listeners(
     _framework: &poise::Framework<Data, Error>,
     user_data: &Data,
 ) -> Result<(), Error> {
+    println!("{:?}", event.name());
     match event {
         poise::Event::Ready { data_about_bot: bot } => {
             println!("{} is connected!", bot.user.name)
         },
+        // poise::Event::Message { new_message: msg } => {
+        //     println!("User:{}\nMessage: {}\n: Guild: {}", msg.author.name, msg.content, msg.guild(&ctx).unwrap().name);
+        // },
         poise::Event::GuildMemberRemoval { guild_id: gid, user, member_data_if_available: _member } => {
             let audit_logs = gid.audit_logs(ctx, None, None, None, None).await?;
             let audit_logs_latest = audit_logs.entries.iter().find(|u| u.target_id.unwrap() == user.id.0).unwrap();
@@ -46,9 +51,16 @@ async fn event_listeners(
                     target_id: audit_logs_latest.target_id.unwrap().to_string(),
                     reason: audit_logs_latest.reason.clone().unwrap_or("Default reason".to_string()),
                     date: Timestamp::unix_timestamp(&Timestamp::now()),
-                    expiration: None
+                    expiration: None,
+                    reference: None
                 }).await;
             };
+        },
+        poise::Event::GuildMemberUpdate { old_if_available: old, new } => {
+            if let Some(m) = old {
+                println!("OLD MEMBER\n{}", m);
+            }
+            println!("UPDATE MEMBER\n{:?}", new);
         },
         _ => {}
     }
@@ -57,6 +69,8 @@ async fn event_listeners(
 }
 
 async fn init() -> Result<(), Error> {
+    // tracing_subscriber::fmt::init();
+
     let discord_token = "ODMwMTMwMzAxNTM1NjQ5ODUz.YHCNFg.mYuhKgA5WQWAP71BsCxT8pMjJCQ";
     let database_url = "mongodb+srv://Client:MomsSpaghetti@cluster0.i1oux.mongodb.net/myFirstDatabase?retryWrites=true&w=majority";
 
@@ -68,11 +82,20 @@ async fn init() -> Result<(), Error> {
 
     let options = poise::FrameworkOptions {
         commands: vec![
+            // Information Commands
             commands::info::user(),
+            commands::info::help(),
+            commands::info::register(),
+            // Music Commands
+            commands::music::play(),
+            // Moderation Commands
             commands::moderation::ban(),
             commands::moderation::kick(),
             commands::moderation::mute(),
             commands::moderation::cases(),
+            commands::moderation::reference(),
+            commands::moderation::reason(),
+            // Settings Command
             poise::Command {
                 subcommands: vec![commands::settings::channel(), commands::settings::role()],
                 ..commands::settings::settings()
@@ -103,6 +126,10 @@ async fn init() -> Result<(), Error> {
                 | serenity::GatewayIntents::GUILD_MEMBERS
                 | serenity::GatewayIntents::GUILD_MESSAGES,
         )
+        .client_settings(move |c| {
+            c.register_songbird()
+            // .register_songbird_from_config(songbird::Config::default().decode_mode(songbird::driver::DecodeMode::Pass))
+        })
         .run()
         .await?;
     Ok(())

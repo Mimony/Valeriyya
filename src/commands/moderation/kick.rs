@@ -2,11 +2,12 @@ use poise::serenity_prelude::Timestamp;
 
 use crate::{serenity, utils::{member_managable, get_guild_db, ActionTypes, create_case, Case}, Context, Error};
 
-#[poise::command(slash_command, category = "Moderation")]
+/// Kicks a member from the guild.
+#[poise::command(prefix_command, slash_command, category = "Moderation")]
 pub async fn kick(
     ctx: Context<'_>,
     #[description = "The member to kick"] member: serenity::Member,
-    #[description = "The reason for this kick."] reason: Option<String>,
+    #[description = "The reason for this kick."] #[rest] reason: Option<String>,
 ) -> Result<(), Error> {
     let database = &ctx.data().database;
     let guild_id = ctx.guild_id().unwrap().0;
@@ -35,7 +36,8 @@ pub async fn kick(
                 target_id: member.user.id.to_string(),
                 date: Timestamp::unix_timestamp(&Timestamp::now()),
                 reason: reason_default.to_string(),
-                expiration: None
+                expiration: None,
+                reference: None,
             },
         ).await;
         ctx.send(|s| {

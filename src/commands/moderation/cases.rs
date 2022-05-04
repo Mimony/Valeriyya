@@ -12,7 +12,7 @@ pub enum OptionChoices {
     Delete,
 }
 
-#[poise::command(slash_command, category = "Moderation")]
+#[poise::command(prefix_command, slash_command, category = "Moderation")]
 pub async fn cases(
     ctx: Context<'_>,
     #[description = "What to do with the case."] option: OptionChoices,
@@ -55,10 +55,13 @@ pub async fn cases(
                 } else {
                     e.description(format!(
                         "Member: `{}`\nAction: `{:?}`\nReason: {}\n",
-                        case.target_id, case.action, case.reason,
+                        case.target_id, case.action, case.reason
                     ));
                 }
                 e.timestamp(serenity::Timestamp::now())
+                .footer(|f| {
+                    f.text(format!("Case {}", case.id))
+                })
             });
             s.ephemeral(true)
         })
