@@ -17,7 +17,9 @@ ytextract = "0.11.0"
 git = "https://github.com/serenity-rs/serenity"
 default-features = false
 features = ["builder", "cache", "client", "gateway", "http", "model", "utils", "rustls_backend", "chrono", "voice"]
-branch = "next"
+# branch = "next"
+rev = "e9c200d9af74994d09e40ae129b44f642522932f"
+
 
 [dependencies.poise]
 version = "0.2.2"
