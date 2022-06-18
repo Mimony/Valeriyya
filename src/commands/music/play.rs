@@ -3,13 +3,13 @@ use poise::{
     serenity_prelude::{ChannelId, Color, Http},
 };
 
-use crate::{regex, Context, Error};
+use crate::{Context, Error};
 
 use songbird::{
-    input::{self, restartable::Restartable, Metadata},
-    Event, EventContext, EventHandler as VoiceEventHandler, TrackEvent,
+    input::YoutubeDl, Event, EventContext, EventHandler as VoiceEventHandler, TrackEvent,
 };
 
+/// Plays a song
 #[poise::command(prefix_command, slash_command, category = "Music")]
 pub async fn play(
     ctx: Context<'_>,
@@ -17,12 +17,13 @@ pub async fn play(
     #[rest]
     url: String,
 ) -> Result<(), Error> {
-    let video_id_rgx = regex!(r"[0-9A-Za-z_-]{10}[048AEIMQUYcgkosw]");
+    let video_id_rgx = crate::regex!(r"[0-9A-Za-z_-]{10}[048AEIMQUYcgkosw]");
 
     let url = video_id_rgx
         .find(&url)
         .map(|u| u.as_str().to_owned())
         .unwrap_or_else(|| format!("ytsearch1:{}", url.trim()));
+    let ytextract = ytextract::Client::new();
 
     let guild = ctx.guild().unwrap();
     let guild_id = guild.id;
@@ -44,73 +45,56 @@ pub async fn play(
 
     let manager = songbird::get(ctx.discord()).await.unwrap().clone();
 
-    ctx.say("Loading song...").await;
+    let msg = ctx.say("Loading song...").await.unwrap();
     manager.join(guild_id, connect_to).await;
 
     if let Some(handler_lock) = manager.get(guild_id) {
         println!("handler initiated");
         let mut handler = handler_lock.lock().await;
 
-        let source = if handler.queue().len() > 0 {
-            match Restartable::ytdl(url, false).await {
-                Ok(source) => source,
-                Err(e) => {
-                    println!("There was an error with making the source: {e}");
-
-                    ctx.send(|m| {
-                        m.content("There was a issue with initializing the source")
-                            .ephemeral(true)
-                    })
-                    .await;
-
-                    return Ok(());
-                }
-            }
-            .into()
-        } else {
-            match input::ytdl(url).await {
-                Ok(source) => source,
-                Err(e) => {
-                    println!("There was an error with making the source: {e}");
-
-                    ctx.send(|m| {
-                        m.content("There was a issue with initializing the source")
-                            .ephemeral(true)
-                    })
-                    .await;
-
-                    return Ok(());
-                }
-            }
-        };
+        let metadata = ytextract.video(url.clone().parse()?).await?;
+        let source = YoutubeDl::new(reqwest::Client::new(), url);
 
         println!("source is done");
 
-        let queue = handler.enqueue_source(source);
-        let metadata = queue.metadata().clone();
+        let queue = handler.enqueue(source.into()).await;
+
+        println!("queued and adding the event");
 
         let _ = queue.add_event(
             Event::Track(TrackEvent::End),
             SongEndNotifier {
                 chan_id: ctx.channel_id(),
                 http: ctx.discord().http.clone(),
-                metadata: metadata.clone(),
             },
         );
 
-        ctx.send(|m| {
+        let playing_status = crate::ternary!(handler.queue().is_empty() => {
+            "Playing";
+            "Queued";
+        });
+        
+        msg.edit(ctx, |m| {
             m.embed(|e| {
                 e.color(Color::from_rgb(82, 66, 100))
-                    .description(format!(
-                        "Playing [{}]({})",
-                        metadata.title.unwrap(),
-                        metadata.source_url.unwrap()
+                    .description(format_args!(
+                        "{playing_status} [{}]({})",
+                        metadata.title(),
+                        // "temp title",
+                        // "temp url",
+                        format_args!("https://youtu.be/{}", metadata.id()) // metadata.source_url.unwrap()
                     ))
                     .timestamp(poise::serenity_prelude::Timestamp::now())
                     .title("Song start")
             })
         })
-        .await;
+        .await?;
+    } else {
+        ctx.send(|m| {
+            m.content("Join a voice channel and then try that again!")
+                .ephemeral(true)
+        })
+        .await?;
     }
 
     Ok(())
@@ -119,7 +103,6 @@ pub async fn play(
 struct SongEndNotifier {
     chan_id: ChannelId,
     http: std::sync::Arc<Http>,
-    metadata: Metadata,
 }
 
 #[async_trait]
@@ -131,7 +114,8 @@ impl VoiceEventHandler for SongEndNotifier {
                     e.color(Color::from_rgb(82, 66, 100))
                         .description(format!(
                             "{} has ended",
-                            self.metadata.title.clone().unwrap()
+                            // self.metadata.title.clone().unwrap()
+                            "temporary song name"
                         ))
                         .title("Song ended")
                         .timestamp(poise::serenity_prelude::Timestamp::now())

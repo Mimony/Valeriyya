@@ -6,14 +6,14 @@ use crate::{
 use poise::serenity_prelude::Timestamp;
 
 /// Mutes a member for a specified time.
-#[poise::command(prefix_command, slash_command, category = "Moderation")]
+#[poise::command(prefix_command, slash_command, category = "Moderation", default_member_permissions="MODERATE_MEMBERS")]
 pub async fn mute(
     ctx: Context<'_>,
     #[description = "The member to mute"] mut member: serenity::Member,
     #[description = "The time the member to be muted for. (Max 28 days)."] time: String,
     #[description = "The reason for this mute."] #[rest] reason: Option<String>,
 ) -> Result<(), Error> {
-    let reason_default = reason.unwrap_or(String::from("default reason"));
+    let reason_default = reason.unwrap_or_else(|| String::from("default reason"));
     let string_time = string_to_sec(&time);
     
     if string_time < 60 {

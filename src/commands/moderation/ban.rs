@@ -6,7 +6,7 @@ use crate::{
 use poise::serenity_prelude::{Timestamp, UserId};
 
 /// Bans a member from the guild.
-#[poise::command(prefix_command, slash_command, category = "Moderation")]
+#[poise::command(prefix_command, slash_command, category = "Moderation", default_member_permissions="BAN_MEMBERS")]
 pub async fn ban(
     ctx: Context<'_>,
     #[description = "The member to ban"] member: Option<serenity::Member>,
@@ -14,7 +14,7 @@ pub async fn ban(
     member_id: Option<String>,
     #[description = "The reason for this ban."] #[rest] reason: Option<String>,
 ) -> Result<(), Error> {
-    let reason_default = reason.unwrap_or(String::from("Default reason"));
+    let reason_default = reason.unwrap_or_else(|| String::from("Default reason"));
     let database = &ctx.data().database;
     let guild_id = ctx.guild_id().unwrap().0;
 

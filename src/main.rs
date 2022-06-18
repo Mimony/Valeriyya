@@ -8,9 +8,8 @@ use mongodb::options::{ClientOptions, ResolverConfig};
 use mongodb::{Client, Database};
 use poise::serenity_prelude::{self as serenity, Action, MemberAction, Timestamp};
 
-use crate::utils::{get_guild_db, Case, create_case, ActionTypes};
+use crate::utils::{create_case, get_guild_db, ActionTypes, Case};
 use songbird::SerenityInit;
-
 
 type Error = Box<dyn std::error::Error + Send + Sync>;
 type Context<'a> = poise::Context<'a, Data, Error>;
@@ -26,42 +25,63 @@ pub struct Data {
 async fn event_listeners(
     ctx: &serenity::Context,
     event: &poise::Event<'_>,
-    _framework: &poise::Framework<Data, Error>,
+    _framework: poise::FrameworkContext<'_, Data, Error>,
     user_data: &Data,
 ) -> Result<(), Error> {
     println!("{:?}", event.name());
     match event {
-        poise::Event::Ready { data_about_bot: bot } => {
+        poise::Event::Ready {
+            data_about_bot: bot,
+        } => {
             println!("{} is connected!", bot.user.name)
-        },
+        }
         // poise::Event::Message { new_message: msg } => {
         //     println!("User:{}\nMessage: {}\n: Guild: {}", msg.author.name, msg.content, msg.guild(&ctx).unwrap().name);
         // },
-        poise::Event::GuildMemberRemoval { guild_id: gid, user, member_data_if_available: _member } => {
+        poise::Event::GuildMemberRemoval {
+            guild_id: gid,
+            user,
+            member_data_if_available: _member,
+        } => {
             let audit_logs = gid.audit_logs(ctx, None, None, None, None).await?;
-            let audit_logs_latest = audit_logs.entries.iter().find(|u| u.target_id.unwrap() == user.id.0).unwrap();
+            let audit_logs_latest = audit_logs
+                .entries
+                .iter()
+                .find(|u| u.target_id.unwrap() == user.id.0)
+                .unwrap();
 
             if let Action::Member(MemberAction::Kick) = audit_logs_latest.action {
                 let db = get_guild_db(&user_data.database, gid.0.to_string()).await;
-                create_case(&user_data.database, gid.0.to_string(), Case {
-                    id: db.cases_number + 1,
-                    action: ActionTypes::kick,
-                    guild_id: gid.0.to_string(),
-                    staff_id: audit_logs_latest.user_id.0.to_string(),
-                    target_id: audit_logs_latest.target_id.unwrap().to_string(),
-                    reason: audit_logs_latest.reason.clone().unwrap_or("Default reason".to_string()),
-                    date: Timestamp::unix_timestamp(&Timestamp::now()),
-                    expiration: None,
-                    reference: None
-                }).await;
+                create_case(
+                    &user_data.database,
+                    gid.0.to_string(),
+                    Case {
+                        id: db.cases_number + 1,
+                        action: ActionTypes::kick,
+                        guild_id: gid.0.to_string(),
+                        staff_id: audit_logs_latest.user_id.0.to_string(),
+                        target_id: audit_logs_latest.target_id.unwrap().to_string(),
+                        reason: audit_logs_latest
+                            .reason
+                            .clone()
+                            .unwrap_or_else(|| "Default reason".to_string()),
+                        date: Timestamp::unix_timestamp(&Timestamp::now()),
+                        expiration: None,
+                        reference: None,
+                    },
+                )
+                .await;
             };
-        },
-        poise::Event::GuildMemberUpdate { old_if_available: old, new } => {
+        }
+        poise::Event::GuildMemberUpdate {
+            old_if_available: old,
+            new,
+        } => {
             if let Some(m) = old {
                 println!("OLD MEMBER\n{}", m);
             }
             println!("UPDATE MEMBER\n{:?}", new);
-        },
+        }
         _ => {}
     }
 
@@ -81,6 +101,10 @@ async fn init() -> Result<(), Error> {
     let database = db_client.database("Valeriyya");
 
     let options = poise::FrameworkOptions {
+        prefix_options: poise::PrefixFrameworkOptions {
+            prefix: Some("!".to_string()),
+            ..Default::default()
+        },
         commands: vec![
             // Information Commands
             commands::info::user(),
@@ -88,6 +112,7 @@ async fn init() -> Result<(), Error> {
             commands::info::register(),
             // Music Commands
             commands::music::play(),
+            commands::music::skip(),
             // Moderation Commands
             commands::moderation::ban(),
             commands::moderation::kick(),
@@ -96,10 +121,7 @@ async fn init() -> Result<(), Error> {
             commands::moderation::reference(),
             commands::moderation::reason(),
             // Settings Command
-            poise::Command {
-                subcommands: vec![commands::settings::channel(), commands::settings::role()],
-                ..commands::settings::settings()
-            },
+            commands::settings::settings(),
         ],
         listener: |ctx, event, framework, user_data| {
             Box::pin(event_listeners(ctx, event, framework, user_data))
@@ -124,7 +146,8 @@ async fn init() -> Result<(), Error> {
         .intents(
             serenity::GatewayIntents::non_privileged()
                 | serenity::GatewayIntents::GUILD_MEMBERS
-                | serenity::GatewayIntents::GUILD_MESSAGES,
+                | serenity::GatewayIntents::GUILD_MESSAGES
+                | serenity::GatewayIntents::MESSAGE_CONTENT,
         )
         .client_settings(move |c| {
             c.register_songbird()

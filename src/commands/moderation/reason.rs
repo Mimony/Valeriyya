@@ -4,7 +4,7 @@ use crate::{
     Context, Error,
 };
 
-#[poise::command(prefix_command, slash_command, category = "Moderation")]
+#[poise::command(prefix_command, slash_command, category = "Moderation", default_member_permissions="MANAGE_GUILD")]
 pub async fn reason(
     ctx: Context<'_>,
     #[description = "The case to assign a reason."] case: u32,

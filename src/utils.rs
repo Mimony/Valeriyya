@@ -3,9 +3,7 @@
 use bson::doc;
 use mongodb::Database;
 use poise::serenity_prelude::RoleId;
-use regex::Regex;
 use serde::{Deserialize, Serialize};
-use std::lazy::Lazy;
 
 use crate::{serenity, Context, Error};
 
@@ -56,7 +54,9 @@ macro_rules! regex_lazy {
 }
 
 pub fn string_to_sec(raw_text: impl ToString) -> i64 {
-    let re = regex_lazy!(r"((?P<years>\d+?)\s??y|year|years)?((?P<months>\d+?)\s??month|months)?((?P<weeks>\d+?)\s??w|week|weeks)?((?P<days>\d+?)\s??d|day|days)?((?P<hours>\d+?\s??)h|hour|hours)?((?P<minutes>\d+?)\s??m|min|minutes)?((?P<seconds>\d+?)\s??s|sec|second|seconds)?");
+    let re = regex_lazy!(
+        r"((?P<years>\d+?)\s??y|year|years)?((?P<months>\d+?)\s??month|months)?((?P<weeks>\d+?)\s??w|week|weeks)?((?P<days>\d+?)\s??d|day|days)?((?P<hours>\d+?\s??)h|hour|hours)?((?P<minutes>\d+?)\s??m|min|minutes)?((?P<seconds>\d+?)\s??s|sec|second|seconds)?"
+    );
 
     let text = raw_text.to_string();
 
@@ -147,24 +147,17 @@ pub async fn member_managable(ctx: Context<'_>, member: &serenity::Member) -> bo
         .await
         .unwrap();
 
-    let highest_me_role: RoleId;
-    let member_highest_role: RoleId;
-
-    ternary!(me.roles.len() == 0 => {
-        highest_me_role = RoleId(guild.id.0);
-        highest_me_role = me.highest_role_info(&ctx.discord().cache).unwrap().0;
+    let highest_me_role: RoleId = ternary!(me.roles.is_empty() => {
+        RoleId(guild.id.0);
+        me.highest_role_info(&ctx.discord().cache).unwrap().0;
     });
 
-    ternary!(member.roles.len() == 0 => {
-        member_highest_role = RoleId(guild.id.0);
-        member_highest_role = member.highest_role_info(&ctx.discord().cache).unwrap().0;
+    let member_highest_role: RoleId = ternary!(member.roles.is_empty() => {
+        RoleId(guild.id.0);
+        member.highest_role_info(&ctx.discord().cache).unwrap().0;
     });
 
-    if compare_role_position(ctx, highest_me_role, member_highest_role) > 0 {
-        return true;
-    } else {
-        return false;
-    }
+    compare_role_position(ctx, highest_me_role, member_highest_role) > 0
 }
 
 pub fn compare_role_position(
@@ -195,7 +188,7 @@ pub struct RoleStruct {
 }
 
 #[allow(non_camel_case_types)]
-#[derive(Debug, Serialize, Deserialize, PartialEq)]
+#[derive(Debug, Serialize, Deserialize, PartialEq, Eq)]
 pub enum ActionTypes {
     ban,
     unban,
@@ -295,22 +288,24 @@ pub async fn create_case(database: &Database, gid: impl ToString, case: Case) {
 #[allow(non_camel_case_types)]
 pub enum CaseUpdateAction {
     reason,
-    reference
+    reference,
 }
 
 pub struct CaseUpdateValue {
     pub reason: Option<String>,
-    pub reference: Option<u32>
+    pub reference: Option<u32>,
 }
 
-pub async fn update_case(database: &Database, gid: impl ToString, id: u32, action: CaseUpdateAction, value: CaseUpdateValue) {
+pub async fn update_case(
+    database: &Database,
+    gid: impl ToString,
+    id: u32,
+    action: CaseUpdateAction,
+    value: CaseUpdateValue,
+) {
     let mut db = get_guild_db(database, gid.to_string()).await;
 
-    let mut c = db
-    .cases
-    .iter_mut()
-    .find(|c| c.id == id)
-    .unwrap();
+    let mut c = db.cases.iter_mut().find(|c| c.id == id).unwrap();
 
     if let CaseUpdateAction::reason = action {
         // println!("{}", value.reason.unwrap());

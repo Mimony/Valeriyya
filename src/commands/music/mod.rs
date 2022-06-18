@@ -1,3 +1,3 @@
 use crate::import;
 
-import![play];
+import![play, skip];

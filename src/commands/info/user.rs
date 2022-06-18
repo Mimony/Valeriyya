@@ -1,13 +1,11 @@
 use crate::{serenity, ternary, utils::get_guild_member, Context, Error};
 
 /// Gets the information about a user.
-#[poise::command(prefix_command, slash_command, category = "Information")]
+#[poise::command(prefix_command, slash_command, category = "Information", default_member_permissions="SEND_MESSAGES")]
 pub async fn user(
     ctx: Context<'_>,
     #[description = "Gets the information about a user."] user: Option<serenity::Member>,
 ) -> Result<(), Error> {
-    // poise::builtins::register_application_commands(ctx, false).await?;
-
     let member = &user.unwrap_or(get_guild_member(ctx).await?.unwrap());
 
     ctx.send(|m| {
@@ -16,11 +14,11 @@ pub async fn user(
             e.timestamp(serenity::Timestamp::now());
             e.author(|a| {
                 a.name(format!("{} ({})", member.user.tag(), member.user.id));
-                a.icon_url(format!("{}", member.face()))
+                a.icon_url(member.face())
             });
-            e.description(format!(
+            e.description(format_args!(
                 "User Created At: {}\nMember Joined At: {}",
-                format!(
+                format_args!(
                     "{} {}",
                     time_format(member.user.created_at()),
                     is_bot(&member.user)

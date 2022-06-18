@@ -12,7 +12,7 @@ pub enum OptionChoices {
     Delete,
 }
 
-#[poise::command(prefix_command, slash_command, category = "Moderation")]
+#[poise::command(prefix_command, slash_command, category = "Moderation", default_member_permissions="MANAGE_GUILD")]
 pub async fn cases(
     ctx: Context<'_>,
     #[description = "What to do with the case."] option: OptionChoices,
