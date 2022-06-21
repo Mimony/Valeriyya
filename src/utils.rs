@@ -1,9 +1,12 @@
 #![allow(dead_code)]
+#![allow(non_camel_case_types)]
+#![allow(non_snake_case)]
 
 use bson::doc;
 use mongodb::Database;
-use poise::serenity_prelude::RoleId;
+use poise::{serenity_prelude::{RoleId, ChannelId, Http}, async_trait};
 use serde::{Deserialize, Serialize};
+use songbird::{EventContext, Event, EventHandler};
 
 use crate::{serenity, Context, Error};
 
@@ -147,12 +150,14 @@ pub async fn member_managable(ctx: Context<'_>, member: &serenity::Member) -> bo
         .await
         .unwrap();
 
-    let highest_me_role: RoleId = ternary!(me.roles.is_empty() => {
+    #[allow(clippy::len_zero)]
+    let highest_me_role: RoleId = ternary!(me.roles.len() == 0 => {
         RoleId(guild.id.0);
         me.highest_role_info(&ctx.discord().cache).unwrap().0;
     });
-
-    let member_highest_role: RoleId = ternary!(member.roles.is_empty() => {
+    
+    #[allow(clippy::len_zero)]
+    let member_highest_role: RoleId = ternary!(member.roles.len() == 0 => {
         RoleId(guild.id.0);
         member.highest_role_info(&ctx.discord().cache).unwrap().0;
     });
@@ -285,7 +290,6 @@ pub async fn create_case(database: &Database, gid: impl ToString, case: Case) {
     update_guild_db(database, gid, &db).await;
 }
 
-#[allow(non_camel_case_types)]
 pub enum CaseUpdateAction {
     reason,
     reference,
@@ -316,3 +320,94 @@ pub async fn update_case(
 
     update_guild_db(database, gid, &db).await;
 }
+
+#[derive(Deserialize, Debug, Clone)]
+pub struct ResponseVideoApi {
+    pub kind: String,
+    pub etag: String,
+    pub nextPageToken: String,
+    pub regionCode: String,
+    pub pageInfo: PageInfo,
+    pub items: Vec<Item>
+}
+
+#[derive(Deserialize, Debug, Clone)]
+pub struct PageInfo {
+    pub totalResults: u32,
+    pub resultsPerPage: u8,
+}
+
+#[derive(Deserialize, Debug, Clone)]
+pub struct Item {
+    pub kind: String,
+    pub etag: String,
+    pub id: ItemId
+}
+
+#[derive(Deserialize, Debug, Clone)]
+pub struct ItemId {
+    pub kind: String,
+    pub videoId: String
+}
+
+#[derive(Clone, Debug)]
+pub struct Video {
+    pub id: String,
+    pub title: String,
+    pub duration: std::time::Duration
+}
+
+pub struct SongEndNotifier {
+    pub chan_id: ChannelId,
+    pub http: std::sync::Arc<Http>,
+    pub metadata: Video,
+}
+
+pub struct SongPlayNotifier {
+    pub chan_id: ChannelId,
+    pub http: std::sync::Arc<Http>,
+    pub metadata: Video,
+}
+
+#[async_trait]
+impl EventHandler for SongEndNotifier {
+    async fn act(&self, _ctx: &EventContext<'_>) -> Option<Event> {
+        self.chan_id
+            .send_message(&self.http, |m| {
+                m.add_embed(|e| {
+                    e.color(PURPLE_COLOR)
+                        .description(format!("{} has ended", self.metadata.title))
+                        .title("Song ended")
+                        .timestamp(poise::serenity_prelude::Timestamp::now())
+                })
+            })
+            .await;
+
+        None
+    }
+}
+
+#[async_trait]
+impl EventHandler for SongPlayNotifier {
+    async fn act(&self, _ctx: &EventContext<'_>) -> Option<Event> {
+        self.chan_id
+            .send_message(&self.http, |m| {
+                m.add_embed(|e| {
+                    e.color(PURPLE_COLOR)
+                        .description(format!(
+                            "Playing [{}]({})",
+                            self.metadata.title,
+                            format_args!("https://youtu.be/{}", self.metadata.id)
+                        ))
+                        .title("Song playing")
+                        .timestamp(poise::serenity_prelude::Timestamp::now())
+                })
+            })
+            .await;
+
+        None
+    }
+}
+
+
+pub const PURPLE_COLOR: serenity::Color = serenity::Color::from_rgb(82, 66, 100);
