@@ -1,6 +1,6 @@
 use crate::{Context, Error};
 
-#[poise::command(prefix_command, slash_command, category="Music")]
+#[poise::command(prefix_command, slash_command, category="Music", aliases("s"))]
 pub async fn skip(ctx: Context<'_>) -> Result<(), Error> {
     let guild = ctx.guild().unwrap();
     let guild_id = guild.id;
@@ -28,10 +28,6 @@ pub async fn skip(ctx: Context<'_>) -> Result<(), Error> {
         match queue.is_empty() {
             false => { 
                 queue.skip();
-                ctx.send(|m| {
-                    m.content("Song skipped")
-                    .ephemeral(true)
-                }).await;
             },
             true => {
                 ctx.send(|m| {
@@ -40,12 +36,7 @@ pub async fn skip(ctx: Context<'_>) -> Result<(), Error> {
                 }).await;
             },
         };
-    } else {
-        ctx.send(|m| {
-            m.content("Join a voice channel and then try that again!")
-            .ephemeral(true)
-        }).await;
-    }
+    };
 
     Ok(())
 }
