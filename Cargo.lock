@@ -150,9 +150,9 @@ dependencies = [
 
 [[package]]
 name = "async-std"
-version = "1.11.0"
+version = "1.12.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "52580991739c5cdb36cde8b2a516371c0a3b70dda36d916cc08b82372916808c"
+checksum = "62565bb4402e926b29953c785397c6dc0391b7b446e45008b0049eb43cec6f5d"
 dependencies = [
  "async-attributes",
  "async-channel",
@@ -169,7 +169,6 @@ dependencies = [
  "kv-log-macro",
  "log",
  "memchr",
- "num_cpus",
  "once_cell",
  "pin-project-lite",
  "pin-utils",
@@ -451,9 +450,9 @@ dependencies = [
 
 [[package]]
 name = "crossbeam-channel"
-version = "0.5.4"
+version = "0.5.5"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "5aaa7bd5fb665c6864b5f963dd9097905c54125909c7aa94c9e18507cdbe6c53"
+checksum = "4c02a4d71819009c192cf4872265391563fd6a84c81ff2c0f2a7026ca4c1d85c"
 dependencies = [
  "cfg-if",
  "crossbeam-utils",
@@ -461,12 +460,12 @@ dependencies = [
 
 [[package]]
 name = "crossbeam-utils"
-version = "0.8.8"
+version = "0.8.9"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "0bf124c720b7686e3c2663cf54062ab0f68a88af2fb6a030e87e30bf721fcb38"
+checksum = "8ff1f980957787286a554052d03c7aee98d99cc32e09f6d45f0a814133c87978"
 dependencies = [
  "cfg-if",
- "lazy_static",
+ "once_cell",
 ]
 
 [[package]]
@@ -566,7 +565,7 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "3495912c9c1ccf2e18976439f4443f3fee0fd61f424ff99fde6a66b15ecb448f"
 dependencies = [
  "cfg-if",
- "hashbrown 0.12.1",
+ "hashbrown",
  "lock_api",
  "parking_lot_core",
  "serde",
@@ -882,12 +881,6 @@ dependencies = [
 
 [[package]]
 name = "hashbrown"
-version = "0.11.2"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "ab5ef0d4909ef3724cc8cce6ccc8572c5c817592e9285f5464f8e86f8bd3726e"
-
-[[package]]
-name = "hashbrown"
 version = "0.12.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "db0d4cf898abf0081f964436dc980e96670a0f36863e4b83aaacdb65c9d7ccc3"
@@ -1036,12 +1029,12 @@ dependencies = [
 
 [[package]]
 name = "indexmap"
-version = "1.8.2"
+version = "1.9.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "e6012d540c5baa3589337a98ce73408de9b5a25ec9fc2c6fd6be8f0d39e0ca5a"
+checksum = "6c6392766afd7964e2531940894cffe4bd8d7d17dbc3c1c4857040fd4b33bdb3"
 dependencies = [
  "autocfg",
- "hashbrown 0.11.2",
+ "hashbrown",
 ]
 
 [[package]]
@@ -1312,9 +1305,9 @@ checksum = "43794a0ace135be66a25d3ae77d41b91615fb68ae937f904090203e81f755b65"
 
 [[package]]
 name = "num-complex"
-version = "0.4.1"
+version = "0.4.2"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "97fbc387afefefd5e9e39493299f3069e14a140dd34dc19b4c1c1a8fddb6a790"
+checksum = "7ae39348c8bc5fbd7f40c727a9925f03517afd2ab27d46702108b6a7e5414c19"
 dependencies = [
  "num-traits 0.2.15",
 ]
@@ -2118,7 +2111,7 @@ dependencies = [
 [[package]]
 name = "serenity-voice-model"
 version = "0.1.1"
-source = "git+https://github.com/serenity-rs/serenity?branch=next#e0a901e491a7d86f17d2fb3878a82c2373abb788"
+source = "git+https://github.com/serenity-rs/serenity?branch=next#94fa0b17504500411f3566182c39d8c8bb9677dd"
 dependencies = [
  "bitflags",
  "enum_primitive",
@@ -2202,7 +2195,7 @@ dependencies = [
 [[package]]
 name = "songbird"
 version = "0.2.2"
-source = "git+https://github.com/FelixMcFelix/songbird?branch=symphonia#a60afb09d5e305f364f7874c67df2e2da084545c"
+source = "git+https://github.com/FelixMcFelix/songbird?branch=symphonia#849100d0cace3c04253e6c0750a5f95aa050c62c"
 dependencies = [
  "async-trait",
  "async-tungstenite",
@@ -2226,8 +2219,8 @@ dependencies = [
  "serenity",
  "serenity-voice-model",
  "streamcatcher",
- "symphonia 0.5.0 (git+https://github.com/FelixMcFelix/Symphonia?branch=fix-ogg-opus-timebase)",
- "symphonia-core 0.5.0 (git+https://github.com/FelixMcFelix/Symphonia?branch=fix-ogg-opus-timebase)",
+ "symphonia",
+ "symphonia-core",
  "tokio",
  "tokio-util",
  "tracing",
@@ -2295,8 +2288,7 @@ checksum = "6bdef32e8150c2a081110b42772ffe7d7c9032b606bc226c8260fd97e0976601"
 [[package]]
 name = "symphonia"
 version = "0.5.0"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "eb30457ee7a904dae1e4ace25156dcabaf71e425db318e7885267f09cd8fb648"
+source = "git+https://github.com/FelixMcFelix/Symphonia?branch=songbird-fixes#12f29a5a895b8c3c1680fe3d55fc3e2df30000bd"
 dependencies = [
  "lazy_static",
  "symphonia-bundle-flac",
@@ -2305,108 +2297,79 @@ dependencies = [
  "symphonia-codec-alac",
  "symphonia-codec-pcm",
  "symphonia-codec-vorbis",
- "symphonia-core 0.5.0 (registry+https://github.com/rust-lang/crates.io-index)",
+ "symphonia-core",
  "symphonia-format-isomp4",
  "symphonia-format-mkv",
  "symphonia-format-ogg",
  "symphonia-format-wav",
- "symphonia-metadata 0.5.0 (registry+https://github.com/rust-lang/crates.io-index)",
-]
-
-[[package]]
-name = "symphonia"
-version = "0.5.0"
-source = "git+https://github.com/FelixMcFelix/Symphonia?branch=fix-ogg-opus-timebase#e15316c358aa09e4af02f1abfa68c833a7b66b49"
-dependencies = [
- "lazy_static",
- "symphonia-core 0.5.0 (git+https://github.com/FelixMcFelix/Symphonia?branch=fix-ogg-opus-timebase)",
- "symphonia-metadata 0.5.0 (git+https://github.com/FelixMcFelix/Symphonia?branch=fix-ogg-opus-timebase)",
+ "symphonia-metadata",
 ]
 
 [[package]]
 name = "symphonia-bundle-flac"
 version = "0.5.0"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "f34f8f90825ee2692df0ee64981312267d6cf640358c3db7a4805d1805340665"
+source = "git+https://github.com/FelixMcFelix/Symphonia?branch=songbird-fixes#12f29a5a895b8c3c1680fe3d55fc3e2df30000bd"
 dependencies = [
  "log",
- "symphonia-core 0.5.0 (registry+https://github.com/rust-lang/crates.io-index)",
- "symphonia-metadata 0.5.0 (registry+https://github.com/rust-lang/crates.io-index)",
+ "symphonia-core",
+ "symphonia-metadata",
  "symphonia-utils-xiph",
 ]
 
 [[package]]
 name = "symphonia-bundle-mp3"
 version = "0.5.0"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "9130cae661447f234b58759d74d23500e9c95697b698589b34196cb0fb488a61"
+source = "git+https://github.com/FelixMcFelix/Symphonia?branch=songbird-fixes#12f29a5a895b8c3c1680fe3d55fc3e2df30000bd"
 dependencies = [
  "bitflags",
  "lazy_static",
  "log",
- "symphonia-core 0.5.0 (registry+https://github.com/rust-lang/crates.io-index)",
- "symphonia-metadata 0.5.0 (registry+https://github.com/rust-lang/crates.io-index)",
+ "symphonia-core",
+ "symphonia-metadata",
 ]
 
 [[package]]
 name = "symphonia-codec-aac"
 version = "0.5.0"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "96671dbcf83a4415e899812c5820dd26f48b9a6fece8b8d680e3004553080468"
+source = "git+https://github.com/FelixMcFelix/Symphonia?branch=songbird-fixes#12f29a5a895b8c3c1680fe3d55fc3e2df30000bd"
 dependencies = [
  "lazy_static",
  "log",
- "symphonia-core 0.5.0 (registry+https://github.com/rust-lang/crates.io-index)",
+ "symphonia-core",
 ]
 
 [[package]]
 name = "symphonia-codec-alac"
 version = "0.5.0"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "a95d0cc9d94c55d9467e71e26990e509bd5a602fabde3ee422d87f77bbda860a"
+source = "git+https://github.com/FelixMcFelix/Symphonia?branch=songbird-fixes#12f29a5a895b8c3c1680fe3d55fc3e2df30000bd"
 dependencies = [
  "log",
- "symphonia-core 0.5.0 (registry+https://github.com/rust-lang/crates.io-index)",
+ "symphonia-core",
 ]
 
 [[package]]
 name = "symphonia-codec-pcm"
 version = "0.5.0"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "0812a197602dff1f963ff212f174c4aa4d9b695d6511ba7a8fe2470296cf8310"
+source = "git+https://github.com/FelixMcFelix/Symphonia?branch=songbird-fixes#12f29a5a895b8c3c1680fe3d55fc3e2df30000bd"
 dependencies = [
  "log",
- "symphonia-core 0.5.0 (registry+https://github.com/rust-lang/crates.io-index)",
+ "symphonia-core",
 ]
 
 [[package]]
 name = "symphonia-codec-vorbis"
 version = "0.5.0"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "746fc459966b37e277565f9632e5ffd6cbd83d9381152727123f68484cb8f9c4"
+source = "git+https://github.com/FelixMcFelix/Symphonia?branch=songbird-fixes#12f29a5a895b8c3c1680fe3d55fc3e2df30000bd"
 dependencies = [
  "log",
- "symphonia-core 0.5.0 (registry+https://github.com/rust-lang/crates.io-index)",
+ "symphonia-core",
  "symphonia-utils-xiph",
 ]
 
 [[package]]
 name = "symphonia-core"
 version = "0.5.0"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "1edcb254d25e02b688b6f8a290a778153fa5f29674ac50773d03e0a16060391d"
-dependencies = [
- "arrayvec",
- "bitflags",
- "bytemuck",
- "lazy_static",
- "log",
-]
-
-[[package]]
-name = "symphonia-core"
-version = "0.5.0"
-source = "git+https://github.com/FelixMcFelix/Symphonia?branch=fix-ogg-opus-timebase#e15316c358aa09e4af02f1abfa68c833a7b66b49"
+source = "git+https://github.com/FelixMcFelix/Symphonia?branch=songbird-fixes#12f29a5a895b8c3c1680fe3d55fc3e2df30000bd"
 dependencies = [
  "arrayvec",
  "bitflags",
@@ -2418,90 +2381,73 @@ dependencies = [
 [[package]]
 name = "symphonia-format-isomp4"
 version = "0.5.0"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "2a335816c1840bf3ce92b968a93b7b5c14a5d74737ad9ed63567ea451eac1951"
+source = "git+https://github.com/FelixMcFelix/Symphonia?branch=songbird-fixes#12f29a5a895b8c3c1680fe3d55fc3e2df30000bd"
 dependencies = [
  "encoding_rs",
  "log",
- "symphonia-core 0.5.0 (registry+https://github.com/rust-lang/crates.io-index)",
- "symphonia-metadata 0.5.0 (registry+https://github.com/rust-lang/crates.io-index)",
+ "symphonia-core",
+ "symphonia-metadata",
  "symphonia-utils-xiph",
 ]
 
 [[package]]
 name = "symphonia-format-mkv"
 version = "0.5.0"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "901a52e62285b3794a3ecb9b8a00b1d92d639e0dabf51eac0823a16493752726"
+source = "git+https://github.com/FelixMcFelix/Symphonia?branch=songbird-fixes#12f29a5a895b8c3c1680fe3d55fc3e2df30000bd"
 dependencies = [
  "lazy_static",
  "log",
- "symphonia-core 0.5.0 (registry+https://github.com/rust-lang/crates.io-index)",
- "symphonia-metadata 0.5.0 (registry+https://github.com/rust-lang/crates.io-index)",
+ "symphonia-core",
+ "symphonia-metadata",
  "symphonia-utils-xiph",
 ]
 
 [[package]]
 name = "symphonia-format-ogg"
 version = "0.5.0"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "00f5b92a2a6370873d9dbe3326dad1bf795b3151efcadca6e5f47d732499a518"
+source = "git+https://github.com/FelixMcFelix/Symphonia?branch=songbird-fixes#12f29a5a895b8c3c1680fe3d55fc3e2df30000bd"
 dependencies = [
  "log",
- "symphonia-core 0.5.0 (registry+https://github.com/rust-lang/crates.io-index)",
- "symphonia-metadata 0.5.0 (registry+https://github.com/rust-lang/crates.io-index)",
+ "symphonia-core",
+ "symphonia-metadata",
  "symphonia-utils-xiph",
 ]
 
 [[package]]
 name = "symphonia-format-wav"
 version = "0.5.0"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "66b2016576a9f7e5e95f9354993116458170a9077845a908ee67a4c81e8072c0"
+source = "git+https://github.com/FelixMcFelix/Symphonia?branch=songbird-fixes#12f29a5a895b8c3c1680fe3d55fc3e2df30000bd"
 dependencies = [
  "log",
- "symphonia-core 0.5.0 (registry+https://github.com/rust-lang/crates.io-index)",
- "symphonia-metadata 0.5.0 (registry+https://github.com/rust-lang/crates.io-index)",
+ "symphonia-core",
+ "symphonia-metadata",
 ]
 
 [[package]]
 name = "symphonia-metadata"
 version = "0.5.0"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "f04ee665c99fd2b919b87261c86a5312e996b720ca142646a163d9583e72bd0e"
+source = "git+https://github.com/FelixMcFelix/Symphonia?branch=songbird-fixes#12f29a5a895b8c3c1680fe3d55fc3e2df30000bd"
 dependencies = [
  "encoding_rs",
  "lazy_static",
  "log",
- "symphonia-core 0.5.0 (registry+https://github.com/rust-lang/crates.io-index)",
-]
-
-[[package]]
-name = "symphonia-metadata"
-version = "0.5.0"
-source = "git+https://github.com/FelixMcFelix/Symphonia?branch=fix-ogg-opus-timebase#e15316c358aa09e4af02f1abfa68c833a7b66b49"
-dependencies = [
- "encoding_rs",
- "lazy_static",
- "log",
- "symphonia-core 0.5.0 (git+https://github.com/FelixMcFelix/Symphonia?branch=fix-ogg-opus-timebase)",
+ "symphonia-core",
 ]
 
 [[package]]
 name = "symphonia-utils-xiph"
 version = "0.5.0"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "abadfa53359fa437836f2554a0019dd06bfdf742fbb735d0645db3b6c5a763e0"
+source = "git+https://github.com/FelixMcFelix/Symphonia?branch=songbird-fixes#12f29a5a895b8c3c1680fe3d55fc3e2df30000bd"
 dependencies = [
- "symphonia-core 0.5.0 (registry+https://github.com/rust-lang/crates.io-index)",
- "symphonia-metadata 0.5.0 (registry+https://github.com/rust-lang/crates.io-index)",
+ "symphonia-core",
+ "symphonia-metadata",
 ]
 
 [[package]]
 name = "syn"
-version = "1.0.96"
+version = "1.0.97"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "0748dd251e24453cb8717f0354206b91557e4ec8703673a4b30208f2abaf1ebf"
+checksum = "233d6785e2e6b8442eb26736eaef8c8f0ce0e575c1457d06c3f2812f9cb4c8a0"
 dependencies = [
  "proc-macro2",
  "quote",
@@ -2670,9 +2616,9 @@ dependencies = [
 
 [[package]]
 name = "tower-service"
-version = "0.3.1"
+version = "0.3.2"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "360dfd1d6d30e05fda32ace2c8c70e9c0a9da713275777f5a4dbb8a1893930c6"
+checksum = "b6bc1c9ce2b5135ac7f93c72918fc37feb872bdc6a5533a8b85eb4b86bfdae52"
 
 [[package]]
 name = "tracing"
@@ -2942,15 +2888,17 @@ version = "0.1.1"
 dependencies = [
  "bson",
  "chrono",
+ "futures",
  "mongodb",
  "once_cell",
  "poise",
  "regex",
  "reqwest",
  "serde",
+ "serde_json",
  "serenity",
  "songbird",
- "symphonia 0.5.0 (registry+https://github.com/rust-lang/crates.io-index)",
+ "symphonia",
  "tokio",
  "ytextract",
 ]
