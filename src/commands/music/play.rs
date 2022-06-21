@@ -1,28 +1,48 @@
-use poise::{
-    async_trait,
-    serenity_prelude::{ChannelId, Color, Http},
-};
+use crate::{utils::{PURPLE_COLOR, Video, ResponseVideoApi, SongPlayNotifier, SongEndNotifier}, Context, Error};
+use futures::StreamExt;
 
-use crate::{Context, Error};
 
-use songbird::{
-    input::YoutubeDl, Event, EventContext, EventHandler as VoiceEventHandler, TrackEvent,
-};
+use songbird::{input::YoutubeDl, Event, TrackEvent};
+use std::time::Duration;
+
+const API_KEY: &str = "AIzaSyBZwr0hh2l9sn3XUtyPYNBREq-5gA-qFzk";
 
 /// Plays a song
-#[poise::command(prefix_command, slash_command, category = "Music")]
+#[poise::command(prefix_command, slash_command, category = "Music", aliases("p"))]
 pub async fn play(
     ctx: Context<'_>,
     #[description = "The url of the song"]
     #[rest]
     url: String,
 ) -> Result<(), Error> {
-    let video_id_rgx = crate::regex!(r"[0-9A-Za-z_-]{10}[048AEIMQUYcgkosw]");
+    println!("{}", std::mem::size_of::<Video>());
+    let video_id_regex = crate::regex!(r"[0-9A-Za-z_-]{10}[048AEIMQUYcgkosw]");
+    let playlist_id_regex =
+        crate::regex!(r"(?:(?:PL|LL|EC|UU|FL|RD|UL|TL|PU|OLAK5uy_)[0-9A-Za-z-_]{10,}|RDMM)");
 
-    let url = video_id_rgx
+    let request_client = reqwest::Client::new();
+
+    let url: (String, bool) = match playlist_id_regex
         .find(&url)
-        .map(|u| u.as_str().to_owned())
-        .unwrap_or_else(|| format!("ytsearch1:{}", url.trim()));
+        .map(|u| u.as_str().to_owned()) {
+            Some(url) => (url, false),
+            None => {
+                match video_id_regex
+                .find(&url)
+                .map(|u| u.as_str().to_owned()) {
+                    Some(url) => (url, true),
+                    None => {
+                        (request_client.get(
+                            format!(
+                                "https://youtube.googleapis.com/youtube/v3/search?part=snippet&order=relevance&type=video&maxResults=1&q={query}&key={API_KEY}", 
+                                query = url.clone()
+                            ))
+                            .send().await?.json::<ResponseVideoApi>().await?.items[0].id.videoId.clone(), true)
+
+                    }
+                }
+            },
+        };
     let ytextract = ytextract::Client::new();
 
     let guild = ctx.guild().unwrap();
@@ -49,80 +69,98 @@ pub async fn play(
     manager.join(guild_id, connect_to).await;
 
     if let Some(handler_lock) = manager.get(guild_id) {
-        println!("handler initiated");
         let mut handler = handler_lock.lock().await;
 
-        let metadata = ytextract.video(url.clone().parse()?).await?;
-        let source = YoutubeDl::new(reqwest::Client::new(), url);
-
-        println!("source is done");
-
-        let queue = handler.enqueue(source.into()).await;
-
-        println!("queued and adding the event");
-
-        let _ = queue.add_event(
-            Event::Track(TrackEvent::End),
-            SongEndNotifier {
-                chan_id: ctx.channel_id(),
-                http: ctx.discord().http.clone(),
+        let metadata: (Vec<Video>, bool) = match url.1 {
+            true => {
+                let video = ytextract.video(url.0.parse()?).await?;
+                (vec![Video {
+                    id: video.id().to_string(),
+                    duration: video.duration(),
+                    title: video.title().to_string()
+                }], true)
             },
-        );
+            false => {
+                let playlist_data = ytextract.playlist(url.0.parse()?).await?;
+                let videos = playlist_data.videos();
+                futures::pin_mut!(videos);
+                let mut vec: Vec<Video> = vec![];
 
-        let playing_status = crate::ternary!(handler.queue().is_empty() => {
-            "Playing";
-            "Queued";
-        });
-        
+                while let Some(video) = videos.next().await {
+                    let video = match video {
+                        Ok(vid) => vid,
+                        Err(_) => {
+                            continue;
+                        }
+                    };
+
+                    let video = ytextract.video(video.id()).await?;
+                    vec.push(Video {
+                        id: video.id().to_string(),
+                        duration: video.duration(),
+                        title: video.title().to_string()
+                    });
+                }
+                (vec, false)
+            }
+        };
+
+        let source: Vec<YoutubeDl> = match metadata.1 {
+            true => {
+                vec![YoutubeDl::new(request_client, metadata.0[0].id.parse()?)]
+            }
+            false => {
+                let vids = &metadata.0;
+                let mut yt: Vec<YoutubeDl> = Vec::new();
+                for q in vids {
+                    yt.push(YoutubeDl::new(request_client.clone(), q.id.parse()?));
+                }
+                yt
+            }
+        };
+
+        for (i, s) in source.into_iter().enumerate() {
+            println!("{} this is the iter number", i);
+            let metadata = &metadata.0;
+            let queue = handler.enqueue_with_preload(
+                s.into(),
+                Some(metadata[i].duration - Duration::from_secs(15)),
+            );
+            let _ = queue.add_event(
+                Event::Track(TrackEvent::End),
+                SongEndNotifier {
+                    chan_id: ctx.channel_id(),
+                    http: ctx.discord().http.clone(),
+                    metadata: metadata[i].clone(),
+                },
+            );
+
+            if i >= 1 {
+                let _ = queue.add_event(
+                    Event::Track(TrackEvent::Play),
+                    SongPlayNotifier {
+                        chan_id: ctx.channel_id(),
+                        http: ctx.discord().http.clone(),
+                        metadata: metadata[i].clone(),
+                    },
+                );
+            };
+
+        }
         msg.edit(ctx, |m| {
             m.embed(|e| {
-                e.color(Color::from_rgb(82, 66, 100))
+                e.color(PURPLE_COLOR)
                     .description(format_args!(
-                        "{playing_status} [{}]({})",
-                        metadata.title(),
-                        // "temp title",
-                        // "temp url",
-                        format_args!("https://youtu.be/{}", metadata.id()) // metadata.source_url.unwrap()
+                        "Queued [{}]({})",
+                        metadata.0[0].title,
+                        format_args!("https://youtu.be/{}", metadata.0[0].id)
                     ))
                     .timestamp(poise::serenity_prelude::Timestamp::now())
-                    .title("Song start")
+                    .title("Song playing")
             })
         })
         .await?;
-    } else {
-        ctx.send(|m| {
-            m.content("Join a voice channel and then try that again!")
-                .ephemeral(true)
-        })
-        .await?;
-    }
+    };
 
     Ok(())
-}
-
-struct SongEndNotifier {
-    chan_id: ChannelId,
-    http: std::sync::Arc<Http>,
-}
-
-#[async_trait]
-impl VoiceEventHandler for SongEndNotifier {
-    async fn act(&self, _ctx: &EventContext<'_>) -> Option<Event> {
-        self.chan_id
-            .send_message(&self.http, |m| {
-                m.add_embed(|e| {
-                    e.color(Color::from_rgb(82, 66, 100))
-                        .description(format!(
-                            "{} has ended",
-                            // self.metadata.title.clone().unwrap()
-                            "temporary song name"
-                        ))
-                        .title("Song ended")
-                        .timestamp(poise::serenity_prelude::Timestamp::now())
-                })
-            })
-            .await;
-
-        None
-    }
 }
