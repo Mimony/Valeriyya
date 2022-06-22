@@ -15,7 +15,6 @@ pub async fn play(
     #[rest]
     url: String,
 ) -> Result<(), Error> {
-    println!("{}", std::mem::size_of::<Video>());
     let video_id_regex = crate::regex!(r"[0-9A-Za-z_-]{10}[048AEIMQUYcgkosw]");
     let playlist_id_regex =
         crate::regex!(r"(?:(?:PL|LL|EC|UU|FL|RD|UL|TL|PU|OLAK5uy_)[0-9A-Za-z-_]{10,}|RDMM)");
@@ -70,6 +69,19 @@ pub async fn play(
 
     if let Some(handler_lock) = manager.get(guild_id) {
         let mut handler = handler_lock.lock().await;
+
+        tokio::task::spawn(async {
+            let queue = handler.queue();
+
+            loop {
+                if !queue.is_none() {
+                    tokio::time::sleep(Duration::from_secs(300)).await;
+                    continue;
+                }
+
+                manager.leave(guild_id);
+            }
+        });
 
         let metadata: (Vec<Video>, bool) = match url.1 {
             true => {
