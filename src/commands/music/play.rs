@@ -80,6 +80,7 @@ pub async fn play(
                 }
 
                 manager.leave(guild_id);
+                break;
             }
         });
 
