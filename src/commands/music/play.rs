@@ -139,6 +139,7 @@ pub async fn play(
                 },
             );
 
+            #[allow(clippy::if_same_then_else)]
             if !video_bool && i >= 1 {
                 let _ = queue.add_event(
                     Event::Track(TrackEvent::Play),
