@@ -149,23 +149,10 @@ pub async fn play(
                 );
             };
         }
-        msg.edit(ctx, |m| {
-            m.embed(|e| {
-                e.color(PURPLE_COLOR)
-                    .description(format_args!(
-                        "Queued [{}]({})",
-                        metadata.0[0].title,
-                        format_args!("https://youtu.be/{}", metadata.0[0].id)
-                    ))
-                    .timestamp(poise::serenity_prelude::Timestamp::now())
-                    .title("Song playing")
-            })
-        })
-        .await?;
-
+        
         let queue_clone = handler.queue().clone();
         let mng = manager.clone();
-
+        
         tokio::task::spawn(async move {
             let queue = queue_clone;
 
@@ -178,6 +165,21 @@ pub async fn play(
                 break;
             }
         });
+
+        msg.edit(ctx, |m| {
+            m.embed(|e| {
+                e.color(PURPLE_COLOR)
+                    .description(format_args!(
+                        "Queued [{}]({})",
+                        metadata.0[0].title,
+                        format_args!("https://youtu.be/{}", metadata.0[0].id)
+                    ))
+                    .timestamp(poise::serenity_prelude::Timestamp::now())
+                    .title("Song playing")
+            })
+        }).await?;
+
+        drop(handler);
     };
 
     Ok(())

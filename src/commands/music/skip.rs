@@ -31,6 +31,7 @@ pub async fn skip(ctx: Context<'_>) -> Result<(), Error> {
                 queue.skip();
             },
             true => {
+                drop(handler);
                 ctx.send(|m| {
                     m.content("There is no songs in the queue!")
                     .ephemeral(true)
