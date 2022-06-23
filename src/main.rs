@@ -30,16 +30,12 @@ async fn event_listeners(
     _framework: poise::FrameworkContext<'_, Data, Error>,
     user_data: &Data,
 ) -> Result<(), Error> {
-    println!("{:?}", event.name());
     match event {
         poise::Event::Ready {
             data_about_bot: bot,
         } => {
             println!("{} is connected!", bot.user.name)
         }
-        // poise::Event::Message { new_message: msg } => {
-        //     println!("User:{}\nMessage: {}\n: Guild: {}", msg.author.name, msg.content, msg.guild(&ctx).unwrap().name);
-        // },
         poise::Event::GuildMemberRemoval {
             guild_id: gid,
             user,
@@ -74,16 +70,7 @@ async fn event_listeners(
                 )
                 .await;
             };
-        }
-        poise::Event::GuildMemberUpdate {
-            old_if_available: old,
-            new,
-        } => {
-            if let Some(m) = old {
-                println!("OLD MEMBER\n{}", m);
-            }
-            println!("UPDATE MEMBER\n{:?}", new);
-        }
+        },
         _ => {}
     }
 
