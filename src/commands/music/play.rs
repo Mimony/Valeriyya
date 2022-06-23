@@ -1,6 +1,8 @@
-use crate::{utils::{PURPLE_COLOR, Video, ResponseVideoApi, SongPlayNotifier, SongEndNotifier}, Context, Error};
+use crate::{
+    utils::{ResponseVideoApi, SongEndNotifier, SongPlayNotifier, Video, PURPLE_COLOR},
+    Context, Error,
+};
 use futures::StreamExt;
-
 
 use songbird::{input::YoutubeDl, Event, TrackEvent};
 use std::time::Duration;
@@ -8,7 +10,7 @@ use std::time::Duration;
 const API_KEY: &str = "AIzaSyBZwr0hh2l9sn3XUtyPYNBREq-5gA-qFzk";
 
 /// Plays a song
-#[poise::command(prefix_command, slash_command, category = "Music", aliases("p"))]
+#[poise::command(prefix_command, slash_command, category = "Music", aliases("p"), default_member_permissions="VIEW_CHANNEL")]
 pub async fn play(
     ctx: Context<'_>,
     #[description = "The url of the song"]
@@ -55,7 +57,7 @@ pub async fn play(
     let connect_to = match channel_id {
         Some(channel) => channel,
         None => {
-            ctx.send(|m| m.content("Not in a voice channel").ephemeral(true))
+            ctx.send(|m| m.content("You are not in a voice channel").ephemeral(true))
                 .await;
 
             return Ok(());
@@ -70,29 +72,18 @@ pub async fn play(
     if let Some(handler_lock) = manager.get(guild_id) {
         let mut handler = handler_lock.lock().await;
 
-        tokio::task::spawn(async {
-            let queue = handler.queue();
-
-            loop {
-                if !queue.is_none() {
-                    tokio::time::sleep(Duration::from_secs(300)).await;
-                    continue;
-                }
-
-                manager.leave(guild_id);
-                break;
-            }
-        });
-
         let metadata: (Vec<Video>, bool) = match url.1 {
             true => {
                 let video = ytextract.video(url.0.parse()?).await?;
-                (vec![Video {
-                    id: video.id().to_string(),
-                    duration: video.duration(),
-                    title: video.title().to_string()
-                }], true)
-            },
+                (
+                    vec![Video {
+                        id: video.id().to_string(),
+                        duration: video.duration(),
+                        title: video.title().to_string(),
+                    }],
+                    true,
+                )
+            }
             false => {
                 let playlist_data = ytextract.playlist(url.0.parse()?).await?;
                 let videos = playlist_data.videos();
@@ -111,7 +102,7 @@ pub async fn play(
                     vec.push(Video {
                         id: video.id().to_string(),
                         duration: video.duration(),
-                        title: video.title().to_string()
+                        title: video.title().to_string(),
                     });
                 }
                 (vec, false)
@@ -133,7 +124,6 @@ pub async fn play(
         };
 
         for (i, s) in source.into_iter().enumerate() {
-            println!("{} this is the iter number", i);
             let metadata = &metadata.0;
             let queue = handler.enqueue_with_preload(
                 s.into(),
@@ -158,7 +148,6 @@ pub async fn play(
                     },
                 );
             };
-
         }
         msg.edit(ctx, |m| {
             m.embed(|e| {
@@ -173,6 +162,22 @@ pub async fn play(
             })
         })
         .await?;
+
+        let queue_clone = handler.queue().clone();
+        let mng = manager.clone();
+
+        tokio::task::spawn(async move {
+            let queue = queue_clone;
+
+            loop {
+                if !queue.is_empty() {
+                    tokio::time::sleep(Duration::from_secs(600)).await;
+                    continue;
+                }
+                mng.remove(guild_id).await;
+                break;
+            }
+        });
     };
 
     Ok(())

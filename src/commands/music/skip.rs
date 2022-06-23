@@ -2,9 +2,10 @@ use crate::{Context, Error};
 
 #[poise::command(prefix_command, slash_command, category="Music", aliases("s"))]
 pub async fn skip(ctx: Context<'_>) -> Result<(), Error> {
+    println!("yes 1 skip");
     let guild = ctx.guild().unwrap();
     let guild_id = guild.id;
-
+    
     let channel_id = guild
     .voice_states
     .get(&ctx.author().id)
@@ -13,15 +14,15 @@ pub async fn skip(ctx: Context<'_>) -> Result<(), Error> {
     let _connect_to = match channel_id {
         Some(channel) => channel,
         None => {
-            ctx.send(|m| m.content("Not in a voice channel").ephemeral(true))
-                .await;
-
+            ctx.send(|m| m.content("You are not in a voice channel").ephemeral(true))
+            .await;
+            
             return Ok(());
         }
     };
 
     let manager = songbird::get(ctx.discord()).await.unwrap().clone();
-
+    
     if let Some(handler_lock) = manager.get(guild_id) {
         let handler = handler_lock.lock().await;
         let queue = handler.queue();
