@@ -124,6 +124,7 @@ pub async fn play(
         };
 
         for (i, s) in source.into_iter().enumerate() {
+            let video_bool = &metadata.1;
             let metadata = &metadata.0;
             let queue = handler.enqueue_with_preload(
                 s.into(),
@@ -138,7 +139,16 @@ pub async fn play(
                 },
             );
 
-            if i >= 1 {
+            if !video_bool && i >= 1 {
+                let _ = queue.add_event(
+                    Event::Track(TrackEvent::Play),
+                    SongPlayNotifier {
+                        chan_id: ctx.channel_id(),
+                        http: ctx.discord().http.clone(),
+                        metadata: metadata[i].clone(),
+                    },
+                );
+            } else if handler.queue().len() >= 2 {
                 let _ = queue.add_event(
                     Event::Track(TrackEvent::Play),
                     SongPlayNotifier {
