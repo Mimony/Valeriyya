@@ -78,7 +78,7 @@ async fn event_listeners(
 }
 
 async fn init() -> Result<(), Error> {
-    let discord_token = "ODMwMTMwMzAxNTM1NjQ5ODUz.YHCNFg.mYuhKgA5WQWAP71BsCxT8pMjJCQ";
+    let discord_token = "OTA5NzkxNDU0MDQwMzAxNTY4.YZJbUQ.c8PIUM_EftouBg9KKV9bDG6IWCY";
     let database_url = "mongodb+srv://Client:MomsSpaghetti@cluster0.i1oux.mongodb.net/myFirstDatabase?retryWrites=true&w=majority";
 
     let database_options =
