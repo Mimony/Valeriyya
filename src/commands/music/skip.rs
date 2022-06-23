@@ -2,7 +2,6 @@ use crate::{Context, Error};
 
 #[poise::command(prefix_command, slash_command, category="Music", aliases("s"))]
 pub async fn skip(ctx: Context<'_>) -> Result<(), Error> {
-    println!("yes 1 skip");
     let guild = ctx.guild().unwrap();
     let guild_id = guild.id;
     
