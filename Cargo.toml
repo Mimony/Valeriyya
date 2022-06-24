@@ -37,7 +37,8 @@ features = ["async-std-runtime"]
 [dependencies.songbird]
 git = "https://github.com/FelixMcFelix/songbird"
 features = ["builtin-queue"]
-branch = "symphonia"
+# branch = "symphonia"
+rev = "eef35933c7d7fbd64300b303a4f37a759b3f1041"
 
 [dependencies.symphonia]
 version = "0.5"
