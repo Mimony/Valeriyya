@@ -5,6 +5,7 @@ edition = "2021"
 
 [profile.release]
 codegen-units = 512
+lto = "thin"
 
 [dependencies]
 tokio = { version = "1.17.0", features = ["rt-multi-thread"] }
