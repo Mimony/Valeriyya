@@ -3,7 +3,7 @@ use crate::{Context, Error};
 #[poise::command(prefix_command, slash_command, default_member_permissions="VIEW_CHANNEL")]
 pub async fn join(ctx: Context<'_>) -> Result<(), Error> {
     
-    let guild = ctx.guild().unwrap();
+    let guild = ctx.guild().unwrap().clone();
     let guild_id = guild.id;
     
     let channel_id = guild

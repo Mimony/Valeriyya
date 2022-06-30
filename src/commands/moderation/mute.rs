@@ -30,9 +30,9 @@ pub async fn mute(
     .ok();
 
     let database = &ctx.data().database;
-    let guild = ctx.guild().unwrap();
+    let guild_id = ctx.guild_id().unwrap();
 
-    let db = get_guild_db(database, guild.id.0).await;
+    let db = get_guild_db(database, guild_id.0).await;
 
     if !member_managable(ctx, &member).await {
         ctx.send(|m| {
@@ -58,7 +58,7 @@ pub async fn mute(
         Case {
             id: db.cases_number + 1,
             action: ActionTypes::mute,
-            guild_id: guild.id.0.to_string(),
+            guild_id: guild_id.0.to_string(),
             staff_id: ctx.author().id.to_string(),
             target_id: member.user.id.to_string(),
             date: Timestamp::unix_timestamp(&Timestamp::now()),

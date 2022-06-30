@@ -78,7 +78,7 @@ async fn event_listeners(
 }
 
 async fn init() -> Result<(), Error> {
-    let discord_token = "OTA5NzkxNDU0MDQwMzAxNTY4.YZJbUQ.c8PIUM_EftouBg9KKV9bDG6IWCY";
+    let discord_token = "discord-token";
     let database_url = "mongodb+srv://Client:MomsSpaghetti@cluster0.i1oux.mongodb.net/myFirstDatabase?retryWrites=true&w=majority";
 
     let database_options =
@@ -102,6 +102,7 @@ async fn init() -> Result<(), Error> {
             commands::music::skip(),
             commands::music::leave(),
             commands::music::join(),
+            commands::music::loop_music(),
             // Moderation Commands
             commands::moderation::ban(),
             commands::moderation::kick(),
@@ -147,6 +148,7 @@ async fn init() -> Result<(), Error> {
 
     Ok(())
 }
+
 #[tokio::main]
 async fn main() {
     if let Err(e) = init().await {

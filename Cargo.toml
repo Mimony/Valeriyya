@@ -24,7 +24,6 @@ default-features = false
 features = ["builder", "cache", "client", "gateway", "http", "model", "utils", "rustls_backend", "chrono", "voice"]
 branch = "next"
 
-
 [dependencies.poise]
 version = "0.2.2"
 
@@ -34,9 +33,9 @@ default-features = false
 features = ["async-std-runtime"]
 
 [dependencies.songbird]
-git = "https://github.com/FelixMcFelix/songbird"
+git = "https://github.com/Bloectasy/songbird"
 features = ["builtin-queue"]
-branch = "symphonia"
+branch = "symphonia-personal"
 
 [dependencies.symphonia]
 version = "0.5"

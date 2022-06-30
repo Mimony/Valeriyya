@@ -1,3 +1,3 @@
 use crate::import;
 
-import![play, skip, leave, join];
+import![play, skip, leave, join, loop_music];
