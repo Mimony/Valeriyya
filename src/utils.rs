@@ -4,9 +4,12 @@
 
 use bson::doc;
 use mongodb::Database;
-use poise::{serenity_prelude::{RoleId, ChannelId, Http}, async_trait};
+use poise::{
+    async_trait,
+    serenity_prelude::{ChannelId, Http, RoleId, CreateMessage, CreateEmbed},
+};
 use serde::{Deserialize, Serialize};
-use songbird::{EventContext, Event, EventHandler};
+use songbird::{Event, EventContext, EventHandler};
 
 use crate::{serenity, Context, Error};
 
@@ -134,35 +137,42 @@ pub async fn get_guild_permissions(
 }
 
 pub async fn member_managable(ctx: Context<'_>, member: &serenity::Member) -> bool {
-    let guild = ctx.guild().unwrap();
-    if member.user.id == guild.owner_id {
-        return false;
-    }
-    if member.user.id == ctx.discord().cache.current_user_id() {
-        return false;
-    }
-    if ctx.discord().cache.current_user_id() == guild.owner_id {
-        return true;
-    }
-
-    let me = guild
-        .member(ctx.discord(), ctx.discord().cache.current_user_id())
-        .await
-        .unwrap();
-
-    #[allow(clippy::len_zero)]
-    let highest_me_role: RoleId = ternary!(me.roles.len() == 0 => {
-        RoleId(guild.id.0);
-        me.highest_role_info(&ctx.discord().cache).unwrap().0;
-    });
     
-    #[allow(clippy::len_zero)]
-    let member_highest_role: RoleId = ternary!(member.roles.len() == 0 => {
-        RoleId(guild.id.0);
-        member.highest_role_info(&ctx.discord().cache).unwrap().0;
-    });
+    {
+        let guild = ctx.guild().unwrap();
+        if member.user.id == guild.owner_id {
+            return false;
+        }
+        if member.user.id == ctx.discord().cache.current_user().id {
+            return false;
+        }
+        if ctx.discord().cache.current_user().id == guild.owner_id {
+            return true;
+        }
+    }
+    
+    let guild_id = ctx.guild_id().unwrap();
+    {   
+        let user_id = ctx.discord().cache.current_user().id;
+        let me = guild_id
+            .member(ctx.discord(), user_id)
+            .await
+            .unwrap();
 
-    compare_role_position(ctx, highest_me_role, member_highest_role) > 0
+        #[allow(clippy::len_zero)]
+        let highest_me_role: RoleId = ternary!(me.roles.len() == 0 => {
+            RoleId(guild_id.0); 
+            me.highest_role_info(&ctx.discord().cache).unwrap().0;
+        });
+
+        #[allow(clippy::len_zero)]
+        let member_highest_role: RoleId = ternary!(member.roles.len() == 0 => {
+            RoleId(guild_id.0);
+            member.highest_role_info(&ctx.discord().cache).unwrap().0;
+        });
+
+        compare_role_position(ctx, highest_me_role, member_highest_role) > 0
+    }
 }
 
 pub fn compare_role_position(
@@ -328,7 +338,7 @@ pub struct ResponseVideoApi {
     pub nextPageToken: String,
     pub regionCode: String,
     pub pageInfo: PageInfo,
-    pub items: Vec<Item>
+    pub items: Vec<Item>,
 }
 
 #[derive(Deserialize, Debug, Clone)]
@@ -341,20 +351,20 @@ pub struct PageInfo {
 pub struct Item {
     pub kind: String,
     pub etag: String,
-    pub id: ItemId
+    pub id: ItemId,
 }
 
 #[derive(Deserialize, Debug, Clone)]
 pub struct ItemId {
     pub kind: String,
-    pub videoId: String
+    pub videoId: String,
 }
 
 #[derive(Clone, Debug)]
 pub struct Video {
     pub id: String,
     pub title: String,
-    pub duration: std::time::Duration
+    pub duration: std::time::Duration,
 }
 
 pub struct SongEndNotifier {
@@ -373,14 +383,14 @@ pub struct SongPlayNotifier {
 impl EventHandler for SongEndNotifier {
     async fn act(&self, _ctx: &EventContext<'_>) -> Option<Event> {
         self.chan_id
-            .send_message(&self.http, |m| {
-                m.add_embed(|e| {
-                    e.color(PURPLE_COLOR)
+            .send_message(&self.http, CreateMessage::default()
+                .add_embed( CreateEmbed::default()
+                    .color(PURPLE_COLOR)
                         .description(format!("{} has ended", self.metadata.title))
                         .title("Song ended")
                         .timestamp(poise::serenity_prelude::Timestamp::now())
-                })
-            })
+                )
+            )
             .await;
 
         None
@@ -391,9 +401,9 @@ impl EventHandler for SongEndNotifier {
 impl EventHandler for SongPlayNotifier {
     async fn act(&self, _ctx: &EventContext<'_>) -> Option<Event> {
         self.chan_id
-            .send_message(&self.http, |m| {
-                m.add_embed(|e| {
-                    e.color(PURPLE_COLOR)
+            .send_message(&self.http, CreateMessage::default()
+                .add_embed(CreateEmbed::default()
+                    .color(PURPLE_COLOR)
                         .description(format!(
                             "Playing [{}]({})",
                             self.metadata.title,
@@ -401,13 +411,12 @@ impl EventHandler for SongPlayNotifier {
                         ))
                         .title("Song playing")
                         .timestamp(poise::serenity_prelude::Timestamp::now())
-                })
-            })
+                )
+            )
             .await;
 
         None
     }
 }
-
 
 pub const PURPLE_COLOR: serenity::Color = serenity::Color::from_rgb(82, 66, 100);

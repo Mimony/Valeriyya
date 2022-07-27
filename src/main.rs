@@ -45,7 +45,7 @@ async fn event_listeners(
             let audit_logs_latest = audit_logs
                 .entries
                 .iter()
-                .find(|u| u.target_id.unwrap() == user.id.0)
+                .find(|u| u.target_id.unwrap().0 == user.id.0)
                 .unwrap();
 
             if let Action::Member(MemberAction::Kick) = audit_logs_latest.action {
@@ -123,15 +123,18 @@ async fn init() -> Result<(), Error> {
         .token(discord_token)
         .user_data_setup(move |ctx, client, _framework| {
             Box::pin(async move {
-                ctx.set_activity(serenity::Activity::watching("the lovely moon"))
-                    .await;
+                ctx.set_activity(Some(::serenity::gateway::ActivityData {
+                    name: String::from("the lovely moon"),
+                    kind: serenity::ActivityType::Watching,
+                    url: None
+                })).await;
                 Ok(Data {
                     db_client,
                     database,
                     client_id: client.user.id,
                 })
             })
-        })
+        }) 
         .options(options)
         .intents(
             serenity::GatewayIntents::non_privileged()

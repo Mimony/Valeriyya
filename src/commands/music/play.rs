@@ -4,6 +4,7 @@ use crate::{
 };
 use futures::StreamExt;
 
+use poise::{CreateReply, serenity_prelude::CreateEmbed};
 use songbird::{input::YoutubeDl, Event, TrackEvent};
 use std::time::Duration;
 
@@ -46,10 +47,9 @@ pub async fn play(
         };
     let ytextract = ytextract::Client::new();
 
-    let guild = ctx.guild().unwrap();
-    let guild_id = guild.id;
+    let guild_id = ctx.guild_id().unwrap();
 
-    let channel_id = guild
+    let channel_id = ctx.guild().unwrap()
         .voice_states
         .get(&ctx.author().id)
         .and_then(|voice_state| voice_state.channel_id);
@@ -57,7 +57,7 @@ pub async fn play(
     let connect_to = match channel_id {
         Some(channel) => channel,
         None => {
-            ctx.send(|m| m.content("You are not in a voice channel").ephemeral(true))
+            ctx.send(CreateReply::default().content("You are not in a voice channel").ephemeral(true))
                 .await;
 
             return Ok(());
@@ -177,18 +177,18 @@ pub async fn play(
             }
         });
 
-        msg.edit(ctx, |m| {
-            m.embed(|e| {
-                e.color(PURPLE_COLOR)
-                    .description(format_args!(
+        msg.edit(ctx, CreateReply::default()
+            .embed(CreateEmbed::default()
+                .color(PURPLE_COLOR)
+                    .description(format!(
                         "Queued [{}]({})",
                         metadata.0[0].title,
-                        format_args!("https://youtu.be/{}", metadata.0[0].id)
+                        format!("https://youtu.be/{}", metadata.0[0].id)
                     ))
                     .timestamp(poise::serenity_prelude::Timestamp::now())
                     .title("Song playing")
-            })
-        }).await?;
+            )
+        ).await?;
 
         drop(handler);
     };

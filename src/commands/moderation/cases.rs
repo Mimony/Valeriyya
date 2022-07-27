@@ -1,3 +1,8 @@
+use poise::{
+    serenity_prelude::{CreateEmbed, CreateEmbedAuthor, CreateEmbedFooter},
+    CreateReply,
+};
+
 use crate::{
     serenity,
     utils::{get_guild_db, get_guild_member, update_guild_db, ActionTypes},
@@ -12,7 +17,12 @@ pub enum OptionChoices {
     Delete,
 }
 
-#[poise::command(prefix_command, slash_command, category = "Moderation", default_member_permissions="MANAGE_GUILD")]
+#[poise::command(
+    prefix_command,
+    slash_command,
+    category = "Moderation",
+    default_member_permissions = "MANAGE_GUILD"
+)]
 pub async fn cases(
     ctx: Context<'_>,
     #[description = "What to do with the case."] option: OptionChoices,
@@ -29,51 +39,70 @@ pub async fn cases(
         let case = db.cases.iter().find(|c| c.id == id);
 
         if case.is_none() {
-            ctx.send(|m| {
-                m.content(format!("Can't find a case with the id: {}", id))
-                    .ephemeral(true)
-            })
+            ctx.send(
+                CreateReply::default()
+                    .content(format!("Can't find a case with the id: {}", id))
+                    .ephemeral(true),
+            )
             .await;
             return Ok(());
         }
 
         let case = case.unwrap();
 
-        ctx.send(|s| {
-            s.embed(|e| {
-                e.color(serenity::Color::from_rgb(82, 66, 100));
-                e.author(|a| {
-                    a.name(format!("{} ({})", staff.user.tag(), staff.user.id));
-                    a.icon_url(staff.user.face())
-                });
-                e.thumbnail(ctx.guild().unwrap().icon_url().unwrap());
-                if ActionTypes::mute == case.action {
-                    e.description(format!(
-                        "Member: `{}`\nAction: `{:?}`\nReason: {}\nExpiration:<t:{}:R>",
-                        case.target_id, case.action, case.reason, case.date
-                    ));
-                } else {
-                    e.description(format!(
-                        "Member: `{}`\nAction: `{:?}`\nReason: {}\n",
-                        case.target_id, case.action, case.reason
-                    ));
-                }
-                e.timestamp(serenity::Timestamp::now())
-                .footer(|f| {
-                    f.text(format!("Case {}", case.id))
-                })
-            });
-            s.ephemeral(true)
-        })
-        .await;
+        let mut case_embed = CreateEmbed::default()
+            .color(serenity::Color::from_rgb(82, 66, 100))
+            .author(
+                CreateEmbedAuthor::default()
+                    .name(format!("{} ({})", staff.user.tag(), staff.user.id))
+                    .icon_url(staff.user.face()),
+            )
+            .thumbnail(ctx.guild().unwrap().icon_url().unwrap())
+            .timestamp(serenity::Timestamp::now())
+            .footer(CreateEmbedFooter::default().text(format!("Case {}", case.id)));
+        if ActionTypes::mute == case.action {
+            case_embed = CreateEmbed::default()
+            .color(serenity::Color::from_rgb(82, 66, 100))
+            .author(
+                CreateEmbedAuthor::default()
+                    .name(format!("{} ({})", staff.user.tag(), staff.user.id))
+                    .icon_url(staff.user.face()),
+            )
+            .thumbnail(ctx.guild().unwrap().icon_url().unwrap())
+            .timestamp(serenity::Timestamp::now())
+            .footer(CreateEmbedFooter::default().text(format!("Case {}", case.id)))
+            .description(format!(
+                "Member: `{}`\nAction: `{:?}`\nReason: {}\nExpiration:<t:{}:R>",
+                case.target_id, case.action, case.reason, case.date
+            ));
+        } else {
+            case_embed = CreateEmbed::default()
+            .color(serenity::Color::from_rgb(82, 66, 100))
+            .author(
+                CreateEmbedAuthor::default()
+                    .name(format!("{} ({})", staff.user.tag(), staff.user.id))
+                    .icon_url(staff.user.face()),
+            )
+            .thumbnail(ctx.guild().unwrap().icon_url().unwrap())
+            .timestamp(serenity::Timestamp::now())
+            .footer(CreateEmbedFooter::default().text(format!("Case {}", case.id)))
+            .description(format!(
+                "Member: `{}`\nAction: `{:?}`\nReason: {}\n",
+                case.target_id, case.action, case.reason
+            ));
+        }
+        
+        ctx.send(CreateReply::default().embed(case_embed).ephemeral(true))
+            .await;
     } else if let OptionChoices::Delete = option {
         let case = db.cases.iter().find(|c| c.id == id);
 
         if case.is_none() {
-            ctx.send(|m| {
-                m.content(format!("Can't find a case with the id: {}", id))
-                    .ephemeral(true)
-            })
+            ctx.send(
+                CreateReply::default()
+                    .content(format!("Can't find a case with the id: {}", id))
+                    .ephemeral(true),
+            )
             .await;
             return Ok(());
         }
@@ -89,18 +118,21 @@ pub async fn cases(
 
         update_guild_db(database, guild_id, &db).await;
 
-        ctx.send(|s| {
-            s.embed(|e| {
-                e.color(serenity::Color::from_rgb(82, 66, 100));
-                e.author(|a| {
-                    a.name(format!("{} ({})", staff.user.tag(), staff.user.id));
-                    a.icon_url(staff.user.face())
-                });
-                e.description(format!("Case with the id: {} has been deleted.", id));
-                e.timestamp(serenity::Timestamp::now())
-            });
-            s.ephemeral(true)
-        })
+        ctx.send(
+            CreateReply::default()
+                .embed(
+                    CreateEmbed::default()
+                        .color(serenity::Color::from_rgb(82, 66, 100))
+                        .author(
+                            CreateEmbedAuthor::default()
+                                .name(format!("{} ({})", staff.user.tag(), staff.user.id))
+                                .icon_url(staff.user.face()),
+                        )
+                        .description(format!("Case with the id: {} has been deleted.", id))
+                        .timestamp(serenity::Timestamp::now()),
+                )
+                .ephemeral(true),
+        )
         .await;
     }
 

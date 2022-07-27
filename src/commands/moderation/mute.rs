@@ -3,31 +3,39 @@ use crate::{
     utils::{create_case, get_guild_db, member_managable, string_to_sec, ActionTypes, Case},
     Context, Error,
 };
-use poise::serenity_prelude::Timestamp;
+use poise::{serenity_prelude::{Timestamp, CreateEmbedAuthor, CreateEmbed}, CreateReply};
 
 /// Mutes a member for a specified time.
-#[poise::command(prefix_command, slash_command, category = "Moderation", default_member_permissions="MODERATE_MEMBERS")]
+#[poise::command(
+    prefix_command,
+    slash_command,
+    category = "Moderation",
+    default_member_permissions = "MODERATE_MEMBERS"
+)]
 pub async fn mute(
     ctx: Context<'_>,
     #[description = "The member to mute"] mut member: serenity::Member,
     #[description = "The time the member to be muted for. (Max 28 days)."] time: String,
-    #[description = "The reason for this mute."] #[rest] reason: Option<String>,
+    #[description = "The reason for this mute."]
+    #[rest]
+    reason: Option<String>,
 ) -> Result<(), Error> {
     let reason_default = reason.unwrap_or_else(|| String::from("default reason"));
     let string_time = string_to_sec(&time);
-    
+
     if string_time < 60 {
-        ctx.send(|m| {
-            m.content("You can't mute someone for under 60 seconds!")
-            .ephemeral(true)
-        }).await;
+        ctx.send(
+            CreateReply::default()
+                .content("You can't mute someone for under 60 seconds!")
+                .ephemeral(true),
+        )
+        .await;
         return Ok(());
     }
 
-    let timestamp = Timestamp::from_unix_timestamp(
-        Timestamp::unix_timestamp(&Timestamp::now()) + string_time,
-    )
-    .ok();
+    let timestamp =
+        Timestamp::from_unix_timestamp(Timestamp::unix_timestamp(&Timestamp::now()) + string_time)
+            .ok();
 
     let database = &ctx.data().database;
     let guild_id = ctx.guild_id().unwrap();
@@ -35,17 +43,29 @@ pub async fn mute(
     let db = get_guild_db(database, guild_id.0).await;
 
     if !member_managable(ctx, &member).await {
-        ctx.send(|m| {
-            m.content("The member can't be managed so you can't mute them!")
-                .ephemeral(true)
-        })
+        ctx.send(
+            CreateReply::default()
+                .content("The member can't be managed so you can't mute them!")
+                .ephemeral(true),
+        )
         .await;
         return Ok(());
     }
-    
-    if member.communication_disabled_until.is_some() & ((Timestamp::unix_timestamp(&Timestamp::now()) - member.communication_disabled_until.unwrap().unix_timestamp()) < 0) {
-        ctx.send(|m| m.content("This member is already muted").ephemeral(true))
-            .await;
+
+    if member.communication_disabled_until.is_some()
+        & ((Timestamp::unix_timestamp(&Timestamp::now())
+            - member
+                .communication_disabled_until
+                .unwrap()
+                .unix_timestamp())
+            < 0)
+    {
+        ctx.send(
+            CreateReply::default()
+                .content("This member is already muted")
+                .ephemeral(true),
+        )
+        .await;
         return Ok(());
     };
 
@@ -68,25 +88,29 @@ pub async fn mute(
         },
     )
     .await;
-    ctx.send(|s| {
-        s.embed(|e| {
-            e.color(serenity::Color::from_rgb(82, 66, 100))
-                .author(|a| {
-                    a.name(format!("{} ({})", member.user.tag(), member.user.id))
-                        .icon_url(ctx.author().face())
-                })
-                .thumbnail(ctx.guild().unwrap().icon_url().unwrap())
-                .description(format!(
-                    "Member: `{}`\nAction: `{:?}`\nReason: `{}`\nExpiration: {}",
-                    member.user.tag(),
-                    ActionTypes::mute,
-                    reason_default,
-                    time_format(time)
-                ))
-                .timestamp(Timestamp::now())
-        })
-        .ephemeral(true)
-    })
+    let icon_url = ctx.guild().unwrap().icon_url().unwrap_or_else(|| String::from(""));
+    ctx.send(
+        CreateReply::default()
+            .embed(
+                CreateEmbed::default()
+                    .color(serenity::Color::from_rgb(82, 66, 100))
+                    .author(
+                        CreateEmbedAuthor::default()
+                            .name(format!("{} ({})", member.user.tag(), member.user.id))
+                            .icon_url(ctx.author().face()),
+                    )
+                    .thumbnail(icon_url)
+                    .description(format!(
+                        "Member: `{}`\nAction: `{:?}`\nReason: `{}`\nExpiration: {}",
+                        member.user.tag(),
+                        ActionTypes::mute,
+                        reason_default,
+                        time_format(time)
+                    ))
+                    .timestamp(Timestamp::now()),
+            )
+            .ephemeral(true),
+    )
     .await;
 
     Ok(())

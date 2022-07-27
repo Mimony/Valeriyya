@@ -1,3 +1,5 @@
+use poise::CreateReply;
+
 use crate::{Context, Error};
 
 #[poise::command(prefix_command, slash_command, default_member_permissions="VIEW_CHANNEL")]
@@ -14,7 +16,7 @@ pub async fn join(ctx: Context<'_>) -> Result<(), Error> {
     let connect_to = match channel_id {
         Some(channel) => channel,
         None => {
-            ctx.send(|m| m.content("Not in a voice channel").ephemeral(true))
+            ctx.send(CreateReply::default().content("Not in a voice channel").ephemeral(true))
             .await;
             
             return Ok(());

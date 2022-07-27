@@ -3,7 +3,7 @@ use crate::{
     utils::{create_case, get_guild_db, member_managable, ActionTypes, Case},
     Context, Error,
 };
-use poise::serenity_prelude::{Timestamp, UserId};
+use poise::{serenity_prelude::{Timestamp, UserId, CreateEmbedAuthor, CreateEmbed}, CreateReply};
 
 /// Bans a member from the guild.
 #[poise::command(prefix_command, slash_command, category = "Moderation", default_member_permissions="BAN_MEMBERS")]
@@ -16,37 +16,34 @@ pub async fn ban(
 ) -> Result<(), Error> {
     let reason_default = reason.unwrap_or_else(|| String::from("Default reason"));
     let database = &ctx.data().database;
-    let guild_id = ctx.guild_id().unwrap().0;
+    let guild_id = ctx.guild_id().unwrap();
+    let icon_url = ctx.guild().unwrap().icon_url().unwrap_or_else(|| String::from(""));
 
     let db = get_guild_db(database, guild_id).await;
 
     if let Some(m) = &member {
         if !member_managable(ctx, m).await {
-            ctx.send(|m| {
-                m.content("The member can't be managed so you can't ban them!")
+            ctx.send(CreateReply::default().content("The member can't be managed so you can't ban them!")
                     .ephemeral(true)
-            })
+            )
             .await;
             return Ok(());
         }
-        if ctx
-            .guild()
-            .unwrap()
+        if guild_id
             .bans(&ctx.discord().http)
             .await?
             .iter()
             .any(|ban| ban.user.id == m.user.id)
         {
-            ctx.send(|int| {
-                int.content("This member is already banned from this guild.")
+            ctx.send(CreateReply::default().content("This member is already banned from this guild.")
                     .ephemeral(true)
-            })
+            )
             .await;
         }
         m.ban_with_reason(ctx.discord(), 7, &reason_default).await?;
         create_case(
             database,
-            ctx.guild_id().unwrap().0,
+            guild_id,
             Case {
                 id: db.cases_number + 1,
                 action: ActionTypes::ban,
@@ -60,14 +57,14 @@ pub async fn ban(
             },
         )
         .await;
-        ctx.send(|s| {
-            s.embed(|e| {
-                e.color(serenity::Color::from_rgb(82, 66, 100))
-                    .author(|a| {
-                        a.name(format!("{} ({})", m.user.tag(), m.user.id));
-                        a.icon_url(ctx.author().face())
-                    })
-                    .thumbnail(ctx.guild().unwrap().icon_url().unwrap())
+
+        ctx.send(CreateReply::default().embed(CreateEmbed::default()
+                .color(serenity::Color::from_rgb(82, 66, 100))
+                    .author(CreateEmbedAuthor::default() 
+                        .name(format!("{} ({})", m.user.tag(), m.user.id))
+                        .icon_url(ctx.author().face())
+                    )
+                    .thumbnail(&icon_url)
                     .description(format!(
                         "Member: `{}`\nAction: `{:?}`\nReason: `{}`",
                         m.user.tag(),
@@ -75,35 +72,31 @@ pub async fn ban(
                         reason_default
                     ))
                     .timestamp(Timestamp::now())
-            })
+            )
             .ephemeral(true)
-        })
+        )
         .await;
     }
     if let Some(m_id) = &member_id {
         let user_id = UserId(m_id.parse().unwrap());
-        if ctx
-            .guild()
-            .unwrap()
+        if guild_id
             .bans(&ctx.discord().http)
             .await?
             .iter()
             .any(|ban| ban.user.id == user_id)
         {
-            ctx.send(|int| {
-                int.content("This member is already banned from this guild.");
-                int.ephemeral(true)
-            })
+            ctx.send(CreateReply::default().content("This member is already banned from this guild.")
+            .ephemeral(true)
+            )
             .await;
         }
-        ctx.guild()
-            .unwrap()
+        guild_id
             .ban_with_reason(ctx.discord(), user_id, 7, &reason_default)
             .await?;
 
         create_case(
             database,
-            ctx.guild_id().unwrap().0,
+            guild_id,
             Case {
                 id: db.cases_number + 1,
                 action: ActionTypes::ban,
@@ -118,24 +111,23 @@ pub async fn ban(
         )
         .await;
 
-        ctx.send(|s| {
-            s.embed(|e| {
-                e.color(serenity::Color::from_rgb(82, 66, 100));
-                e.author(|a| {
-                    a.name(format!("{} ({})", ctx.author().tag(), ctx.author().id));
-                    a.icon_url(ctx.author().face())
-                });
-                e.thumbnail(ctx.guild().unwrap().icon_url().unwrap());
-                e.description(format!(
+        ctx.send(CreateReply::default().embed(CreateEmbed::default()
+                .color(serenity::Color::from_rgb(82, 66, 100))
+                .author(CreateEmbedAuthor::default()
+                    .name(format!("{} ({})", ctx.author().tag(), ctx.author().id))
+                    .icon_url(ctx.author().face())
+                )
+                .thumbnail(icon_url)
+                .description(format!(
                     "Member: `{}`\nAction: `{:?}`\nReason: `{}`",
                     m_id,
                     ActionTypes::ban,
                     reason_default
-                ));
-                e.timestamp(Timestamp::now())
-            });
-            s.ephemeral(true)
-        })
+                ))
+                .timestamp(Timestamp::now())
+            )
+            .ephemeral(true)
+        )
         .await;
     }
 

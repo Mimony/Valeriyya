@@ -1,3 +1,7 @@
+use std::num::NonZeroU64;
+
+use poise::CreateReply;
+
 use crate::{
     serenity,
     utils::{get_guild_db, update_case, CaseUpdateAction, CaseUpdateValue},
@@ -18,10 +22,9 @@ pub async fn reason(
 
 
      if case_find.is_none() {
-        ctx.send(|m| {
-            m.content(format!("Case with the id: {} doesn't exist", case))
+        ctx.send(CreateReply::default().content(format!("Case with the id: {} doesn't exist", case))
             .ephemeral(true)
-        }).await;
+        ).await;
         return Ok(())
     } 
     
@@ -30,14 +33,13 @@ pub async fn reason(
         reference: None
     });
 
-    ctx.send(|m| {
-        m.content(format!("Updated case with the id: {case}"))
+    ctx.send(CreateReply::default().content(format!("Updated case with the id: {case}"))
         .ephemeral(true)
-    }).await;
+    ).await;
 
     if db.channels.logs.is_some() {
-        let channel = serenity::ChannelId(db.channels.logs.unwrap().parse::<u64>().unwrap());
-        channel.say(ctx.discord(), "smth").await;
+        let channel = serenity::ChannelId(db.channels.logs.unwrap().parse::<NonZeroU64>().unwrap());
+        channel.say(ctx.discord(), format!("Temporary msg")).await;
     }
 
     Ok(())
