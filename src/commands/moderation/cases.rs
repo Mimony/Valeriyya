@@ -61,31 +61,13 @@ pub async fn cases(
             .timestamp(serenity::Timestamp::now())
             .footer(CreateEmbedFooter::default().text(format!("Case {}", case.id)));
         if ActionTypes::mute == case.action {
-            case_embed = CreateEmbed::default()
-            .color(serenity::Color::from_rgb(82, 66, 100))
-            .author(
-                CreateEmbedAuthor::default()
-                    .name(format!("{} ({})", staff.user.tag(), staff.user.id))
-                    .icon_url(staff.user.face()),
-            )
-            .thumbnail(ctx.guild().unwrap().icon_url().unwrap())
-            .timestamp(serenity::Timestamp::now())
-            .footer(CreateEmbedFooter::default().text(format!("Case {}", case.id)))
+            case_embed = case_embed
             .description(format!(
                 "Member: `{}`\nAction: `{:?}`\nReason: {}\nExpiration:<t:{}:R>",
                 case.target_id, case.action, case.reason, case.date
             ));
         } else {
-            case_embed = CreateEmbed::default()
-            .color(serenity::Color::from_rgb(82, 66, 100))
-            .author(
-                CreateEmbedAuthor::default()
-                    .name(format!("{} ({})", staff.user.tag(), staff.user.id))
-                    .icon_url(staff.user.face()),
-            )
-            .thumbnail(ctx.guild().unwrap().icon_url().unwrap())
-            .timestamp(serenity::Timestamp::now())
-            .footer(CreateEmbedFooter::default().text(format!("Case {}", case.id)))
+            case_embed = case_embed
             .description(format!(
                 "Member: `{}`\nAction: `{:?}`\nReason: {}\n",
                 case.target_id, case.action, case.reason

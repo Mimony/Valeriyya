@@ -1,4 +1,7 @@
-use poise::{serenity_prelude::{Timestamp, CreateEmbed, CreateEmbedAuthor}, CreateReply};
+use poise::{
+    serenity_prelude::{CreateEmbed, CreateEmbedAuthor, Timestamp},
+    CreateReply,
+};
 
 use crate::{
     serenity,
@@ -21,7 +24,7 @@ pub async fn kick(
     reason: Option<String>,
 ) -> Result<(), Error> {
     let database = &ctx.data().database;
-    let guild_id = ctx.guild_id().unwrap().0;
+    let guild_id = ctx.guild_id().unwrap();
 
     let db = get_guild_db(database, guild_id).await;
 
@@ -36,10 +39,12 @@ pub async fn kick(
         .await;
         return Ok(());
     }
-    member.kick(ctx.discord()).await;
+    member
+        .kick_with_reason(ctx.discord(), &reason_default)
+        .await;
     create_case(
         database,
-        ctx.guild_id().unwrap().0,
+        guild_id,
         Case {
             id: db.cases_number + 1,
             action: ActionTypes::kick,
@@ -53,29 +58,34 @@ pub async fn kick(
         },
     )
     .await;
-    let icon_url = ctx.guild().unwrap().icon_url().unwrap_or_else(|| String::from(""));
-    ctx.send(
-        CreateReply::default()
-            .embed(
-                CreateEmbed::default()
-                    .color(serenity::Color::from_rgb(82, 66, 100))
-                    .author(
-                        CreateEmbedAuthor::default()
-                            .name(format!("{} ({})", member.user.tag(), member.user.id))
-                            .icon_url(ctx.author().face()),
-                    )
-                    .thumbnail(icon_url)
-                    .description(format!(
-                        "Member: `{}`\nAction: `{:?}`\nReason: `{}`",
-                        member.user.tag(),
-                        ActionTypes::kick,
-                        reason_default
-                    ))
-                    .timestamp(Timestamp::now()),
-            )
-            .ephemeral(true),
-    )
-    .await;
+        let icon_url = ctx
+            .guild()
+            .unwrap()
+            .icon_url()
+            .unwrap_or_else(|| String::from(""));
+        ctx.send(
+            CreateReply::default()
+                .embed(
+                    CreateEmbed::default()
+                        .color(serenity::Color::from_rgb(82, 66, 100))
+                        .author(
+                            CreateEmbedAuthor::default()
+                                .name(format!("{} ({})", member.user.tag(), member.user.id))
+                                .icon_url(ctx.author().face()),
+                        )
+                        .thumbnail(icon_url)
+                        .description(format!(
+                            "Member: `{}`\nAction: `{:?}`\nReason: `{}`",
+                            member.user.tag(),
+                            ActionTypes::kick,
+                            reason_default
+                        ))
+                        .timestamp(Timestamp::now()),
+                )
+                .ephemeral(true),
+        )
+        .await;
+    
 
     Ok(())
 }

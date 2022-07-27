@@ -78,11 +78,11 @@ async fn event_listeners(
 }
 
 async fn init() -> Result<(), Error> {
-    let discord_token = "discord-token";
-    let database_url = "mongodb+srv://Client:MomsSpaghetti@cluster0.i1oux.mongodb.net/myFirstDatabase?retryWrites=true&w=majority";
+    let discord_token = std::env::var("VALERIYYA-DISCORD-TOKEN").unwrap();
+    let database_url = std::env::var("VALERIYYA-MONGODB").unwrap();
 
     let database_options =
-        ClientOptions::parse_with_resolver_config(&database_url, ResolverConfig::cloudflare())
+        ClientOptions::parse_with_resolver_config(database_url, ResolverConfig::cloudflare())
             .await?;
     let db_client = Client::with_options(database_options)?;
     let database = db_client.database("Valeriyya");
@@ -123,9 +123,9 @@ async fn init() -> Result<(), Error> {
         .token(discord_token)
         .user_data_setup(move |ctx, client, _framework| {
             Box::pin(async move {
-                ctx.set_activity(Some(::serenity::gateway::ActivityData {
+                ctx.set_activity(Some(poise::serenity::gateway::ActivityData {
                     name: String::from("the lovely moon"),
-                    kind: serenity::ActivityType::Watching,
+                    kind: serenity::model::gateway::ActivityType::Watching,
                     url: None
                 })).await;
                 Ok(Data {

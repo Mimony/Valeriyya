@@ -19,14 +19,14 @@ ytextract = "0.11.0"
 futures = { version = "0.3.17", features = ["std"], default-features = false }
 
 [dependencies.serenity]
-git = "https://github.com/GnomedDev/serenity"
+git = "https://github.com/bloectasy/serenity"
 default-features = false
 features = ["builder", "cache", "client", "gateway", "http", "model", "utils", "rustls_backend", "chrono", "voice"]
-branch = "personal"
+branch = "next"
 
 [dependencies.poise]
 git = "https://github.com/GnomedDev/poise"
-branch = "personal"
+rev = "eaa116f325cdf3a7b3aa2982c7bea09281372fc8"
 
 [dependencies.mongodb]
 version = "2.2.2"
@@ -36,17 +36,17 @@ features = ["async-std-runtime"]
 [dependencies.songbird]
 git = "https://github.com/GnomedDev/songbird"
 features = ["builtin-queue"]
-branch = "symphonia-personal"
+rev = "f1d9da31d7fb346b5aa0726ad607c7971ea53787"
 
 [dependencies.symphonia]
 version = "0.5"
 features = ["aac", "mp3", "isomp4", "alac"]
 git = "https://github.com/FelixMcFelix/Symphonia"
-branch = "songbird-fixes"
+rev = "3ef90d7b336e9fa00c20f77e3b54b5f1f84f123b"
 
 [patch."https://github.com/serenity-rs/serenity"]
-serenity = {git = "https://github.com/GnomedDev/serenity", branch = "personal"}
+serenity = {git = "https://github.com/bloectasy/serenity", branch = "next"}
 
 [patch.crates-io."serenity"]
-git = "https://github.com/GnomedDev/serenity"
-branch = "personal"
+git = "https://github.com/bloectasy/serenity"
+branch = "next"
