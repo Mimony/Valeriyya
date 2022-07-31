@@ -24,16 +24,6 @@ macro_rules! import {
 }
 
 #[macro_export]
-macro_rules! import_sub {
-    ($cmd:ident => { $($sub_cmd:ident), *}) => {
-        mod $cmd;
-        $(
-            pub use $cmd::$sub_cmd;
-        )*
-    }
-}
-
-#[macro_export]
 macro_rules! ternary {
     ($condition:expr => { $true_condition:expr; $false_condition:expr; }) => {
         if $condition {

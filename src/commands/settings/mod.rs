@@ -1,9 +1,3 @@
-use crate::import_sub;
+use crate::import;
 
-import_sub!(settings => {
-    settings, channel, role
-});
-
-// mod settings;
-// pub use settings::channel;
-// pub use settings::settings;
+import![settings];
