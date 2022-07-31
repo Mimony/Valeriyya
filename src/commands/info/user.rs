@@ -20,7 +20,7 @@ pub async fn user(
             )
             .description(format!(
                 "User Created At: {}\nMember Joined At: {}",
-                format!(
+                format_args!(
                     "{} {}",
                     time_format(member.user.created_at()),
                     is_bot(&member.user)

@@ -9,7 +9,6 @@ use crate::{Context, Error};
     rename = "loop"
 )]
 pub async fn loop_music(ctx: Context<'_>) -> Result<(), Error> {
-    println!("yes");
     let guild_id = ctx.guild_id().unwrap();
     let manager = songbird::get(ctx.discord()).await.unwrap().clone();
 

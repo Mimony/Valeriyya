@@ -352,9 +352,9 @@ checksum = "14c189c53d098945499cdfa7ecc63567cf3886b3332b312a5b4585d8d3a6a610"
 
 [[package]]
 name = "bytes"
-version = "1.2.0"
+version = "1.2.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "f0b3de4a0c5e67e16066a0715723abd91edc2f9001d09c46e1dca929351e130e"
+checksum = "ec8a7b6a70fde80372154c65702f00a0f56f3e1c36abbc6c440484be248856db"
 
 [[package]]
 name = "cache-padded"
@@ -481,9 +481,9 @@ dependencies = [
 
 [[package]]
 name = "ctor"
-version = "0.1.22"
+version = "0.1.23"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "f877be4f7c9f246b183111634f75baa039715e3f46ce860677d3b19a69fb229c"
+checksum = "cdffe87e1d521a10f9696f833fe502293ea446d7f256c06128293a4119bdf4cb"
 dependencies = [
  "quote",
  "syn",
@@ -1604,7 +1604,7 @@ dependencies = [
  "once_cell",
  "poise_macros",
  "regex",
- "serenity 0.11.4 (git+https://github.com/GnomedDev/serenity?branch=personal)",
+ "serenity",
  "tokio",
 ]
 
@@ -2132,7 +2132,7 @@ dependencies = [
 [[package]]
 name = "serenity"
 version = "0.11.4"
-source = "git+https://github.com/bloectasy/serenity?branch=next#3a1091c081e5dcce1be5472663dac43509c5faf7"
+source = "git+https://github.com/GnomedDev/serenity?branch=personal#aec16ffd57e9fe68a5fb11ef507dd844a835b360"
 dependencies = [
  "async-trait",
  "base64",
@@ -2140,36 +2140,6 @@ dependencies = [
  "bytes",
  "cfg-if",
  "chrono",
- "dashmap",
- "flate2",
- "futures",
- "mime",
- "mime_guess",
- "parking_lot",
- "percent-encoding",
- "reqwest",
- "rustversion",
- "serde",
- "serde-value",
- "serde_json",
- "time 0.3.11",
- "tokio",
- "tokio-tungstenite",
- "tracing",
- "typemap_rev",
- "url",
-]
-
-[[package]]
-name = "serenity"
-version = "0.11.4"
-source = "git+https://github.com/GnomedDev/serenity?branch=personal#5652a37eca63eb25d16dc797ea596b47ff4ee2dd"
-dependencies = [
- "async-trait",
- "base64",
- "bitflags",
- "bytes",
- "cfg-if",
  "dashmap",
  "derivative",
  "flate2",
@@ -2195,7 +2165,7 @@ dependencies = [
 [[package]]
 name = "serenity-voice-model"
 version = "0.1.1"
-source = "git+https://github.com/GnomedDev/serenity?branch=personal#5652a37eca63eb25d16dc797ea596b47ff4ee2dd"
+source = "git+https://github.com/serenity-rs/serenity?branch=next#daa15f6f1e32500dacd79ed07d034974ea33a9b4"
 dependencies = [
  "bitflags",
  "enum_primitive",
@@ -2282,7 +2252,7 @@ dependencies = [
 [[package]]
 name = "songbird"
 version = "0.2.2"
-source = "git+https://github.com/GnomedDev/songbird?rev=f1d9da31d7fb346b5aa0726ad607c7971ea53787#f1d9da31d7fb346b5aa0726ad607c7971ea53787"
+source = "git+https://github.com/FelixMcFelix/songbird?rev=e7a233c1d67dd585178766a46080b44f73897c59#e7a233c1d67dd585178766a46080b44f73897c59"
 dependencies = [
  "async-trait",
  "async-tungstenite",
@@ -2305,11 +2275,11 @@ dependencies = [
  "serde",
  "serde-aux",
  "serde_json",
- "serenity 0.11.4 (git+https://github.com/GnomedDev/serenity?branch=personal)",
+ "serenity",
  "serenity-voice-model",
  "streamcatcher",
- "symphonia 0.5.1 (git+https://github.com/FelixMcFelix/Symphonia?branch=songbird-fixes)",
- "symphonia-core 0.5.1 (git+https://github.com/FelixMcFelix/Symphonia?branch=songbird-fixes)",
+ "symphonia",
+ "symphonia-core",
  "tokio",
  "tokio-util",
  "tracing",
@@ -2380,88 +2350,78 @@ version = "0.5.1"
 source = "git+https://github.com/FelixMcFelix/Symphonia?branch=songbird-fixes#3ef90d7b336e9fa00c20f77e3b54b5f1f84f123b"
 dependencies = [
  "lazy_static",
- "symphonia-core 0.5.1 (git+https://github.com/FelixMcFelix/Symphonia?branch=songbird-fixes)",
- "symphonia-metadata 0.5.1 (git+https://github.com/FelixMcFelix/Symphonia?branch=songbird-fixes)",
-]
-
-[[package]]
-name = "symphonia"
-version = "0.5.1"
-source = "git+https://github.com/FelixMcFelix/Symphonia?rev=3ef90d7b336e9fa00c20f77e3b54b5f1f84f123b#3ef90d7b336e9fa00c20f77e3b54b5f1f84f123b"
-dependencies = [
- "lazy_static",
  "symphonia-bundle-flac",
  "symphonia-bundle-mp3",
  "symphonia-codec-aac",
  "symphonia-codec-alac",
  "symphonia-codec-pcm",
  "symphonia-codec-vorbis",
- "symphonia-core 0.5.1 (git+https://github.com/FelixMcFelix/Symphonia?rev=3ef90d7b336e9fa00c20f77e3b54b5f1f84f123b)",
+ "symphonia-core",
  "symphonia-format-isomp4",
  "symphonia-format-mkv",
  "symphonia-format-ogg",
  "symphonia-format-wav",
- "symphonia-metadata 0.5.1 (git+https://github.com/FelixMcFelix/Symphonia?rev=3ef90d7b336e9fa00c20f77e3b54b5f1f84f123b)",
+ "symphonia-metadata",
 ]
 
 [[package]]
 name = "symphonia-bundle-flac"
 version = "0.5.1"
-source = "git+https://github.com/FelixMcFelix/Symphonia?rev=3ef90d7b336e9fa00c20f77e3b54b5f1f84f123b#3ef90d7b336e9fa00c20f77e3b54b5f1f84f123b"
+source = "git+https://github.com/FelixMcFelix/Symphonia?branch=songbird-fixes#3ef90d7b336e9fa00c20f77e3b54b5f1f84f123b"
 dependencies = [
  "log",
- "symphonia-core 0.5.1 (git+https://github.com/FelixMcFelix/Symphonia?rev=3ef90d7b336e9fa00c20f77e3b54b5f1f84f123b)",
- "symphonia-metadata 0.5.1 (git+https://github.com/FelixMcFelix/Symphonia?rev=3ef90d7b336e9fa00c20f77e3b54b5f1f84f123b)",
+ "symphonia-core",
+ "symphonia-metadata",
  "symphonia-utils-xiph",
 ]
 
 [[package]]
 name = "symphonia-bundle-mp3"
 version = "0.5.1"
-source = "git+https://github.com/FelixMcFelix/Symphonia?rev=3ef90d7b336e9fa00c20f77e3b54b5f1f84f123b#3ef90d7b336e9fa00c20f77e3b54b5f1f84f123b"
+source = "git+https://github.com/FelixMcFelix/Symphonia?branch=songbird-fixes#3ef90d7b336e9fa00c20f77e3b54b5f1f84f123b"
 dependencies = [
  "bitflags",
  "lazy_static",
  "log",
- "symphonia-core 0.5.1 (git+https://github.com/FelixMcFelix/Symphonia?rev=3ef90d7b336e9fa00c20f77e3b54b5f1f84f123b)",
- "symphonia-metadata 0.5.1 (git+https://github.com/FelixMcFelix/Symphonia?rev=3ef90d7b336e9fa00c20f77e3b54b5f1f84f123b)",
+ "symphonia-core",
+ "symphonia-metadata",
 ]
 
 [[package]]
 name = "symphonia-codec-aac"
 version = "0.5.1"
-source = "git+https://github.com/FelixMcFelix/Symphonia?rev=3ef90d7b336e9fa00c20f77e3b54b5f1f84f123b#3ef90d7b336e9fa00c20f77e3b54b5f1f84f123b"
+source = "git+https://github.com/FelixMcFelix/Symphonia?branch=songbird-fixes#3ef90d7b336e9fa00c20f77e3b54b5f1f84f123b"
 dependencies = [
  "lazy_static",
  "log",
- "symphonia-core 0.5.1 (git+https://github.com/FelixMcFelix/Symphonia?rev=3ef90d7b336e9fa00c20f77e3b54b5f1f84f123b)",
+ "symphonia-core",
 ]
 
 [[package]]
 name = "symphonia-codec-alac"
 version = "0.5.1"
-source = "git+https://github.com/FelixMcFelix/Symphonia?rev=3ef90d7b336e9fa00c20f77e3b54b5f1f84f123b#3ef90d7b336e9fa00c20f77e3b54b5f1f84f123b"
+source = "git+https://github.com/FelixMcFelix/Symphonia?branch=songbird-fixes#3ef90d7b336e9fa00c20f77e3b54b5f1f84f123b"
 dependencies = [
  "log",
- "symphonia-core 0.5.1 (git+https://github.com/FelixMcFelix/Symphonia?rev=3ef90d7b336e9fa00c20f77e3b54b5f1f84f123b)",
+ "symphonia-core",
 ]
 
 [[package]]
 name = "symphonia-codec-pcm"
 version = "0.5.1"
-source = "git+https://github.com/FelixMcFelix/Symphonia?rev=3ef90d7b336e9fa00c20f77e3b54b5f1f84f123b#3ef90d7b336e9fa00c20f77e3b54b5f1f84f123b"
+source = "git+https://github.com/FelixMcFelix/Symphonia?branch=songbird-fixes#3ef90d7b336e9fa00c20f77e3b54b5f1f84f123b"
 dependencies = [
  "log",
- "symphonia-core 0.5.1 (git+https://github.com/FelixMcFelix/Symphonia?rev=3ef90d7b336e9fa00c20f77e3b54b5f1f84f123b)",
+ "symphonia-core",
 ]
 
 [[package]]
 name = "symphonia-codec-vorbis"
 version = "0.5.1"
-source = "git+https://github.com/FelixMcFelix/Symphonia?rev=3ef90d7b336e9fa00c20f77e3b54b5f1f84f123b#3ef90d7b336e9fa00c20f77e3b54b5f1f84f123b"
+source = "git+https://github.com/FelixMcFelix/Symphonia?branch=songbird-fixes#3ef90d7b336e9fa00c20f77e3b54b5f1f84f123b"
 dependencies = [
  "log",
- "symphonia-core 0.5.1 (git+https://github.com/FelixMcFelix/Symphonia?rev=3ef90d7b336e9fa00c20f77e3b54b5f1f84f123b)",
+ "symphonia-core",
  "symphonia-utils-xiph",
 ]
 
@@ -2469,18 +2429,6 @@ dependencies = [
 name = "symphonia-core"
 version = "0.5.1"
 source = "git+https://github.com/FelixMcFelix/Symphonia?branch=songbird-fixes#3ef90d7b336e9fa00c20f77e3b54b5f1f84f123b"
-dependencies = [
- "arrayvec",
- "bitflags",
- "bytemuck",
- "lazy_static",
- "log",
-]
-
-[[package]]
-name = "symphonia-core"
-version = "0.5.1"
-source = "git+https://github.com/FelixMcFelix/Symphonia?rev=3ef90d7b336e9fa00c20f77e3b54b5f1f84f123b#3ef90d7b336e9fa00c20f77e3b54b5f1f84f123b"
 dependencies = [
  "arrayvec",
  "bitflags",
@@ -2492,46 +2440,46 @@ dependencies = [
 [[package]]
 name = "symphonia-format-isomp4"
 version = "0.5.1"
-source = "git+https://github.com/FelixMcFelix/Symphonia?rev=3ef90d7b336e9fa00c20f77e3b54b5f1f84f123b#3ef90d7b336e9fa00c20f77e3b54b5f1f84f123b"
+source = "git+https://github.com/FelixMcFelix/Symphonia?branch=songbird-fixes#3ef90d7b336e9fa00c20f77e3b54b5f1f84f123b"
 dependencies = [
  "encoding_rs",
  "log",
- "symphonia-core 0.5.1 (git+https://github.com/FelixMcFelix/Symphonia?rev=3ef90d7b336e9fa00c20f77e3b54b5f1f84f123b)",
- "symphonia-metadata 0.5.1 (git+https://github.com/FelixMcFelix/Symphonia?rev=3ef90d7b336e9fa00c20f77e3b54b5f1f84f123b)",
+ "symphonia-core",
+ "symphonia-metadata",
  "symphonia-utils-xiph",
 ]
 
 [[package]]
 name = "symphonia-format-mkv"
 version = "0.5.1"
-source = "git+https://github.com/FelixMcFelix/Symphonia?rev=3ef90d7b336e9fa00c20f77e3b54b5f1f84f123b#3ef90d7b336e9fa00c20f77e3b54b5f1f84f123b"
+source = "git+https://github.com/FelixMcFelix/Symphonia?branch=songbird-fixes#3ef90d7b336e9fa00c20f77e3b54b5f1f84f123b"
 dependencies = [
  "lazy_static",
  "log",
- "symphonia-core 0.5.1 (git+https://github.com/FelixMcFelix/Symphonia?rev=3ef90d7b336e9fa00c20f77e3b54b5f1f84f123b)",
- "symphonia-metadata 0.5.1 (git+https://github.com/FelixMcFelix/Symphonia?rev=3ef90d7b336e9fa00c20f77e3b54b5f1f84f123b)",
+ "symphonia-core",
+ "symphonia-metadata",
  "symphonia-utils-xiph",
 ]
 
 [[package]]
 name = "symphonia-format-ogg"
 version = "0.5.1"
-source = "git+https://github.com/FelixMcFelix/Symphonia?rev=3ef90d7b336e9fa00c20f77e3b54b5f1f84f123b#3ef90d7b336e9fa00c20f77e3b54b5f1f84f123b"
+source = "git+https://github.com/FelixMcFelix/Symphonia?branch=songbird-fixes#3ef90d7b336e9fa00c20f77e3b54b5f1f84f123b"
 dependencies = [
  "log",
- "symphonia-core 0.5.1 (git+https://github.com/FelixMcFelix/Symphonia?rev=3ef90d7b336e9fa00c20f77e3b54b5f1f84f123b)",
- "symphonia-metadata 0.5.1 (git+https://github.com/FelixMcFelix/Symphonia?rev=3ef90d7b336e9fa00c20f77e3b54b5f1f84f123b)",
+ "symphonia-core",
+ "symphonia-metadata",
  "symphonia-utils-xiph",
 ]
 
 [[package]]
 name = "symphonia-format-wav"
 version = "0.5.1"
-source = "git+https://github.com/FelixMcFelix/Symphonia?rev=3ef90d7b336e9fa00c20f77e3b54b5f1f84f123b#3ef90d7b336e9fa00c20f77e3b54b5f1f84f123b"
+source = "git+https://github.com/FelixMcFelix/Symphonia?branch=songbird-fixes#3ef90d7b336e9fa00c20f77e3b54b5f1f84f123b"
 dependencies = [
  "log",
- "symphonia-core 0.5.1 (git+https://github.com/FelixMcFelix/Symphonia?rev=3ef90d7b336e9fa00c20f77e3b54b5f1f84f123b)",
- "symphonia-metadata 0.5.1 (git+https://github.com/FelixMcFelix/Symphonia?rev=3ef90d7b336e9fa00c20f77e3b54b5f1f84f123b)",
+ "symphonia-core",
+ "symphonia-metadata",
 ]
 
 [[package]]
@@ -2542,27 +2490,16 @@ dependencies = [
  "encoding_rs",
  "lazy_static",
  "log",
- "symphonia-core 0.5.1 (git+https://github.com/FelixMcFelix/Symphonia?branch=songbird-fixes)",
-]
-
-[[package]]
-name = "symphonia-metadata"
-version = "0.5.1"
-source = "git+https://github.com/FelixMcFelix/Symphonia?rev=3ef90d7b336e9fa00c20f77e3b54b5f1f84f123b#3ef90d7b336e9fa00c20f77e3b54b5f1f84f123b"
-dependencies = [
- "encoding_rs",
- "lazy_static",
- "log",
- "symphonia-core 0.5.1 (git+https://github.com/FelixMcFelix/Symphonia?rev=3ef90d7b336e9fa00c20f77e3b54b5f1f84f123b)",
+ "symphonia-core",
 ]
 
 [[package]]
 name = "symphonia-utils-xiph"
 version = "0.5.1"
-source = "git+https://github.com/FelixMcFelix/Symphonia?rev=3ef90d7b336e9fa00c20f77e3b54b5f1f84f123b#3ef90d7b336e9fa00c20f77e3b54b5f1f84f123b"
+source = "git+https://github.com/FelixMcFelix/Symphonia?branch=songbird-fixes#3ef90d7b336e9fa00c20f77e3b54b5f1f84f123b"
 dependencies = [
- "symphonia-core 0.5.1 (git+https://github.com/FelixMcFelix/Symphonia?rev=3ef90d7b336e9fa00c20f77e3b54b5f1f84f123b)",
- "symphonia-metadata 0.5.1 (git+https://github.com/FelixMcFelix/Symphonia?rev=3ef90d7b336e9fa00c20f77e3b54b5f1f84f123b)",
+ "symphonia-core",
+ "symphonia-metadata",
 ]
 
 [[package]]
@@ -2761,9 +2698,9 @@ checksum = "b6bc1c9ce2b5135ac7f93c72918fc37feb872bdc6a5533a8b85eb4b86bfdae52"
 
 [[package]]
 name = "tracing"
-version = "0.1.35"
+version = "0.1.36"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "a400e31aa60b9d44a52a8ee0343b5b18566b03a8321e0d321f695cf56e940160"
+checksum = "2fce9567bd60a67d08a16488756721ba392f24f29006402881e43b19aac64307"
 dependencies = [
  "cfg-if",
  "log",
@@ -2785,9 +2722,9 @@ dependencies = [
 
 [[package]]
 name = "tracing-core"
-version = "0.1.28"
+version = "0.1.29"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "7b7358be39f2f274f322d2aaed611acc57f382e8eb1e5b48cb9ae30933495ce7"
+checksum = "5aeea4303076558a00714b823f9ad67d58a3bbda1df83d8827d21193156e22f7"
 dependencies = [
  "once_cell",
  "valuable",
@@ -3035,10 +2972,13 @@ dependencies = [
  "reqwest",
  "serde",
  "serde_json",
- "serenity 0.11.4 (git+https://github.com/bloectasy/serenity?branch=next)",
+ "serenity",
  "songbird",
- "symphonia 0.5.1 (git+https://github.com/FelixMcFelix/Symphonia?rev=3ef90d7b336e9fa00c20f77e3b54b5f1f84f123b)",
+ "symphonia",
  "tokio",
+ "tracing",
+ "tracing-futures",
+ "tracing-subscriber",
  "ytextract",
 ]
 

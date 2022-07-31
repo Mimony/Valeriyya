@@ -72,7 +72,7 @@ pub async fn reference(
                 .parse::<std::num::NonZeroU64>()
                 .unwrap(),
         );
-        channel.say(ctx.discord(), format!("Temporary msg")).await;
+        channel.say(ctx.discord(), "Temporary msg").await;
     }
 
     Ok(())

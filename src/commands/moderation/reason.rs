@@ -39,7 +39,7 @@ pub async fn reason(
 
     if db.channels.logs.is_some() {
         let channel = serenity::ChannelId(db.channels.logs.unwrap().parse::<NonZeroU64>().unwrap());
-        channel.say(ctx.discord(), format!("Temporary msg")).await;
+        channel.say(ctx.discord(), "Temporary msg").await;
     }
 
     Ok(())

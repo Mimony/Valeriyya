@@ -183,7 +183,7 @@ pub async fn play(
                     .description(format!(
                         "Queued [{}]({})",
                         metadata.0[0].title,
-                        format!("https://youtu.be/{}", metadata.0[0].id)
+                        format_args!("https://youtu.be/{}", metadata.0[0].id)
                     ))
                     .timestamp(poise::serenity_prelude::Timestamp::now())
                     .title("Song playing")
