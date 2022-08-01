@@ -1,11 +1,13 @@
+use std::num::NonZeroU64;
+
 use poise::{
-    serenity_prelude::{CreateEmbed, CreateEmbedAuthor, Timestamp},
+    serenity_prelude::{ChannelId, CreateMessage, Timestamp},
     CreateReply,
 };
 
 use crate::{
     serenity,
-    utils::{create_case, get_guild_db, member_managable, ActionTypes, Case},
+    utils::{self, create_case, get_guild_db, member_managable, ActionTypes, Case},
     Context, Error,
 };
 
@@ -28,7 +30,7 @@ pub async fn kick(
 
     let db = get_guild_db(database, guild_id).await;
 
-    let reason_default = reason.unwrap_or_else(|| String::from("Default reason"));
+    let reason_default = reason.unwrap_or_else(|| format!("Use /reason {} <...reason> to seat a reason for this case.", db.cases_number + 1));
 
     if !member_managable(ctx, &member).await {
         ctx.send(
@@ -42,6 +44,39 @@ pub async fn kick(
     member
         .kick_with_reason(ctx.discord(), &reason_default)
         .await;
+    let icon_url = ctx
+        .guild()
+        .unwrap()
+        .icon_url()
+        .unwrap_or_else(|| String::from(""));
+
+    let message = if db.channels.logs.is_some() {
+        let sent_msg = ChannelId(db.channels.logs.unwrap().parse::<NonZeroU64>().unwrap())
+            .send_message(
+                ctx.discord(),
+                CreateMessage::default().add_embed(
+                    utils::valeriyya_embed()
+                    .author(
+                        serenity::CreateEmbedAuthor::default()
+                            .name(format!("{} ({})", ctx.author().tag(), ctx.author().id))
+                            .icon_url(ctx.author().face()),
+                    )
+                        .thumbnail(&icon_url)
+                        .description(format!(
+                            "Member: `{}`\nAction: `{:?}`\nReason: `{}`",
+                            member.user.tag(),
+                            ActionTypes::kick,
+                            reason_default
+                        ))
+                        .footer(serenity::CreateEmbedFooter::default().text(format!("Case {}", db.cases_number + 1)))
+                ),
+            )
+            .await?;
+        Some(sent_msg.id.to_string())
+    } else {
+        None
+    };
+
     create_case(
         database,
         guild_id,
@@ -53,39 +88,14 @@ pub async fn kick(
             target_id: member.user.id.to_string(),
             date: Timestamp::unix_timestamp(&Timestamp::now()),
             reason: reason_default.to_string(),
+            message,
             expiration: None,
             reference: None,
         },
     )
     .await;
-        let icon_url = ctx
-            .guild()
-            .unwrap()
-            .icon_url()
-            .unwrap_or_else(|| String::from(""));
-        ctx.send(
-            CreateReply::default()
-                .embed(
-                    CreateEmbed::default()
-                        .color(serenity::Color::from_rgb(82, 66, 100))
-                        .author(
-                            CreateEmbedAuthor::default()
-                                .name(format!("{} ({})", member.user.tag(), member.user.id))
-                                .icon_url(ctx.author().face()),
-                        )
-                        .thumbnail(icon_url)
-                        .description(format!(
-                            "Member: `{}`\nAction: `{:?}`\nReason: `{}`",
-                            member.user.tag(),
-                            ActionTypes::kick,
-                            reason_default
-                        ))
-                        .timestamp(Timestamp::now()),
-                )
-                .ephemeral(true),
-        )
-        .await;
-    
+
+    ctx.say(format!("{} has been kicked by {}!", member, ctx.author())).await;
 
     Ok(())
 }

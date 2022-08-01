@@ -1,11 +1,13 @@
+use std::num::NonZeroU64;
+
 use poise::{
-    serenity_prelude::{CreateEmbed, CreateEmbedAuthor, CreateEmbedFooter},
+    serenity_prelude::{CreateEmbed, CreateEmbedAuthor, CreateEmbedFooter, Timestamp, UserId},
     CreateReply,
 };
 
 use crate::{
     serenity,
-    utils::{get_guild_db, get_guild_member, update_guild_db, ActionTypes},
+    utils::{get_guild_db, get_guild_member, update_guild_db, ActionTypes, self},
     Context, Error,
 };
 
@@ -49,28 +51,41 @@ pub async fn cases(
         }
 
         let case = case.unwrap();
+        let target_user = UserId(case.target_id.parse::<NonZeroU64>().unwrap()).to_user(ctx.discord()).await?.tag();
 
         let mut case_embed = CreateEmbed::default()
-            .color(serenity::Color::from_rgb(82, 66, 100))
+            .color(utils::PURPLE_COLOR)
             .author(
                 CreateEmbedAuthor::default()
                     .name(format!("{} ({})", staff.user.tag(), staff.user.id))
                     .icon_url(staff.user.face()),
             )
             .thumbnail(ctx.guild().unwrap().icon_url().unwrap())
-            .timestamp(serenity::Timestamp::now())
+            .timestamp(Timestamp::from(&Timestamp::from_unix_timestamp(case.date).unwrap()))
             .footer(CreateEmbedFooter::default().text(format!("Case {}", case.id)));
-        if ActionTypes::mute == case.action {
+        if ActionTypes::mute == case.action && case.reference.is_some() {
             case_embed = case_embed
             .description(format!(
-                "Member: `{}`\nAction: `{:?}`\nReason: {}\nExpiration:<t:{}:R>",
-                case.target_id, case.action, case.reason, case.date
+                "Member: `{}`\nAction: `{:?}`\nReason: `{}`\nExpiration:<t:{}:R>\nReference: `{}`",
+                target_user, case.action, case.reason, case.expiration.unwrap(), case.reference.unwrap()
+            ));
+        } else if ActionTypes::mute == case.action {
+            case_embed = case_embed
+            .description(format!(
+                "Member: `{}`\nAction: `{:?}`\nReason: `{}`\nExpiration:<t:{}:R>",
+                target_user, case.action, case.reason, case.expiration.unwrap()
+            ));
+        } else if case.reference.is_some() {
+            case_embed = case_embed
+            .description(format!(
+                "Member: `{}`\nAction: `{:?}`\nReason: `{}`\nReference: `{}`",
+                target_user, case.action, case.reason, case.reference.unwrap()
             ));
         } else {
             case_embed = case_embed
             .description(format!(
                 "Member: `{}`\nAction: `{:?}`\nReason: {}\n",
-                case.target_id, case.action, case.reason
+                target_user, case.action, case.reason
             ));
         }
         
@@ -104,7 +119,7 @@ pub async fn cases(
             CreateReply::default()
                 .embed(
                     CreateEmbed::default()
-                        .color(serenity::Color::from_rgb(82, 66, 100))
+                        .color(utils::PURPLE_COLOR)
                         .author(
                             CreateEmbedAuthor::default()
                                 .name(format!("{} ({})", staff.user.tag(), staff.user.id))

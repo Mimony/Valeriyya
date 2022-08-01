@@ -1,9 +1,12 @@
 use crate::{
     serenity,
-    utils::{create_case, get_guild_db, member_managable, string_to_sec, ActionTypes, Case},
+    utils::{self, create_case, get_guild_db, member_managable, string_to_sec, ActionTypes, Case},
     Context, Error,
 };
-use poise::{serenity_prelude::{Timestamp, CreateEmbedAuthor, CreateEmbed}, CreateReply};
+use poise::{
+    serenity_prelude::{CreateMessage, Timestamp},
+    CreateReply,
+};
 
 /// Mutes a member for a specified time.
 #[poise::command(
@@ -20,7 +23,6 @@ pub async fn mute(
     #[rest]
     reason: Option<String>,
 ) -> Result<(), Error> {
-    let reason_default = reason.unwrap_or_else(|| String::from("default reason"));
     let string_time = string_to_sec(&time);
 
     if string_time < 60 {
@@ -41,6 +43,7 @@ pub async fn mute(
     let guild_id = ctx.guild_id().unwrap();
 
     let db = get_guild_db(database, guild_id.0).await;
+    let reason_default = reason.unwrap_or_else(|| format!("Use /reason {} <...reason> to seat a reason for this case.", db.cases_number + 1));
 
     if !member_managable(ctx, &member).await {
         ctx.send(
@@ -53,7 +56,7 @@ pub async fn mute(
     }
 
     if member.communication_disabled_until.is_some()
-        & ((Timestamp::unix_timestamp(&Timestamp::now())
+        && ((Timestamp::unix_timestamp(&Timestamp::now())
             - member
                 .communication_disabled_until
                 .unwrap()
@@ -72,6 +75,48 @@ pub async fn mute(
     member
         .disable_communication_until_datetime(&ctx.discord().http, timestamp.unwrap())
         .await;
+    let icon_url = ctx
+        .guild()
+        .unwrap()
+        .icon_url()
+        .unwrap_or_else(|| String::from(""));
+    let message = if db.channels.logs.is_some() {
+        let sent_msg = serenity::ChannelId(
+            db.channels
+                .logs
+                .unwrap()
+                .parse::<std::num::NonZeroU64>()
+                .unwrap(),
+        )
+        .send_message(
+            ctx.discord(),
+            CreateMessage::default().add_embed(
+                utils::valeriyya_embed()
+                    .author(
+                        serenity::CreateEmbedAuthor::default()
+                            .name(format!("{} ({})", ctx.author().tag(), ctx.author().id))
+                            .icon_url(ctx.author().face()),
+                    )
+                    .thumbnail(&icon_url)
+                    .description(format!(
+                        "Member: `{}`\nAction: `{:?}`\nReason: `{}`\nExpiration: {}",
+                        member.user.tag(),
+                        ActionTypes::mute,
+                        reason_default,
+                        time_format(time)
+                    ))
+                    .footer(
+                        serenity::CreateEmbedFooter::default()
+                            .text(format!("Case {}", db.cases_number + 1)),
+                    ),
+            ),
+        )
+        .await?;
+        Some(sent_msg.id.to_string())
+    } else {
+        None
+    };
+
     create_case(
         database,
         ctx.guild_id().unwrap().0,
@@ -84,34 +129,13 @@ pub async fn mute(
             date: Timestamp::unix_timestamp(&Timestamp::now()),
             reason: reason_default.to_string(),
             expiration: Some(timestamp.unwrap().unix_timestamp()),
+            message,
             reference: None,
         },
     )
     .await;
-    let icon_url = ctx.guild().unwrap().icon_url().unwrap_or_else(|| String::from(""));
-    ctx.send(
-        CreateReply::default()
-            .embed(
-                CreateEmbed::default()
-                    .color(serenity::Color::from_rgb(82, 66, 100))
-                    .author(
-                        CreateEmbedAuthor::default()
-                            .name(format!("{} ({})", member.user.tag(), member.user.id))
-                            .icon_url(ctx.author().face()),
-                    )
-                    .thumbnail(icon_url)
-                    .description(format!(
-                        "Member: `{}`\nAction: `{:?}`\nReason: `{}`\nExpiration: {}",
-                        member.user.tag(),
-                        ActionTypes::mute,
-                        reason_default,
-                        time_format(time)
-                    ))
-                    .timestamp(Timestamp::now()),
-            )
-            .ephemeral(true),
-    )
-    .await;
+
+    ctx.say(format!("{} has been muted by {}!", member, ctx.author())).await;
 
     Ok(())
 }

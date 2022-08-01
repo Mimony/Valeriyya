@@ -49,6 +49,12 @@ macro_rules! regex_lazy {
     };
 }
 
+pub fn valeriyya_embed() -> CreateEmbed {
+    CreateEmbed::default()
+    .color(PURPLE_COLOR)
+    .timestamp(serenity::Timestamp::now())
+}
+
 pub fn string_to_sec(raw_text: impl ToString) -> i64 {
     let re = regex_lazy!(
         r"((?P<years>\d+?)\s??y|year|years)?((?P<months>\d+?)\s??month|months)?((?P<weeks>\d+?)\s??w|week|weeks)?((?P<days>\d+?)\s??d|day|days)?((?P<hours>\d+?\s??)h|hour|hours)?((?P<minutes>\d+?)\s??m|min|minutes)?((?P<seconds>\d+?)\s??s|sec|second|seconds)?"
@@ -212,6 +218,7 @@ pub struct Case {
     pub reason: String,
     pub reference: Option<u32>,
     pub expiration: Option<i64>,
+    pub message: Option<String>
 }
 
 #[derive(Debug, Serialize, Deserialize)]
@@ -312,7 +319,6 @@ pub async fn update_case(
     let mut c = db.cases.iter_mut().find(|c| c.id == id).unwrap();
 
     if let CaseUpdateAction::reason = action {
-        // println!("{}", value.reason.unwrap());
         c.reason = value.reason.unwrap();
     } else {
         c.reference = Some(value.reference.unwrap());
