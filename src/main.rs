@@ -8,9 +8,8 @@ mod utils;
 use mongodb::options::{ClientOptions, ResolverConfig};
 use mongodb::{Client, Database};
 
-use poise::serenity_prelude::{self as serenity, Action, MemberAction, Timestamp};
+use poise::serenity_prelude as serenity;
 
-use crate::utils::{create_case, get_guild_db, ActionTypes, Case};
 use songbird::SerenityInit;
 
 type Error = Box<dyn std::error::Error + Send + Sync>;
@@ -25,52 +24,18 @@ pub struct Data {
 }
 
 async fn event_listeners(
-    ctx: &serenity::Context,
+    _ctx: &serenity::Context,
     event: &poise::Event<'_>,
     _framework: poise::FrameworkContext<'_, Data, Error>,
-    user_data: &Data,
+    _user_data: &Data,
 ) -> Result<(), Error> {
+    #[allow(clippy::single_match)]
     match event {
         poise::Event::Ready {
             data_about_bot: bot,
         } => {
             println!("{} is connected!", bot.user.name)
         }
-        poise::Event::GuildMemberRemoval {
-            guild_id: gid,
-            user,
-            member_data_if_available: _member,
-        } => {
-            let audit_logs = gid.audit_logs(ctx, None, None, None, None).await?;
-            let audit_logs_latest = audit_logs
-                .entries
-                .iter()
-                .find(|u| u.target_id.unwrap().0 == user.id.0)
-                .unwrap();
-
-            if let Action::Member(MemberAction::Kick) = audit_logs_latest.action {
-                let db = get_guild_db(&user_data.database, gid.0.to_string()).await;
-                create_case(
-                    &user_data.database,
-                    gid.0.to_string(),
-                    Case {
-                        id: db.cases_number + 1,
-                        action: ActionTypes::kick,
-                        guild_id: gid.0.to_string(),
-                        staff_id: audit_logs_latest.user_id.0.to_string(),
-                        target_id: audit_logs_latest.target_id.unwrap().to_string(),
-                        reason: audit_logs_latest
-                            .reason
-                            .clone()
-                            .unwrap_or_else(|| "Default reason".to_string()),
-                        date: Timestamp::unix_timestamp(&Timestamp::now()),
-                        expiration: None,
-                        reference: None,
-                    },
-                )
-                .await;
-            };
-        },
         _ => {}
     }
 
@@ -128,15 +93,16 @@ async fn init() -> Result<(), Error> {
                 ctx.set_activity(Some(poise::serenity::gateway::ActivityData {
                     name: String::from("the lovely moon"),
                     kind: serenity::model::gateway::ActivityType::Watching,
-                    url: None
-                })).await;
+                    url: None,
+                }))
+                .await;
                 Ok(Data {
                     db_client,
                     database,
                     client_id: client.user.id,
                 })
             })
-        }) 
+        })
         .options(options)
         .intents(
             serenity::GatewayIntents::non_privileged()
@@ -144,10 +110,7 @@ async fn init() -> Result<(), Error> {
                 | serenity::GatewayIntents::GUILD_MESSAGES
                 | serenity::GatewayIntents::MESSAGE_CONTENT,
         )
-        .client_settings(move |c| {
-            c.register_songbird()
-        });
-
+        .client_settings(move |c| c.register_songbird());
 
     client.run().await?;
 
