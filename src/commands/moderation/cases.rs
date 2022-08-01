@@ -20,7 +20,6 @@ pub enum OptionChoices {
 }
 
 #[poise::command(
-    prefix_command,
     slash_command,
     category = "Moderation",
     default_member_permissions = "MANAGE_GUILD"

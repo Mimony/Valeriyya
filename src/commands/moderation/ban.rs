@@ -14,7 +14,6 @@ use poise::{
 
 /// Bans a member from the guild.
 #[poise::command(
-    prefix_command,
     slash_command,
     category = "Moderation",
     default_member_permissions = "BAN_MEMBERS"

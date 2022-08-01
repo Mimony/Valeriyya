@@ -13,7 +13,6 @@ use crate::{
 
 /// Kicks a member from the guild.
 #[poise::command(
-    prefix_command,
     slash_command,
     category = "Moderation",
     default_member_permissions = "KICK_MEMBERS"

@@ -10,7 +10,6 @@ use poise::{
 
 /// Mutes a member for a specified time.
 #[poise::command(
-    prefix_command,
     slash_command,
     category = "Moderation",
     default_member_permissions = "MODERATE_MEMBERS"

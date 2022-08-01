@@ -3,7 +3,7 @@ use poise::{CreateReply, serenity_prelude::{CreateEmbed, CreateEmbedAuthor}};
 use crate::{serenity, ternary, utils::get_guild_member, Context, Error};
 
 /// Gets the information about a user.
-#[poise::command(prefix_command, slash_command, category = "Information", default_member_permissions="SEND_MESSAGES")]
+#[poise::command(slash_command, category = "Information", default_member_permissions="SEND_MESSAGES")]
 pub async fn user(
     ctx: Context<'_>,
     #[description = "Gets the information about a user."] user: Option<serenity::Member>,
