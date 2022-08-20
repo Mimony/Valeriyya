@@ -46,8 +46,7 @@ async fn event_listeners(
 async fn init() -> Result<(), Error> {
     tracing_subscriber::fmt::init();
 
-    // let discord_token = std::env::var("VALERIYYA-DISCORD-TOKEN").unwrap();
-    let discord_token = "OTA5NzkxNDU0MDQwMzAxNTY4.GVrzib.2qlY8yy3XuNZnNrWbOs7U3S0e7XcP_PUAgJb9Q";
+    let discord_token = std::env::var("VALERIYYA-DISCORD-TOKEN").unwrap();
     let database_url = std::env::var("VALERIYYA-MONGODB").unwrap();
     let api_key = std::env::var("VALERIYYA-API-KEY").unwrap();
 
