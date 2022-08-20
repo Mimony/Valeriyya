@@ -2,10 +2,12 @@ use poise::{serenity_prelude::CreateEmbed, CreateReply};
 
 use crate::{Context, Error};
 
+/// Leaves the voice channel.
 #[poise::command(
     prefix_command,
     slash_command,
-    default_member_permissions = "VIEW_CHANNEL"
+    default_member_permissions = "VIEW_CHANNEL", 
+    category="Music"
 )]
 pub async fn leave(ctx: Context<'_>) -> Result<(), Error> {
     let guild_id = ctx.guild_id().unwrap();

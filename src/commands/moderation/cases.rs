@@ -19,6 +19,7 @@ pub enum OptionChoices {
     Delete,
 }
 
+/// Shows or deletes a case from guilds actions.
 #[poise::command(
     slash_command,
     category = "Moderation",

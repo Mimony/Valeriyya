@@ -2,11 +2,13 @@ use poise::{CreateReply, serenity_prelude::CreateEmbed};
 
 use crate::{Context, Error};
 
+/// Puts the current song on repeat.
 #[poise::command(
     prefix_command,
     slash_command,
     default_member_permissions = "VIEW_CHANNEL",
-    rename = "loop"
+    rename = "loop",
+    category="Music"
 )]
 pub async fn loop_music(ctx: Context<'_>) -> Result<(), Error> {
     let guild_id = ctx.guild_id().unwrap();

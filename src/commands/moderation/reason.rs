@@ -8,6 +8,8 @@ use crate::{
     Context, Error,
 };
 
+
+/// Changes the reason of a case.
 #[poise::command(slash_command, category = "Moderation", default_member_permissions="MANAGE_GUILD")]
 pub async fn reason(
     ctx: Context<'_>,

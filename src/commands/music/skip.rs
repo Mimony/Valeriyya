@@ -2,6 +2,7 @@ use poise::CreateReply;
 
 use crate::{Context, Error};
 
+/// Skips the currently playing song.
 #[poise::command(prefix_command, slash_command, category="Music", aliases("s"))]
 pub async fn skip(ctx: Context<'_>) -> Result<(), Error> {
     let guild_id = ctx.guild_id().unwrap();

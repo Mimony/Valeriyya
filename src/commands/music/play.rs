@@ -8,9 +8,7 @@ use poise::{CreateReply, serenity_prelude::CreateEmbed};
 use songbird::{input::YoutubeDl, Event, TrackEvent};
 use std::time::Duration;
 
-const API_KEY: &str = "AIzaSyBZwr0hh2l9sn3XUtyPYNBREq-5gA-qFzk";
-
-/// Plays a song
+/// Plays a song.
 #[poise::command(prefix_command, slash_command, category = "Music", aliases("p"), default_member_permissions="VIEW_CHANNEL")]
 pub async fn play(
     ctx: Context<'_>,
@@ -36,8 +34,8 @@ pub async fn play(
                     None => {
                         (request_client.get(
                             format!(
-                                "https://youtube.googleapis.com/youtube/v3/search?part=snippet&order=relevance&type=video&maxResults=1&q={query}&key={API_KEY}", 
-                                query = url.clone()
+                                "https://youtube.googleapis.com/youtube/v3/search?part=snippet&order=relevance&type=video&maxResults=1&q={query}&key={api_key}", 
+                                query = url.clone(), api_key = ctx.data().api_key
                             ))
                             .send().await?.json::<ResponseVideoApi>().await?.items[0].id.videoId.clone(), true)
 
@@ -178,6 +176,7 @@ pub async fn play(
         });
 
         msg.edit(ctx, CreateReply::default()
+            .content("")
             .embed(CreateEmbed::default()
                 .color(PURPLE_COLOR)
                     .description(format!(

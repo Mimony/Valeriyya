@@ -2,7 +2,8 @@ use poise::CreateReply;
 
 use crate::{Context, Error};
 
-#[poise::command(prefix_command, slash_command, default_member_permissions="VIEW_CHANNEL")]
+/// Joins a voice channel.
+#[poise::command(prefix_command, slash_command, default_member_permissions="VIEW_CHANNEL", category="Music")]
 pub async fn join(ctx: Context<'_>) -> Result<(), Error> {
     
     let guild = ctx.guild().unwrap().clone();

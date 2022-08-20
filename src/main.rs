@@ -21,6 +21,7 @@ pub struct Data {
     client_id: serenity::UserId,
     db_client: Client,
     database: Database,
+    api_key: String,
 }
 
 async fn event_listeners(
@@ -45,8 +46,10 @@ async fn event_listeners(
 async fn init() -> Result<(), Error> {
     tracing_subscriber::fmt::init();
 
-    let discord_token = std::env::var("VALERIYYA-DISCORD-TOKEN").unwrap();
+    // let discord_token = std::env::var("VALERIYYA-DISCORD-TOKEN").unwrap();
+    let discord_token = "OTA5NzkxNDU0MDQwMzAxNTY4.GVrzib.2qlY8yy3XuNZnNrWbOs7U3S0e7XcP_PUAgJb9Q";
     let database_url = std::env::var("VALERIYYA-MONGODB").unwrap();
+    let api_key = std::env::var("VALERIYYA-API-KEY").unwrap();
 
     let database_options =
         ClientOptions::parse_with_resolver_config(database_url, ResolverConfig::cloudflare())
@@ -100,13 +103,14 @@ async fn init() -> Result<(), Error> {
                     db_client,
                     database,
                     client_id: client.user.id,
+                    api_key
                 })
             })
         })
         .options(options)
         .intents(
             serenity::GatewayIntents::non_privileged()
-                | serenity::GatewayIntents::GUILD_MEMBERS
+                // | serenity::GatewayIntents::GUILD_MEMBERS
                 | serenity::GatewayIntents::GUILD_MESSAGES
                 | serenity::GatewayIntents::MESSAGE_CONTENT,
         )

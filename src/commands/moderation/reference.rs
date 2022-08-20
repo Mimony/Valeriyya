@@ -8,6 +8,7 @@ use crate::{
     Context, Error,
 };
 
+/// Reference two seperate cases.
 #[poise::command(
     slash_command,
     category = "Moderation",
