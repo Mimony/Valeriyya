@@ -1,6 +1,6 @@
 use poise::{CreateReply, serenity_prelude::CreateEmbed};
 
-use crate::{Context, Error};
+use crate::{Context, Error, utils::PURPLE_COLOR};
 
 /// Puts the current song on repeat.
 #[poise::command(
@@ -20,7 +20,7 @@ pub async fn loop_music(ctx: Context<'_>) -> Result<(), Error> {
            handler.queue().current().unwrap().enable_loop();
            ctx.send(CreateReply::default()
             .embed( CreateEmbed::default()
-                .color(crate::utils::PURPLE_COLOR)
+                .color(PURPLE_COLOR)
                     .description("The loop has been enabled.")
                     .title("Loop information")
                     .timestamp(poise::serenity_prelude::Timestamp::now())
@@ -29,7 +29,7 @@ pub async fn loop_music(ctx: Context<'_>) -> Result<(), Error> {
         } else {
             ctx.send(CreateReply::default()
                 .embed(CreateEmbed::default()
-                    .color(crate::utils::PURPLE_COLOR)
+                    .color(PURPLE_COLOR)
                         .description("There is no songs in the queue.")
                         .title("Loop information")
                         .timestamp(poise::serenity_prelude::Timestamp::now())

@@ -1,6 +1,6 @@
 use poise::{CreateReply, serenity_prelude::{CreateEmbed, CreateEmbedAuthor}};
 
-use crate::{serenity, ternary, utils::get_guild_member, Context, Error};
+use crate::{serenity, ternary, utils::{get_guild_member, valeriyya_embed}, Context, Error};
 
 /// Gets the information about a user.
 #[poise::command(slash_command, category = "Information", default_member_permissions="SEND_MESSAGES")]
@@ -11,8 +11,7 @@ pub async fn user(
     let member = &user.unwrap_or(get_guild_member(ctx).await?.unwrap());
 
     ctx.send(CreateReply::default()
-        .embed(CreateEmbed::default()
-            .color(serenity::Color::from_rgb(82, 66, 100))
+        .embed(valeriyya_embed()
             .timestamp(serenity::Timestamp::now())
             .author(CreateEmbedAuthor::default()
                 .name(format!("{} ({})", member.user.tag(), member.user.id))

@@ -7,7 +7,7 @@ use poise::{
 
 use crate::{
     serenity,
-    utils::{self, create_case, get_guild_db, member_managable, ActionTypes, Case},
+    utils::{create_case, get_guild_db, member_managable, ActionTypes, Case, valeriyya_embed},
     Context, Error,
 };
 
@@ -54,7 +54,7 @@ pub async fn kick(
             .send_message(
                 ctx.discord(),
                 CreateMessage::default().add_embed(
-                    utils::valeriyya_embed()
+                    valeriyya_embed()
                     .author(
                         serenity::CreateEmbedAuthor::default()
                             .name(format!("{} ({})", ctx.author().tag(), ctx.author().id))

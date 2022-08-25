@@ -1,13 +1,13 @@
 use std::num::NonZeroU64;
 
 use poise::{
-    serenity_prelude::{CreateEmbed, CreateEmbedAuthor, CreateEmbedFooter, Timestamp, UserId},
+    serenity_prelude::{CreateEmbedAuthor, CreateEmbedFooter, Timestamp, UserId},
     CreateReply,
 };
 
 use crate::{
     serenity,
-    utils::{get_guild_db, get_guild_member, update_guild_db, ActionTypes, self},
+    utils::{get_guild_db, get_guild_member, update_guild_db, ActionTypes, self, valeriyya_embed},
     Context, Error,
 };
 
@@ -53,8 +53,7 @@ pub async fn cases(
         let case = case.unwrap();
         let target_user = UserId(case.target_id.parse::<NonZeroU64>().unwrap()).to_user(ctx.discord()).await?.tag();
 
-        let mut case_embed = CreateEmbed::default()
-            .color(utils::PURPLE_COLOR)
+        let mut case_embed = valeriyya_embed()
             .author(
                 CreateEmbedAuthor::default()
                     .name(format!("{} ({})", staff.user.tag(), staff.user.id))
@@ -118,8 +117,7 @@ pub async fn cases(
         ctx.send(
             CreateReply::default()
                 .embed(
-                    CreateEmbed::default()
-                        .color(utils::PURPLE_COLOR)
+                    valeriyya_embed()
                         .author(
                             CreateEmbedAuthor::default()
                                 .name(format!("{} ({})", staff.user.tag(), staff.user.id))

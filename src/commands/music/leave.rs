@@ -1,6 +1,6 @@
 use poise::{serenity_prelude::CreateEmbed, CreateReply};
 
-use crate::{Context, Error};
+use crate::{Context, Error, utils::PURPLE_COLOR};
 
 /// Leaves the voice channel.
 #[poise::command(
@@ -17,7 +17,7 @@ pub async fn leave(ctx: Context<'_>) -> Result<(), Error> {
         manager.remove(guild_id).await;
         ctx.send(CreateReply::default() 
             .embed(CreateEmbed::default() 
-                .color(crate::utils::PURPLE_COLOR)
+                .color(PURPLE_COLOR)
                     .description("Leaving the current channel.")
                     .title("Left the channel")
                     .timestamp(poise::serenity_prelude::Timestamp::now())
@@ -27,7 +27,7 @@ pub async fn leave(ctx: Context<'_>) -> Result<(), Error> {
     } else {
         ctx.send(CreateReply::default()
             .embed(CreateEmbed::default()
-                .color(crate::utils::PURPLE_COLOR)
+                .color(PURPLE_COLOR)
                     .description("I need to be in a voice channel to be able to leave.")
                     .title("Error")
                     .timestamp(poise::serenity_prelude::Timestamp::now())
