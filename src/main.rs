@@ -7,9 +7,7 @@ mod utils;
 
 use mongodb::options::{ClientOptions, ResolverConfig};
 use mongodb::{Client, Database};
-
 use poise::serenity_prelude as serenity;
-
 use songbird::SerenityInit;
 
 type Error = Box<dyn std::error::Error + Send + Sync>;
@@ -46,7 +44,10 @@ async fn event_listeners(
 async fn init() -> Result<(), Error> {
     tracing_subscriber::fmt::init();
 
-    let discord_token = std::env::var("VALERIYYA-DISCORD-TOKEN").unwrap();
+    let discord_token = match std::env::var("VALERIYYA-DEVELOP-MODE").unwrap() == "true" {
+        true => std::env::var("VALERIYYA-DISCORD-DEV-TOKEN").unwrap(),
+        false => std::env::var("VALERIYYA-DISCORD-TOKEN").unwrap(),
+    };
     let database_url = std::env::var("VALERIYYA-MONGODB").unwrap();
     let api_key = std::env::var("VALERIYYA-API-KEY").unwrap();
 
@@ -88,16 +89,10 @@ async fn init() -> Result<(), Error> {
         ..Default::default()
     };
 
-    let client = poise::Framework::build()
+    let client = poise::Framework::builder()
         .token(discord_token)
-        .user_data_setup(move |ctx, client, _framework| {
+        .user_data_setup(move |_ctx, client, _framework| {
             Box::pin(async move {
-                ctx.set_activity(Some(poise::serenity::gateway::ActivityData {
-                    name: String::from("the lovely moon"),
-                    kind: serenity::model::gateway::ActivityType::Watching,
-                    url: None,
-                }))
-                .await;
                 Ok(Data {
                     db_client,
                     database,
@@ -109,7 +104,7 @@ async fn init() -> Result<(), Error> {
         .options(options)
         .intents(
             serenity::GatewayIntents::non_privileged()
-                // | serenity::GatewayIntents::GUILD_MEMBERS
+                | serenity::GatewayIntents::GUILD_MEMBERS
                 | serenity::GatewayIntents::GUILD_MESSAGES
                 | serenity::GatewayIntents::MESSAGE_CONTENT,
         )

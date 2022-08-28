@@ -69,8 +69,7 @@ pub async fn ban(
                 CreateMessage::default().add_embed(
                     valeriyya_embed()
                     .author(
-                        serenity::CreateEmbedAuthor::default()
-                            .name(format!("{} ({})", ctx.author().tag(), ctx.author().id))
+                        serenity::CreateEmbedAuthor::new(format!("{} ({})", ctx.author().tag(), ctx.author().id))
                             .icon_url(ctx.author().face()),
                     )
                         .thumbnail(&icon_url)
@@ -80,7 +79,7 @@ pub async fn ban(
                             ActionTypes::ban,
                             reason_default
                         ))
-                        .footer(serenity::CreateEmbedFooter::default().text(format!("Case {}", db.cases_number + 1)))
+                        .footer(serenity::CreateEmbedFooter::new(format!("Case {}", db.cases_number + 1)))
                 ),
             )
             .await?;
@@ -131,11 +130,10 @@ pub async fn ban(
             let message = if db.channels.logs.is_some() {
                 let sent_msg = ChannelId(db.channels.logs.unwrap().parse::<NonZeroU64>().unwrap()).send_message(
                     ctx.discord(),
-                    CreateMessage::default().add_embed(
+                    CreateMessage::new().add_embed(
                         valeriyya_embed()
                         .author(
-                            serenity::CreateEmbedAuthor::default()
-                                .name(format!("{} ({})", ctx.author().tag(), ctx.author().id))
+                            serenity::CreateEmbedAuthor::new(format!("{} ({})", ctx.author().tag(), ctx.author().id))
                                 .icon_url(ctx.author().face()),
                         )
                             .thumbnail(&icon_url)
@@ -145,7 +143,7 @@ pub async fn ban(
                                 ActionTypes::ban,
                                 reason_default
                             ))
-                            .footer(serenity::CreateEmbedFooter::default().text(format!("Case {}", db.cases_number + 1)))
+                            .footer(serenity::CreateEmbedFooter::new(format!("Case {}", db.cases_number + 1)))
                     ),
                 )
                 .await?;

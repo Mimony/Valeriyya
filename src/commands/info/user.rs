@@ -1,4 +1,4 @@
-use poise::{CreateReply, serenity_prelude::{CreateEmbed, CreateEmbedAuthor}};
+use poise::{CreateReply, serenity_prelude::CreateEmbedAuthor};
 
 use crate::{serenity, ternary, utils::{get_guild_member, valeriyya_embed}, Context, Error};
 
@@ -13,8 +13,7 @@ pub async fn user(
     ctx.send(CreateReply::default()
         .embed(valeriyya_embed()
             .timestamp(serenity::Timestamp::now())
-            .author(CreateEmbedAuthor::default()
-                .name(format!("{} ({})", member.user.tag(), member.user.id))
+            .author(CreateEmbedAuthor::new(format!("{} ({})", member.user.tag(), member.user.id))
                 .icon_url(member.face())
             )
             .description(format!(

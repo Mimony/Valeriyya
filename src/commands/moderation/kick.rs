@@ -56,8 +56,7 @@ pub async fn kick(
                 CreateMessage::default().add_embed(
                     valeriyya_embed()
                     .author(
-                        serenity::CreateEmbedAuthor::default()
-                            .name(format!("{} ({})", ctx.author().tag(), ctx.author().id))
+                        serenity::CreateEmbedAuthor::new(format!("{} ({})", ctx.author().tag(), ctx.author().id))
                             .icon_url(ctx.author().face()),
                     )
                         .thumbnail(&icon_url)
@@ -67,7 +66,7 @@ pub async fn kick(
                             ActionTypes::kick,
                             reason_default
                         ))
-                        .footer(serenity::CreateEmbedFooter::default().text(format!("Case {}", db.cases_number + 1)))
+                        .footer(serenity::CreateEmbedFooter::new(format!("Case {}", db.cases_number + 1)))
                 ),
             )
             .await?;

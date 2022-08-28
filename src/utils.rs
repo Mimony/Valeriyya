@@ -50,7 +50,7 @@ macro_rules! regex_lazy {
 }
 
 pub fn valeriyya_embed() -> CreateEmbed {
-    CreateEmbed::default()
+    CreateEmbed::new()
     .color(PURPLE_COLOR)
     .timestamp(serenity::Timestamp::now())
 }
@@ -379,8 +379,8 @@ pub struct SongPlayNotifier {
 impl EventHandler for SongEndNotifier {
     async fn act(&self, _ctx: &EventContext<'_>) -> Option<Event> {
         self.chan_id
-            .send_message(&self.http, CreateMessage::default()
-                .add_embed( CreateEmbed::default()
+            .send_message(&self.http, CreateMessage::new()
+                .add_embed( CreateEmbed::new()
                     .color(PURPLE_COLOR)
                         .description(format!("{} has ended", self.metadata.title))
                         .title("Song ended")
@@ -398,7 +398,7 @@ impl EventHandler for SongPlayNotifier {
     async fn act(&self, _ctx: &EventContext<'_>) -> Option<Event> {
         self.chan_id
             .send_message(&self.http, CreateMessage::default()
-                .add_embed(CreateEmbed::default()
+                .add_embed(CreateEmbed::new()
                     .color(PURPLE_COLOR)
                         .description(format!(
                             "Playing [{}]({})",

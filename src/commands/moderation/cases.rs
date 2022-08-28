@@ -7,7 +7,7 @@ use poise::{
 
 use crate::{
     serenity,
-    utils::{get_guild_db, get_guild_member, update_guild_db, ActionTypes, self, valeriyya_embed},
+    utils::{get_guild_db, get_guild_member, update_guild_db, ActionTypes, valeriyya_embed},
     Context, Error,
 };
 
@@ -55,13 +55,12 @@ pub async fn cases(
 
         let mut case_embed = valeriyya_embed()
             .author(
-                CreateEmbedAuthor::default()
-                    .name(format!("{} ({})", staff.user.tag(), staff.user.id))
+                CreateEmbedAuthor::new(format!("{} ({})", staff.user.tag(), staff.user.id))
                     .icon_url(staff.user.face()),
             )
             .thumbnail(ctx.guild().unwrap().icon_url().unwrap())
             .timestamp(Timestamp::from(&Timestamp::from_unix_timestamp(case.date).unwrap()))
-            .footer(CreateEmbedFooter::default().text(format!("Case {}", case.id)));
+            .footer(CreateEmbedFooter::new(format!("Case {}", case.id)));
         if ActionTypes::mute == case.action && case.reference.is_some() {
             case_embed = case_embed
             .description(format!(
@@ -119,8 +118,7 @@ pub async fn cases(
                 .embed(
                     valeriyya_embed()
                         .author(
-                            CreateEmbedAuthor::default()
-                                .name(format!("{} ({})", staff.user.tag(), staff.user.id))
+                            CreateEmbedAuthor::new(format!("{} ({})", staff.user.tag(), staff.user.id))
                                 .icon_url(staff.user.face()),
                         )
                         .description(format!("Case with the id: {} has been deleted.", id))

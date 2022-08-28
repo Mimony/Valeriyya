@@ -92,8 +92,7 @@ pub async fn mute(
             CreateMessage::default().add_embed(
                 valeriyya_embed()
                     .author(
-                        serenity::CreateEmbedAuthor::default()
-                            .name(format!("{} ({})", ctx.author().tag(), ctx.author().id))
+                        serenity::CreateEmbedAuthor::new(format!("{} ({})", ctx.author().tag(), ctx.author().id))
                             .icon_url(ctx.author().face()),
                     )
                     .thumbnail(&icon_url)
@@ -105,8 +104,7 @@ pub async fn mute(
                         time_format(time)
                     ))
                     .footer(
-                        serenity::CreateEmbedFooter::default()
-                            .text(format!("Case {}", db.cases_number + 1)),
+                        serenity::CreateEmbedFooter::new(format!("Case {}", db.cases_number + 1)),
                     ),
             ),
         )

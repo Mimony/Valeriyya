@@ -28,8 +28,8 @@ features = ["builder", "cache", "client", "gateway", "http", "model", "utils", "
 rev = "daa15f6f1e32500dacd79ed07d034974ea33a9b4"
 
 [dependencies.poise]
-git = "https://github.com/GnomedDev/poise"
-rev = "eaa116f325cdf3a7b3aa2982c7bea09281372fc8"
+git = "https://github.com/kangalioo/poise"
+rev = "0b5b4cfd5c09fae5a81d2087847e97436c476b2a"
 
 [dependencies.mongodb]
 version = "2.2.2"
@@ -45,11 +45,4 @@ rev = "e7a233c1d67dd585178766a46080b44f73897c59"
 features = ["aac", "mp3", "isomp4", "alac", "mkv"] 
 git = "https://github.com/FelixMcFelix/Symphonia"
 branch = "songbird-fixes"
-
-[patch."https://github.com/serenity-rs/serenity"]
-serenity = { git = "https://github.com/GnomedDev/serenity", branch = "personal" }
-
-[patch.crates-io."serenity"]
-git = "https://github.com/GnomedDev/serenity"
-branch = "personal"
 

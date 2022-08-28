@@ -50,8 +50,8 @@ pub async fn reason(
             let staff_user = (staff_user_cache.tag(), staff_user_cache.id, staff_user_cache.face());
             let target_user = UserId(case_found.target_id.parse::<NonZeroU64>().unwrap()).to_user(ctx.discord()).await?.tag();
             let mut embed = valeriyya_embed().timestamp(Timestamp::from(&Timestamp::from_unix_timestamp(case_found.date).unwrap()))
-            .author(serenity::CreateEmbedAuthor::default().name(format!("{} ({})", staff_user.0, staff_user.1)).icon_url(staff_user.2))
-            .footer(CreateEmbedFooter::default().text(format!("Case {}", case_found.id)));
+            .author(serenity::CreateEmbedAuthor::new(format!("{} ({})", staff_user.0, staff_user.1)).icon_url(staff_user.2))
+            .footer(CreateEmbedFooter::new(format!("Case {}", case_found.id)));
 
             if case_found.action == ActionTypes::mute {
                 embed = embed.description(format!(
