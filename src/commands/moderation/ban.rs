@@ -2,7 +2,7 @@ use std::num::NonZeroU64;
 
 use crate::{
     serenity,
-    utils::{create_case, get_guild_db, member_managable, ActionTypes, Case, valeriyya_embed},
+    utils::{member_managable, ActionTypes, Case, valeriyya_embed, GuildDb},
     Context, Error,
 };
 use poise::{
@@ -27,7 +27,7 @@ pub async fn ban(
     #[rest]
     reason: Option<String>,
 ) -> Result<(), Error> {
-    let database = &ctx.data().database;
+    let database = &ctx.data().database();
     let guild_id = ctx.guild_id().unwrap();
     let icon_url = ctx
     .guild()
@@ -35,8 +35,9 @@ pub async fn ban(
     .icon_url()
     .unwrap_or_else(|| String::from(""));
     
-    let db = get_guild_db(database, guild_id).await;
-    let reason_default = reason.unwrap_or_else(|| format!("Use /reason {} <...reason> to seat a reason for this case.", db.cases_number + 1));
+    let mut guild_db = GuildDb::new(database, guild_id.to_string()).await;
+    let case_number = guild_db.cases_number + 1;
+    let reason_default = reason.unwrap_or_else(|| format!("Use /reason {} <...reason> to seat a reason for this case.", case_number));
 
     if let Some(m) = &member {
         if !member_managable(ctx, m).await {
@@ -63,8 +64,8 @@ pub async fn ban(
         }
         m.ban_with_reason(ctx.discord(), 7, &reason_default).await?;
 
-        let message = if db.channels.logs.as_ref().is_some() {
-            let sent_msg = ChannelId(db.channels.logs.as_ref().unwrap().parse::<NonZeroU64>().unwrap()).send_message(
+        let message = if guild_db.channels.logs.as_ref().is_some() {
+            let sent_msg = ChannelId(guild_db.channels.logs.as_ref().unwrap().parse::<NonZeroU64>().unwrap()).send_message(
                 ctx.discord(),
                 CreateMessage::default().add_embed(
                     valeriyya_embed()
@@ -76,10 +77,10 @@ pub async fn ban(
                         .description(format!(
                             "Member: `{}`\nAction: `{:?}`\nReason: `{}`",
                             m.user.tag(),
-                            ActionTypes::ban,
+                            ActionTypes::Ban,
                             reason_default
                         ))
-                        .footer(serenity::CreateEmbedFooter::new(format!("Case {}", db.cases_number + 1)))
+                        .footer(serenity::CreateEmbedFooter::new(format!("Case {}", case_number)))
                 ),
             )
             .await?;
@@ -88,23 +89,18 @@ pub async fn ban(
             None
         };
 
-        create_case(
-            database,
-            guild_id,
-            Case {
-                id: db.cases_number + 1,
-                action: ActionTypes::ban,
-                guild_id: guild_id.to_string(),
-                staff_id: ctx.author().id.to_string(),
-                target_id: m.user.id.to_string(),
-                date: Timestamp::unix_timestamp(&Timestamp::now()),
-                reason: reason_default.to_string(),
-                message,
-                expiration: None,
-                reference: None,
-            },
-        )
-        .await;
+        guild_db = guild_db.add_cases(Case {
+            id: case_number,
+            action: ActionTypes::Ban,
+            guild_id: guild_id.to_string(),
+            staff_id: ctx.author().id.to_string(),
+            target_id: m.user.id.to_string(),
+            date: Timestamp::unix_timestamp(&Timestamp::now()),
+            reason: reason_default.to_string(),
+            message,
+            expiration: None,
+            reference: None,
+        });
 
         ctx.say(format!("{:?} has been banned by {:?}!", member, ctx.author())).await;
     }
@@ -127,8 +123,8 @@ pub async fn ban(
             .ban_with_reason(ctx.discord(), user_id, 7, &reason_default)
             .await?;
 
-            let message = if db.channels.logs.is_some() {
-                let sent_msg = ChannelId(db.channels.logs.unwrap().parse::<NonZeroU64>().unwrap()).send_message(
+            let message = if guild_db.channels.logs.as_ref().is_some() {
+                let sent_msg = ChannelId(guild_db.channels.logs.as_ref().unwrap().parse::<NonZeroU64>().unwrap()).send_message(
                     ctx.discord(),
                     CreateMessage::new().add_embed(
                         valeriyya_embed()
@@ -140,10 +136,10 @@ pub async fn ban(
                             .description(format!(
                                 "Member: `{}`\nAction: `{:?}`\nReason: `{}`",
                                 m_id,
-                                ActionTypes::ban,
+                                ActionTypes::Ban,
                                 reason_default
                             ))
-                            .footer(serenity::CreateEmbedFooter::new(format!("Case {}", db.cases_number + 1)))
+                            .footer(serenity::CreateEmbedFooter::new(format!("Case {}", case_number)))
                     ),
                 )
                 .await?;
@@ -152,25 +148,21 @@ pub async fn ban(
                 None
             };
 
-        create_case(
-            database,
-            guild_id,
-            Case {
-                id: db.cases_number + 1,
-                action: ActionTypes::ban,
-                guild_id: guild_id.to_string(),
-                staff_id: ctx.author().id.to_string(),
-                target_id: user_id.0.to_string(),
-                date: Timestamp::unix_timestamp(&Timestamp::now()),
-                reason: reason_default.to_string(),
-                message,
-                expiration: None,
-                reference: None,
-            },
-        )
-        .await;
+        guild_db = guild_db.add_cases(Case {
+            id: case_number,
+            action: ActionTypes::Ban,
+            guild_id: guild_id.to_string(),
+            staff_id: ctx.author().id.to_string(),
+            target_id: user_id.0.to_string(),
+            date: Timestamp::unix_timestamp(&Timestamp::now()),
+            reason: reason_default.to_string(),
+            message,
+            expiration: None,
+            reference: None,
+        });
+
         ctx.say(format!("Member with the the id: {} has been banned by {:?}!", user_id, ctx.author())).await;
     }
-
+    guild_db.execute(database).await;
     Ok(())
 }

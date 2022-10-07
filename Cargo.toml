@@ -25,11 +25,11 @@ tracing-futures = "0.2"
 git = "https://github.com/serenity-rs/serenity"
 default-features = false
 features = ["builder", "cache", "client", "gateway", "http", "model", "utils", "rustls_backend", "chrono", "voice"]
-rev = "daa15f6f1e32500dacd79ed07d034974ea33a9b4"
+rev = "845334bc1869efa1fc3fcac0ef83cee99075fec7"
 
 [dependencies.poise]
 git = "https://github.com/kangalioo/poise"
-rev = "0b5b4cfd5c09fae5a81d2087847e97436c476b2a"
+rev = "60d006fac1f1c59bc6f63fbd1b4342f0df9af82d"
 
 [dependencies.mongodb]
 version = "2.2.2"

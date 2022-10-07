@@ -7,7 +7,7 @@ use poise::{
 
 use crate::{
     serenity,
-    utils::{get_guild_db, get_guild_member, update_guild_db, ActionTypes, valeriyya_embed},
+    utils::{get_guild_member, ActionTypes, valeriyya_embed, GuildDb},
     Context, Error,
 };
 
@@ -30,11 +30,11 @@ pub async fn cases(
     #[description = "What to do with the case."] option: OptionChoices,
     #[description = "The id of the case."] id: u32,
 ) -> Result<(), Error> {
-    let database = &ctx.data().database;
+    let database = &ctx.data().database();
 
     let guild_id = ctx.guild_id().unwrap().0;
 
-    let mut db = get_guild_db(database, guild_id).await;
+    let mut db = GuildDb::new(database, guild_id.to_string()).await;
     let staff = get_guild_member(ctx).await?.unwrap();
 
     if let OptionChoices::Show = option {
@@ -61,13 +61,13 @@ pub async fn cases(
             .thumbnail(ctx.guild().unwrap().icon_url().unwrap())
             .timestamp(Timestamp::from(&Timestamp::from_unix_timestamp(case.date).unwrap()))
             .footer(CreateEmbedFooter::new(format!("Case {}", case.id)));
-        if ActionTypes::mute == case.action && case.reference.is_some() {
+        if ActionTypes::Mute == case.action && case.reference.is_some() {
             case_embed = case_embed
             .description(format!(
                 "Member: `{}`\nAction: `{:?}`\nReason: `{}`\nExpiration:<t:{}:R>\nReference: `{}`",
                 target_user, case.action, case.reason, case.expiration.unwrap(), case.reference.unwrap()
             ));
-        } else if ActionTypes::mute == case.action {
+        } else if ActionTypes::Mute == case.action {
             case_embed = case_embed
             .description(format!(
                 "Member: `{}`\nAction: `{:?}`\nReason: `{}`\nExpiration:<t:{}:R>",
@@ -109,9 +109,8 @@ pub async fn cases(
             .iter()
             .position(|indexc| indexc.id == case.id)
             .unwrap();
-        db.cases.remove(index);
 
-        update_guild_db(database, guild_id, &db).await;
+        db = db.delete_cases(index);
 
         ctx.send(
             CreateReply::default()
@@ -128,6 +127,6 @@ pub async fn cases(
         )
         .await;
     }
-
+    db.execute(database).await;
     Ok(())
 }

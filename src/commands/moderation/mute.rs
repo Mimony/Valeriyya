@@ -1,6 +1,6 @@
 use crate::{
     serenity,
-    utils::{create_case, get_guild_db, member_managable, string_to_sec, ActionTypes, Case, valeriyya_embed},
+    utils::{member_managable, string_to_sec, ActionTypes, Case, valeriyya_embed, GuildDb},
     Context, Error,
 };
 use poise::{
@@ -38,11 +38,12 @@ pub async fn mute(
         Timestamp::from_unix_timestamp(Timestamp::unix_timestamp(&Timestamp::now()) + string_time)
             .ok();
 
-    let database = &ctx.data().database;
+    let database = &ctx.data().database();
     let guild_id = ctx.guild_id().unwrap();
 
-    let db = get_guild_db(database, guild_id.0).await;
-    let reason_default = reason.unwrap_or_else(|| format!("Use /reason {} <...reason> to seat a reason for this case.", db.cases_number + 1));
+    let mut guild_db = GuildDb::new(database, guild_id.to_string()).await;
+    let case_number = guild_db.cases_number + 1;
+    let reason_default = reason.unwrap_or_else(|| format!("Use /reason {} <...reason> to seat a reason for this case.", case_number));
 
     if !member_managable(ctx, &member).await {
         ctx.send(
@@ -79,10 +80,11 @@ pub async fn mute(
         .unwrap()
         .icon_url()
         .unwrap_or_else(|| String::from(""));
-    let message = if db.channels.logs.is_some() {
+    let message = if guild_db.channels.logs.is_some() {
         let sent_msg = serenity::ChannelId(
-            db.channels
+            guild_db.channels
                 .logs
+                .as_ref()
                 .unwrap()
                 .parse::<std::num::NonZeroU64>()
                 .unwrap(),
@@ -99,12 +101,12 @@ pub async fn mute(
                     .description(format!(
                         "Member: `{}`\nAction: `{:?}`\nReason: `{}`\nExpiration: {}",
                         member.user.tag(),
-                        ActionTypes::mute,
+                        ActionTypes::Mute,
                         reason_default,
                         time_format(time)
                     ))
                     .footer(
-                        serenity::CreateEmbedFooter::new(format!("Case {}", db.cases_number + 1)),
+                        serenity::CreateEmbedFooter::new(format!("Case {}", case_number)),
                     ),
             ),
         )
@@ -114,26 +116,22 @@ pub async fn mute(
         None
     };
 
-    create_case(
-        database,
-        ctx.guild_id().unwrap().0,
-        Case {
-            id: db.cases_number + 1,
-            action: ActionTypes::mute,
-            guild_id: guild_id.0.to_string(),
-            staff_id: ctx.author().id.to_string(),
-            target_id: member.user.id.to_string(),
-            date: Timestamp::unix_timestamp(&Timestamp::now()),
-            reason: reason_default.to_string(),
-            expiration: Some(timestamp.unwrap().unix_timestamp()),
-            message,
-            reference: None,
-        },
-    )
-    .await;
+    guild_db = guild_db.add_cases(Case {
+        id: case_number,
+        action: ActionTypes::Mute,
+        guild_id: guild_id.0.to_string(),
+        staff_id: ctx.author().id.to_string(),
+        target_id: member.user.id.to_string(),
+        date: Timestamp::unix_timestamp(&Timestamp::now()),
+        reason: reason_default.to_string(),
+        expiration: Some(timestamp.unwrap().unix_timestamp()),
+        message,
+        reference: None,
+    });
 
     ctx.say(format!("{} has been muted by {}!", member, ctx.author())).await;
 
+    guild_db.execute(database).await;
     Ok(())
 }
 

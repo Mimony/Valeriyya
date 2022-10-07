@@ -4,7 +4,7 @@ use poise::{CreateReply, serenity_prelude::{UserId, Timestamp, CreateEmbedFooter
 
 use crate::{
     serenity,
-    utils::{get_guild_db, update_case, CaseUpdateAction, CaseUpdateValue, ActionTypes, valeriyya_embed},
+    utils::{update_case, CaseUpdateAction, CaseUpdateValue, ActionTypes, valeriyya_embed, GuildDb},
     Context, Error,
 };
 
@@ -19,9 +19,9 @@ pub async fn reference(
     #[description = "The case to assign a reference."] case: u32,
     #[description = "The reference case"] reference: u32,
 ) -> Result<(), Error> {
-    let database = &ctx.data().database;
+    let database = &ctx.data().database();
     let guild_id = ctx.guild_id().unwrap().0;
-    let db = get_guild_db(database, guild_id).await;
+    let db = GuildDb::new(database, guild_id.to_string()).await;
 
     let case_1 = db.cases.iter().find(|c| c.id == case);
     let case_2 = db.cases.iter().find(|c| c.id == reference);
@@ -50,7 +50,7 @@ pub async fn reference(
 
     update_case(
         database,
-        guild_id,
+        guild_id.to_string(),
         case,
         CaseUpdateAction::reference,
         CaseUpdateValue {
@@ -74,7 +74,7 @@ pub async fn reference(
             .author(serenity::CreateEmbedAuthor::new(format!("{} ({})", staff_user.0, staff_user.1)).icon_url(staff_user.2))
             .footer(CreateEmbedFooter::new(format!("Case {}", case_found.id)));
 
-            if case_found.action == ActionTypes::mute {
+            if case_found.action == ActionTypes::Mute {
                 embed = embed.description(format!(
                     "Member: `{}`\nAction: `{:?}`\nReason: `{}`\nExpiration: {:?}\nReference: `{}`",
                     target_user, case_found.action, case_found.reason, case_found.expiration.unwrap(), &reference

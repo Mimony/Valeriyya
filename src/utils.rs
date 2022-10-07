@@ -6,7 +6,7 @@ use bson::doc;
 use mongodb::Database;
 use poise::{
     async_trait,
-    serenity_prelude::{ChannelId, Http, RoleId, CreateMessage, CreateEmbed},
+    serenity_prelude::{ChannelId, CreateEmbed, CreateMessage, Http, RoleId},
 };
 use serde::{Deserialize, Serialize};
 use songbird::{Event, EventContext, EventHandler};
@@ -51,8 +51,8 @@ macro_rules! regex_lazy {
 
 pub fn valeriyya_embed() -> CreateEmbed {
     CreateEmbed::new()
-    .color(PURPLE_COLOR)
-    .timestamp(serenity::Timestamp::now())
+        .color(PURPLE_COLOR)
+        .timestamp(serenity::Timestamp::now())
 }
 
 pub fn string_to_sec(raw_text: impl ToString) -> i64 {
@@ -133,7 +133,6 @@ pub async fn get_guild_permissions(
 }
 
 pub async fn member_managable(ctx: Context<'_>, member: &serenity::Member) -> bool {
-    
     {
         let guild = ctx.guild().unwrap();
         if member.user.id == guild.owner_id {
@@ -146,18 +145,15 @@ pub async fn member_managable(ctx: Context<'_>, member: &serenity::Member) -> bo
             return true;
         }
     }
-    
+
     let guild_id = ctx.guild_id().unwrap();
-    {   
+    {
         let user_id = ctx.discord().cache.current_user().id;
-        let me = guild_id
-            .member(ctx.discord(), user_id)
-            .await
-            .unwrap();
+        let me = guild_id.member(ctx.discord(), user_id).await.unwrap();
 
         #[allow(clippy::len_zero)]
         let highest_me_role: RoleId = ternary!(me.roles.len() == 0 => {
-            RoleId(guild_id.0); 
+            RoleId(guild_id.0);
             me.highest_role_info(&ctx.discord().cache).unwrap().0;
         });
 
@@ -188,23 +184,26 @@ pub fn compare_role_position(
     r1.position - r2.position
 }
 
-#[derive(Debug, Serialize, Deserialize)]
-pub struct ChannelStruct {
+#[derive(Debug, Serialize, Deserialize, Default)]
+pub struct GuildDbChannels {
     pub logs: Option<String>,
     pub welcome: Option<String>,
 }
-#[derive(Debug, Serialize, Deserialize)]
-pub struct RoleStruct {
+#[derive(Debug, Serialize, Deserialize, Default)]
+pub struct GuildDbRoles {
     pub staff: Option<String>,
 }
 
-#[allow(non_camel_case_types)]
 #[derive(Debug, Serialize, Deserialize, PartialEq, Eq)]
 pub enum ActionTypes {
-    ban,
-    unban,
-    kick,
-    mute,
+    Ban,
+    Unban,
+    Kick,
+    Mute,
+}
+
+impl ActionTypes {
+    
 }
 
 #[derive(Debug, Serialize, Deserialize)]
@@ -218,7 +217,7 @@ pub struct Case {
     pub reason: String,
     pub reference: Option<u32>,
     pub expiration: Option<i64>,
-    pub message: Option<String>
+    pub message: Option<String>,
 }
 
 #[derive(Debug, Serialize, Deserialize)]
@@ -229,73 +228,128 @@ pub struct History {
     pub mute: u16,
 }
 
-#[derive(Debug, Serialize, Deserialize)]
+#[derive(Debug, Serialize, Deserialize, Default)]
 pub struct GuildDb {
     pub gid: String,
     pub cases: Vec<Case>,
     pub cases_number: u32,
     pub history: Vec<History>,
-    pub channels: ChannelStruct,
-    pub roles: RoleStruct,
+    pub channels: GuildDbChannels,
+    pub roles: GuildDbRoles,
 }
 
-pub async fn get_guild_db(database: &Database, gid: impl ToString) -> GuildDb {
-    let db = database.collection::<GuildDb>("guild");
+impl GuildDb {
+    pub async fn new(db: &Database, guild_id: impl Into<String>) -> Self {
+        let guild_id_clone = guild_id.into().clone();
+        let db = db.collection::<GuildDb>("guild");
+        let db_guild = db
+            .find_one(doc! { "gid": guild_id_clone.clone() }, None)
+            .await
+            .unwrap();
 
-    let db_guild = db
-        .find_one(doc! { "gid": gid.to_string() }, None)
-        .await
-        .unwrap();
-    match db_guild {
-        Some(gdb) => gdb,
-        None => {
-            let doc = GuildDb {
-                gid: gid.to_string(),
-                cases: Vec::<Case>::new(),
-                cases_number: 0,
-                channels: ChannelStruct {
-                    logs: None,
-                    welcome: None,
-                },
-                roles: RoleStruct { staff: None },
-                history: Vec::<History>::new(),
-            };
+        if let Some(guilddb) = db_guild {
+            guilddb
+        } else {
+            let doc = Self::default().guild_id(guild_id_clone);
             let id = db.insert_one(doc, None).await.unwrap();
             db.find_one(
                 doc! {
-                    "_id": id.inserted_id
+                    "_id": id.inserted_id,
                 },
                 None,
-            )
-            .await
+            ).await
             .unwrap()
             .unwrap()
         }
     }
+
+    #[inline(always)]
+    pub fn guild_id(mut self, gid: String) -> Self {
+        self.gid = gid;
+        self
+    }
+
+    #[inline(always)]
+    pub fn add_cases(mut self, case: Case) -> Self {
+        let cases_number = self.cases_number + 1;
+        self = self.set_cases_count(cases_number);
+        self.cases.push(case);
+        self
+    }
+
+    #[inline(always)]
+    pub fn set_cases(mut self, cases: Vec<Case>) -> Self {
+        self.cases = cases;
+        self
+    }
+
+    #[inline(always)]
+    pub fn delete_cases(mut self, index: usize) -> Self {
+        self.cases.remove(index);
+        self
+    }
+
+    #[inline(always)]
+    pub fn set_cases_count(mut self, cases_number: u32) -> Self {
+        self.cases_number = cases_number;
+        self
+    }
+
+    #[inline(always)]
+    pub fn set_history(mut self, history: Vec<History>) -> Self {
+        self.history = history;
+        self
+    }
+
+    #[inline(always)]
+    pub fn set_channels(mut self, channels: GuildDbChannels) -> Self {
+        self.channels = channels;
+        self
+    }
+
+    #[inline(always)]
+    pub fn set_roles(mut self, roles: GuildDbRoles) -> Self {
+        self.roles = roles;
+        self
+    }
+
+    pub async fn execute(self, database: &Database) -> Self {
+        let db = database.collection::<GuildDb>("guild");
+        db.find_one_and_update(
+            doc! { "gid": self.gid.clone() },
+            doc! {
+                "$set": bson::to_document(&self).unwrap()
+            },
+            None,
+        ).await
+        .unwrap()
+        .unwrap()
+    }
 }
 
-pub async fn update_guild_db(database: &Database, gid: impl ToString, value: &GuildDb) -> GuildDb {
-    let db = database.collection::<GuildDb>("guild");
+impl GuildDbChannels {
+    #[inline(always)]
+    pub fn set_logs_channel(mut self, logs: Option<String>) -> Self {
+        self.logs = logs;
+        self
+    }
 
-    db.find_one_and_update(
-        doc! { "gid": gid.to_string() },
-        doc! {
-            "$set": bson::to_document(value).unwrap()
-        },
-        None,
-    )
-    .await
-    .unwrap()
-    .unwrap()
+    #[inline(always)]
+    pub fn set_welcome_channel(mut self, welcome: Option<String>) -> Self {
+        self.welcome = welcome;
+        self
+    }
 }
 
-pub async fn create_case(database: &Database, gid: impl ToString, case: Case) {
-    let mut db = get_guild_db(database, gid.to_string()).await;
-
-    db.cases.push(case);
-    db.cases_number += 1;
-    update_guild_db(database, gid, &db).await;
+impl GuildDbRoles {
+    #[inline(always)]
+    pub fn set_staff_role(mut self, staff: Option<String>) -> Self {
+        self.staff = staff;
+        self
+    }
 }
+
+
 
 pub enum CaseUpdateAction {
     reason,
@@ -309,12 +363,12 @@ pub struct CaseUpdateValue {
 
 pub async fn update_case(
     database: &Database,
-    gid: impl ToString,
+    gid: String,
     id: u32,
     action: CaseUpdateAction,
     value: CaseUpdateValue,
 ) {
-    let mut db = get_guild_db(database, gid.to_string()).await;
+    let mut db = GuildDb::new(database, gid).await;
 
     let mut c = db.cases.iter_mut().find(|c| c.id == id).unwrap();
 
@@ -324,7 +378,7 @@ pub async fn update_case(
         c.reference = Some(value.reference.unwrap());
     }
 
-    update_guild_db(database, gid, &db).await;
+    db.execute(database).await;
 }
 
 #[derive(Deserialize, Debug, Clone)]
@@ -379,13 +433,15 @@ pub struct SongPlayNotifier {
 impl EventHandler for SongEndNotifier {
     async fn act(&self, _ctx: &EventContext<'_>) -> Option<Event> {
         self.chan_id
-            .send_message(&self.http, CreateMessage::new()
-                .add_embed( CreateEmbed::new()
-                    .color(PURPLE_COLOR)
+            .send_message(
+                &self.http,
+                CreateMessage::new().add_embed(
+                    CreateEmbed::new()
+                        .color(PURPLE_COLOR)
                         .description(format!("{} has ended", self.metadata.title))
                         .title("Song ended")
-                        .timestamp(poise::serenity_prelude::Timestamp::now())
-                )
+                        .timestamp(poise::serenity_prelude::Timestamp::now()),
+                ),
             )
             .await;
 
@@ -397,17 +453,19 @@ impl EventHandler for SongEndNotifier {
 impl EventHandler for SongPlayNotifier {
     async fn act(&self, _ctx: &EventContext<'_>) -> Option<Event> {
         self.chan_id
-            .send_message(&self.http, CreateMessage::default()
-                .add_embed(CreateEmbed::new()
-                    .color(PURPLE_COLOR)
+            .send_message(
+                &self.http,
+                CreateMessage::default().add_embed(
+                    CreateEmbed::new()
+                        .color(PURPLE_COLOR)
                         .description(format!(
                             "Playing [{}]({})",
                             self.metadata.title,
                             format_args!("https://youtu.be/{}", self.metadata.id)
                         ))
                         .title("Song playing")
-                        .timestamp(poise::serenity_prelude::Timestamp::now())
-                )
+                        .timestamp(poise::serenity_prelude::Timestamp::now()),
+                ),
             )
             .await;
 

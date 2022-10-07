@@ -1,7 +1,7 @@
 use poise::serenity_prelude::Mentionable;
 use crate::{
     serenity,
-    utils::{get_guild_db, update_guild_db},
+    utils::{GuildDb, GuildDbChannels, GuildDbRoles},
     Context, Error,
 };
 
@@ -30,20 +30,19 @@ pub async fn channel(
     #[channel_types("Text")]
     channel: serenity::GuildChannel,
 ) -> Result<(), Error> {
-    let database = &ctx.data().database;
+    let database = &ctx.data().database();
+    let guild_id = ctx.guild_id().unwrap();
 
-    let guild_id = ctx.guild_id().unwrap().0;
-
-    let mut db = get_guild_db(database, guild_id).await;
+    let mut db = GuildDb::new(database, guild_id.to_string()).await;
     if let ChannelTypeChoices::Logs = type_option {
-        db.channels.logs = Some(channel.id.to_string());
+        db = db.set_channels(GuildDbChannels::default().set_logs_channel(Some(channel.id.to_string())));
         ctx.say(format!("The logs channel has been updated to {}.", channel.mention())).await;
     } else {
-        db.channels.welcome = Some(channel.id.to_string());
+        db = db.set_channels(GuildDbChannels::default().set_welcome_channel(Some(channel.id.to_string())));
         ctx.say(format!("The welcome channel has been updated to {}.", channel.mention())).await;
     };
 
-    update_guild_db(database, guild_id, &db).await;
+    db.execute(database).await;
 
     Ok(())
 }
@@ -66,16 +65,16 @@ pub async fn role(
     role: serenity::Role,
 ) -> Result<(), Error> {
 
-    let database = &ctx.data().database;
+    let database = &ctx.data().database();
     let guild_id = ctx.guild_id().unwrap().0;
 
-    let mut db = get_guild_db(database, guild_id).await;
+    let mut db = GuildDb::new(database, guild_id.to_string()).await;
     if let RoleTypeChoices::Staff = type_option {
-        db.roles.staff = Some(role.id.to_string());
+        db = db.set_roles(GuildDbRoles::default().set_staff_role(Some(role.id.to_string())));
         ctx.say(format!("The staff role has been updated to {}.", role.mention())).await;
     };
 
-    update_guild_db(database, guild_id, &db).await;
+    db.execute(database).await;
 
     Ok(())
 }

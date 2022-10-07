@@ -13,13 +13,16 @@ use songbird::SerenityInit;
 type Error = Box<dyn std::error::Error + Send + Sync>;
 type Context<'a> = poise::Context<'a, Data, Error>;
 
-#[allow(dead_code)]
 #[derive(Debug)]
 pub struct Data {
-    client_id: serenity::UserId,
     db_client: Client,
-    database: Database,
     api_key: String,
+}
+
+impl Data {
+    pub fn database(&self) -> Database {
+        self.db_client.database("Valeriyya")
+    }
 }
 
 async fn event_listeners(
@@ -44,10 +47,11 @@ async fn event_listeners(
 async fn init() -> Result<(), Error> {
     tracing_subscriber::fmt::init();
 
-    let discord_token = match std::env::var("VALERIYYA-DEVELOP-MODE").unwrap() == "true" {
-        true => std::env::var("VALERIYYA-DISCORD-DEV-TOKEN").unwrap(),
-        false => std::env::var("VALERIYYA-DISCORD-TOKEN").unwrap(),
-    };
+    // let discord_token = match std::env::var("VALERIYYA-DEVELOP-MODE").unwrap() == "true" {
+    //     true => std::env::var("VALERIYYA-DISCORD-DEV-TOKEN").unwrap(),
+    //     false => std::env::var("VALERIYYA-DISCORD-TOKEN").unwrap(),
+    // };
+    let discord_token = std::env::var("VALERIYYA-DISCORD-DEV-TOKEN").unwrap();
     let database_url = std::env::var("VALERIYYA-MONGODB").unwrap();
     let api_key = std::env::var("VALERIYYA-API-KEY").unwrap();
 
@@ -55,13 +59,8 @@ async fn init() -> Result<(), Error> {
         ClientOptions::parse_with_resolver_config(database_url, ResolverConfig::cloudflare())
             .await?;
     let db_client = Client::with_options(database_options)?;
-    let database = db_client.database("Valeriyya");
 
     let options = poise::FrameworkOptions {
-        prefix_options: poise::PrefixFrameworkOptions {
-            prefix: Some("!".to_string()),
-            ..Default::default()
-        },
         commands: vec![
             // Information Commands
             commands::info::user(),
@@ -86,6 +85,10 @@ async fn init() -> Result<(), Error> {
         listener: |ctx, event, framework, user_data| {
             Box::pin(event_listeners(ctx, event, framework, user_data))
         },
+        prefix_options: poise::PrefixFrameworkOptions {
+            prefix: Some("!".to_string()),
+            ..Default::default()
+        },
         ..Default::default()
     };
 
@@ -95,8 +98,6 @@ async fn init() -> Result<(), Error> {
             Box::pin(async move {
                 Ok(Data {
                     db_client,
-                    database,
-                    client_id: client.user.id,
                     api_key
                 })
             })

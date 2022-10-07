@@ -4,7 +4,7 @@ use poise::{CreateReply, serenity_prelude::{MessageId, EditMessage, UserId, Time
 
 use crate::{
     serenity,
-    utils::{get_guild_db, update_case, CaseUpdateAction, CaseUpdateValue, ActionTypes, valeriyya_embed},
+    utils::{update_case, CaseUpdateAction, CaseUpdateValue, ActionTypes, valeriyya_embed, GuildDb},
     Context, Error,
 };
 
@@ -16,9 +16,9 @@ pub async fn reason(
     #[description = "The case to assign a reason."] case: u32,
     #[description = "The reasoning for the case."] #[rest] reason: String,
 ) -> Result<(), Error> {
-    let database = &ctx.data().database;
+    let database = &ctx.data().database();
     let guild_id = ctx.guild_id().unwrap().0;
-    let db = get_guild_db(database, guild_id).await;
+    let db = GuildDb::new(database, guild_id.to_string()).await;
 
     let case_find = db.cases.iter().find(|c| c.id == case);
 
@@ -30,7 +30,7 @@ pub async fn reason(
         return Ok(())
     } 
     
-    update_case(database, guild_id, case, CaseUpdateAction::reason, CaseUpdateValue {
+    update_case(database, guild_id.to_string(), case, CaseUpdateAction::reason, CaseUpdateValue {
         reason: Some(reason.clone()),
         reference: None
     });
@@ -53,7 +53,7 @@ pub async fn reason(
             .author(serenity::CreateEmbedAuthor::new(format!("{} ({})", staff_user.0, staff_user.1)).icon_url(staff_user.2))
             .footer(CreateEmbedFooter::new(format!("Case {}", case_found.id)));
 
-            if case_found.action == ActionTypes::mute {
+            if case_found.action == ActionTypes::Mute {
                 embed = embed.description(format!(
                     "Member: `{}`\nAction: `{:?}`\nReason: `{}`\nExpiration: {:?}",
                     target_user, case_found.action, reason, case_found.expiration.unwrap() 

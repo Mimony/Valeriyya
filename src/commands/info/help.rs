@@ -8,7 +8,8 @@ pub async fn help(ctx: Context<'_>, command: Option<String>) -> Result<(), Error
         poise::builtins::HelpConfiguration {
             ..Default::default()
         },
-    ).await?;
+    )
+    .await?;
 
     Ok(())
 }

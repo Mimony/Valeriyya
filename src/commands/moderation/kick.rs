@@ -7,7 +7,7 @@ use poise::{
 
 use crate::{
     serenity,
-    utils::{create_case, get_guild_db, member_managable, ActionTypes, Case, valeriyya_embed},
+    utils::{member_managable, ActionTypes, Case, valeriyya_embed, GuildDb},
     Context, Error,
 };
 
@@ -24,12 +24,12 @@ pub async fn kick(
     #[rest]
     reason: Option<String>,
 ) -> Result<(), Error> {
-    let database = &ctx.data().database;
+    let database = &ctx.data().database();
     let guild_id = ctx.guild_id().unwrap();
 
-    let db = get_guild_db(database, guild_id).await;
-
-    let reason_default = reason.unwrap_or_else(|| format!("Use /reason {} <...reason> to seat a reason for this case.", db.cases_number + 1));
+    let mut guild_db = GuildDb::new(database, guild_id.to_string()).await;
+    let case_number = guild_db.cases_number + 1;
+    let reason_default = reason.unwrap_or_else(|| format!("Use /reason {} <...reason> to seat a reason for this case.", case_number));
 
     if !member_managable(ctx, &member).await {
         ctx.send(
@@ -49,8 +49,8 @@ pub async fn kick(
         .icon_url()
         .unwrap_or_else(|| String::from(""));
 
-    let message = if db.channels.logs.is_some() {
-        let sent_msg = ChannelId(db.channels.logs.unwrap().parse::<NonZeroU64>().unwrap())
+    let message = if guild_db.channels.logs.as_ref().is_some() {
+        let sent_msg = ChannelId(guild_db.channels.logs.as_ref().unwrap().parse::<NonZeroU64>().unwrap())
             .send_message(
                 ctx.discord(),
                 CreateMessage::default().add_embed(
@@ -63,10 +63,10 @@ pub async fn kick(
                         .description(format!(
                             "Member: `{}`\nAction: `{:?}`\nReason: `{}`",
                             member.user.tag(),
-                            ActionTypes::kick,
+                            ActionTypes::Kick,
                             reason_default
                         ))
-                        .footer(serenity::CreateEmbedFooter::new(format!("Case {}", db.cases_number + 1)))
+                        .footer(serenity::CreateEmbedFooter::new(format!("Case {}", case_number)))
                 ),
             )
             .await?;
@@ -75,25 +75,21 @@ pub async fn kick(
         None
     };
 
-    create_case(
-        database,
-        guild_id,
-        Case {
-            id: db.cases_number + 1,
-            action: ActionTypes::kick,
-            guild_id: guild_id.to_string(),
-            staff_id: ctx.author().id.to_string(),
-            target_id: member.user.id.to_string(),
-            date: Timestamp::unix_timestamp(&Timestamp::now()),
-            reason: reason_default.to_string(),
-            message,
-            expiration: None,
-            reference: None,
-        },
-    )
-    .await;
+    guild_db = guild_db.add_cases(Case {
+        id: case_number,
+        action: ActionTypes::Kick,
+        guild_id: guild_id.to_string(),
+        staff_id: ctx.author().id.to_string(),
+        target_id: member.user.id.to_string(),
+        date: Timestamp::unix_timestamp(&Timestamp::now()),
+        reason: reason_default.to_string(),
+        message,
+        expiration: None,
+        reference: None,
+    });
 
     ctx.say(format!("{} has been kicked by {}!", member, ctx.author())).await;
 
+    guild_db.execute(database).await;
     Ok(())
 }
