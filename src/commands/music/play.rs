@@ -1,15 +1,20 @@
 use crate::{
-    utils::{ResponseVideoApi, SongEndNotifier, SongPlayNotifier, Video, PURPLE_COLOR},
+    utils::{Valeriyya, ResponseVideoApi, SongEndNotifier, SongPlayNotifier, Video},
     Context, Error,
 };
 use futures::StreamExt;
 
-use poise::{CreateReply, serenity_prelude::CreateEmbed};
 use songbird::{input::YoutubeDl, Event, TrackEvent};
 use std::time::Duration;
 
 /// Plays a song.
-#[poise::command(prefix_command, slash_command, category = "Music", aliases("p"), default_member_permissions="VIEW_CHANNEL")]
+#[poise::command(
+    prefix_command,
+    slash_command,
+    category = "Music",
+    aliases("p"),
+    default_member_permissions = "VIEW_CHANNEL"
+)]
 pub async fn play(
     ctx: Context<'_>,
     #[description = "The url of the song"]
@@ -47,7 +52,9 @@ pub async fn play(
 
     let guild_id = ctx.guild_id().unwrap();
 
-    let channel_id = ctx.guild().unwrap()
+    let channel_id = ctx
+        .guild()
+        .unwrap()
         .voice_states
         .get(&ctx.author().id)
         .and_then(|voice_state| voice_state.channel_id);
@@ -55,9 +62,7 @@ pub async fn play(
     let connect_to = match channel_id {
         Some(channel) => channel,
         None => {
-            ctx.send(CreateReply::default().content("You are not in a voice channel").ephemeral(true))
-                .await;
-
+            ctx.send(Valeriyya::reply("You are not in a voice channel").ephemeral(true)).await;
             return Ok(());
         }
     };
@@ -158,10 +163,10 @@ pub async fn play(
                 );
             };
         }
-        
+
         let queue_clone = handler.queue().clone();
         let mng = manager.clone();
-        
+
         tokio::task::spawn(async move {
             let queue = queue_clone;
 
@@ -175,19 +180,16 @@ pub async fn play(
             }
         });
 
-        msg.edit(ctx, CreateReply::default()
-            .content("")
-            .embed(CreateEmbed::default()
-                .color(PURPLE_COLOR)
-                    .description(format!(
-                        "Queued [{}]({})",
-                        metadata.0[0].title,
-                        format_args!("https://youtu.be/{}", metadata.0[0].id)
-                    ))
-                    .timestamp(poise::serenity_prelude::Timestamp::now())
-                    .title("Song playing")
-            )
-        ).await?;
+    
+        msg.edit(ctx, Valeriyya::reply("").embed(
+            Valeriyya::embed()
+                .description(format!(
+                    "Queued [{}]({})",
+                    metadata.0[0].title,
+                    format_args!("https://youtu.be/{}", metadata.0[0].id)
+                ))
+                .title("Song playing")
+        )).await?;
 
         drop(handler);
     };

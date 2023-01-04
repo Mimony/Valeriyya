@@ -6,12 +6,14 @@ use bson::doc;
 use mongodb::Database;
 use poise::{
     async_trait,
-    serenity_prelude::{ChannelId, CreateEmbed, CreateMessage, Http, RoleId},
+    serenity_prelude::{
+        ChannelId, Color, CreateEmbed, Http, Member, Permissions, Role, RoleId, Timestamp, UserId, CreateEmbedAuthor, CreateEmbedFooter, CreateMessage, EditMessage,
+    }, CreateReply,
 };
 use serde::{Deserialize, Serialize};
 use songbird::{Event, EventContext, EventHandler};
 
-use crate::{serenity, Context, Error};
+use crate::{Context, Error};
 
 #[macro_export]
 macro_rules! import {
@@ -49,10 +51,10 @@ macro_rules! regex_lazy {
     };
 }
 
-pub fn valeriyya_embed() -> CreateEmbed {
-    CreateEmbed::new()
-        .color(PURPLE_COLOR)
-        .timestamp(serenity::Timestamp::now())
+fn valeriyya_embed() -> CreateEmbed {
+    CreateEmbed::default()
+    .color(PURPLE_COLOR)
+    .timestamp(Timestamp::now())
 }
 
 pub fn string_to_sec(raw_text: impl ToString) -> i64 {
@@ -92,32 +94,33 @@ pub fn string_to_sec(raw_text: impl ToString) -> i64 {
     seconds
 }
 
-pub async fn get_guild_member(ctx: Context<'_>) -> Result<Option<serenity::Member>, Error> {
+pub async fn get_guild_member(ctx: Context<'_>) -> Result<Option<Member>, Error> {
     Ok(match ctx.guild_id() {
-        Some(guild_id) => Some(guild_id.member(ctx.discord(), ctx.author()).await?),
+        Some(guild_id) => Some(
+            guild_id
+                .member(ctx.discord(), ctx.author())
+                .await?,
+        ),
         None => None,
     })
 }
 
-pub async fn get_guild_permissions(
-    ctx: Context<'_>,
-) -> Result<Option<serenity::Permissions>, Error> {
-    fn aggregate_role_permissions(
-        guild_member: &serenity::Member,
-        guild_owner_id: serenity::UserId,
-        guild_roles: &std::collections::HashMap<serenity::RoleId, serenity::Role>,
-    ) -> serenity::Permissions {
-        if guild_owner_id == guild_member.user.id {
-            serenity::Permissions::all()
-        } else {
-            guild_member
-                .roles
-                .iter()
-                .filter_map(|r| guild_roles.get(r))
-                .fold(serenity::Permissions::empty(), |a, b| a | b.permissions)
-        }
+pub fn aggregate_role_permissions(
+    guild_member: &Member,
+    guild_owner_id: UserId,
+    guild_roles: &std::collections::HashMap<RoleId, Role>,
+) -> Permissions {
+    if guild_owner_id == guild_member.user.id {
+        Permissions::all()
+    } else {
+        guild_member
+            .roles
+            .iter()
+            .filter_map(|r| guild_roles.get(r))
+            .fold(Permissions::empty(), |a, b| a | b.permissions)
     }
-
+}
+pub async fn get_guild_permissions(ctx: Context<'_>) -> Result<Option<Permissions>, Error> {
     if let (Some(guild_member), Some(guild_id)) = (get_guild_member(ctx).await?, ctx.guild_id()) {
         let permissions = if let Some(guild) = guild_id.to_guild_cached(&ctx.discord()) {
             aggregate_role_permissions(&guild_member, guild.owner_id, &guild.roles)
@@ -132,7 +135,7 @@ pub async fn get_guild_permissions(
     }
 }
 
-pub async fn member_managable(ctx: Context<'_>, member: &serenity::Member) -> bool {
+pub async fn member_managable(ctx: Context<'_>, member: &Member) -> bool {
     {
         let guild = ctx.guild().unwrap();
         if member.user.id == guild.owner_id {
@@ -149,7 +152,10 @@ pub async fn member_managable(ctx: Context<'_>, member: &serenity::Member) -> bo
     let guild_id = ctx.guild_id().unwrap();
     {
         let user_id = ctx.discord().cache.current_user().id;
-        let me = guild_id.member(ctx.discord(), user_id).await.unwrap();
+        let me = guild_id
+            .member(ctx.discord(), user_id)
+            .await
+            .unwrap();
 
         #[allow(clippy::len_zero)]
         let highest_me_role: RoleId = ternary!(me.roles.len() == 0 => {
@@ -167,11 +173,7 @@ pub async fn member_managable(ctx: Context<'_>, member: &serenity::Member) -> bo
     }
 }
 
-pub fn compare_role_position(
-    ctx: Context<'_>,
-    role1: serenity::RoleId,
-    role2: serenity::RoleId,
-) -> i64 {
+pub fn compare_role_position(ctx: Context<'_>, role1: RoleId, role2: RoleId) -> i64 {
     let guild = ctx.guild().unwrap();
 
     let r1 = guild.roles.get(&role1).unwrap();
@@ -181,7 +183,7 @@ pub fn compare_role_position(
         return i64::from(r2.id) - i64::from(r1.id);
     }
 
-    r1.position - r2.position
+    (r1.position - r2.position).into()
 }
 
 #[derive(Debug, Serialize, Deserialize, Default)]
@@ -202,9 +204,7 @@ pub enum ActionTypes {
     Mute,
 }
 
-impl ActionTypes {
-    
-}
+impl ActionTypes {}
 
 #[derive(Debug, Serialize, Deserialize)]
 pub struct Case {
@@ -257,15 +257,16 @@ impl GuildDb {
                     "_id": id.inserted_id,
                 },
                 None,
-            ).await
+            )
+            .await
             .unwrap()
             .unwrap()
         }
     }
 
     #[inline(always)]
-    pub fn guild_id(mut self, gid: String) -> Self {
-        self.gid = gid;
+    pub fn guild_id(mut self, gid: impl Into<String>) -> Self {
+        self.gid = gid.into();
         self
     }
 
@@ -321,7 +322,8 @@ impl GuildDb {
                 "$set": bson::to_document(&self).unwrap()
             },
             None,
-        ).await
+        )
+        .await
         .unwrap()
         .unwrap()
     }
@@ -348,8 +350,6 @@ impl GuildDbRoles {
         self
     }
 }
-
-
 
 pub enum CaseUpdateAction {
     reason,
@@ -433,17 +433,10 @@ pub struct SongPlayNotifier {
 impl EventHandler for SongEndNotifier {
     async fn act(&self, _ctx: &EventContext<'_>) -> Option<Event> {
         self.chan_id
-            .send_message(
-                &self.http,
-                CreateMessage::new().add_embed(
-                    CreateEmbed::new()
-                        .color(PURPLE_COLOR)
-                        .description(format!("{} has ended", self.metadata.title))
-                        .title("Song ended")
-                        .timestamp(poise::serenity_prelude::Timestamp::now()),
-                ),
-            )
-            .await;
+            .send_message(&self.http, Valeriyya::msg_reply().add_embed(
+                Valeriyya::embed()
+                    .description(format!("{} has finished.", self.metadata.title))
+            )).await;
 
         None
     }
@@ -453,24 +446,56 @@ impl EventHandler for SongEndNotifier {
 impl EventHandler for SongPlayNotifier {
     async fn act(&self, _ctx: &EventContext<'_>) -> Option<Event> {
         self.chan_id
-            .send_message(
-                &self.http,
-                CreateMessage::default().add_embed(
-                    CreateEmbed::new()
-                        .color(PURPLE_COLOR)
-                        .description(format!(
-                            "Playing [{}]({})",
-                            self.metadata.title,
-                            format_args!("https://youtu.be/{}", self.metadata.id)
-                        ))
-                        .title("Song playing")
-                        .timestamp(poise::serenity_prelude::Timestamp::now()),
-                ),
-            )
-            .await;
+            .send_message(&self.http, Valeriyya::msg_reply().add_embed(
+                Valeriyya::embed()
+                    .description(format!(
+                        "Playing [{}]({})",
+                        self.metadata.title,
+                        format_args!("https://youtu.be/{}", self.metadata.id)
+                    ))
+                    .title("Song playing")
+            )).await;
 
         None
     }
 }
 
-pub const PURPLE_COLOR: serenity::Color = serenity::Color::from_rgb(82, 66, 100);
+pub const PURPLE_COLOR: Color = Color::from_rgb(82, 66, 100);
+
+pub struct Valeriyya;
+
+impl Valeriyya {
+    // * Better Create Structs
+    pub fn embed() -> CreateEmbed {
+        valeriyya_embed()
+    }
+
+    pub fn msg_reply() -> CreateMessage {
+        CreateMessage::new()
+    }
+
+    pub fn msg_edit() -> EditMessage {
+        EditMessage::new()
+    }
+
+    pub fn reply_default() -> CreateReply {
+        CreateReply::new()
+    }
+
+    pub fn reply(content: impl Into<String>) -> CreateReply {
+        CreateReply::new().content(content)
+    }
+
+    pub fn reply_author(content: impl Into<String>) -> CreateEmbedAuthor {
+        CreateEmbedAuthor::new(content)
+    }
+
+    pub fn reply_footer(content: impl Into<String>) -> CreateEmbedFooter {
+        CreateEmbedFooter::new(content)
+    }
+
+    // * Utils
+    pub async fn get_database(db: &Database, guild_id: impl Into<String>) -> GuildDb {
+        GuildDb::new(db, guild_id).await
+    }
+}

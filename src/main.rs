@@ -1,14 +1,15 @@
 #![feature(fn_traits)]
 #![feature(once_cell)]
 #![allow(unused_must_use)]
+#![allow(clippy::uninlined_format_args)]
 
 mod commands;
 mod utils;
 
 use mongodb::options::{ClientOptions, ResolverConfig};
 use mongodb::{Client, Database};
-use poise::serenity_prelude as serenity;
-use songbird::SerenityInit;
+use poise::serenity_prelude::GatewayIntents;
+use poise::serenity_prelude::FullEvent;
 
 type Error = Box<dyn std::error::Error + Send + Sync>;
 type Context<'a> = poise::Context<'a, Data, Error>;
@@ -25,20 +26,19 @@ impl Data {
     }
 }
 
-async fn event_listeners(
-    _ctx: &serenity::Context,
-    event: &poise::Event<'_>,
+fn event_listeners(
+    event: &FullEvent,
     _framework: poise::FrameworkContext<'_, Data, Error>,
     _user_data: &Data,
 ) -> Result<(), Error> {
+
     #[allow(clippy::single_match)]
     match event {
-        poise::Event::Ready {
-            data_about_bot: bot,
-        } => {
-            println!("{} is connected!", bot.user.name)
-        }
-        _ => {}
+        FullEvent::Ready { ctx, data_about_bot } => {
+            ctx.online();
+            println!("{} is connected!", data_about_bot.user.tag())
+        },
+        _ => {},
     }
 
     Ok(())
@@ -47,18 +47,18 @@ async fn event_listeners(
 async fn init() -> Result<(), Error> {
     tracing_subscriber::fmt::init();
 
-    // let discord_token = match std::env::var("VALERIYYA-DEVELOP-MODE").unwrap() == "true" {
-    //     true => std::env::var("VALERIYYA-DISCORD-DEV-TOKEN").unwrap(),
-    //     false => std::env::var("VALERIYYA-DISCORD-TOKEN").unwrap(),
-    // };
-    let discord_token = std::env::var("VALERIYYA-DISCORD-DEV-TOKEN").unwrap();
-    let database_url = std::env::var("VALERIYYA-MONGODB").unwrap();
-    let api_key = std::env::var("VALERIYYA-API-KEY").unwrap();
+    let discord_token =
+        std::env::var("VALERIYYA_DISCORD_TOKEN").expect("(DISCORD_TOKEN IS NOT PRESENT)");
+    let database_url = std::env::var("VALERIYYA_MONGODB").expect("(MONGODB_TOKEN IS NOT PRESENT)");
+    let api_key = std::env::var("VALERIYYA_API_KEY").expect("(API_TOKEN IS NOT PRESENT)");
 
     let database_options =
         ClientOptions::parse_with_resolver_config(database_url, ResolverConfig::cloudflare())
             .await?;
     let db_client = Client::with_options(database_options)?;
+    let discord_intents = GatewayIntents::non_privileged()
+        | GatewayIntents::GUILD_MEMBERS
+        | GatewayIntents::MESSAGE_CONTENT;
 
     let options = poise::FrameworkOptions {
         commands: vec![
@@ -82,36 +82,31 @@ async fn init() -> Result<(), Error> {
             // Settings Command
             commands::settings::settings(),
         ],
-        listener: |ctx, event, framework, user_data| {
-            Box::pin(event_listeners(ctx, event, framework, user_data))
-        },
         prefix_options: poise::PrefixFrameworkOptions {
             prefix: Some("!".to_string()),
             ..Default::default()
         },
+        listener: |event, framework, data| {
+            Box::pin(async move {
+                event_listeners(event, framework, data)
+            })
+        },
         ..Default::default()
     };
 
-    let client = poise::Framework::builder()
-        .token(discord_token)
-        .user_data_setup(move |_ctx, client, _framework| {
-            Box::pin(async move {
-                Ok(Data {
-                    db_client,
-                    api_key
-                })
-            })
+    let framework = poise::Framework::new(options, move |_ctx, _ready, _framework| {
+        Box::pin(async move {
+            Ok(Data { db_client, api_key })
         })
-        .options(options)
-        .intents(
-            serenity::GatewayIntents::non_privileged()
-                | serenity::GatewayIntents::GUILD_MEMBERS
-                | serenity::GatewayIntents::GUILD_MESSAGES
-                | serenity::GatewayIntents::MESSAGE_CONTENT,
-        )
-        .client_settings(move |c| c.register_songbird());
+    });
 
-    client.run().await?;
+    let mut client = poise::serenity_prelude::Client::builder(discord_token, discord_intents)
+        // .voice_manager(voice_manager)
+        .framework(framework)
+        .await
+        .unwrap();
+
+    client.start().await.unwrap();
 
     Ok(())
 }

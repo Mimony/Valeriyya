@@ -1,9 +1,9 @@
-use poise::serenity_prelude::Mentionable;
 use crate::{
-    serenity,
     utils::{GuildDb, GuildDbChannels, GuildDbRoles},
     Context, Error,
 };
+
+use poise::serenity_prelude::Mentionable;
 
 #[derive(poise::ChoiceParameter, Debug)]
 pub enum ChannelTypeChoices {
@@ -28,7 +28,7 @@ pub async fn channel(
     type_option: ChannelTypeChoices,
     #[description = "The channel that will be used for the previous type."]
     #[channel_types("Text")]
-    channel: serenity::GuildChannel,
+    channel: poise::serenity_prelude::GuildChannel,
 ) -> Result<(), Error> {
     let database = &ctx.data().database();
     let guild_id = ctx.guild_id().unwrap();
@@ -62,7 +62,7 @@ pub async fn role(
     #[rename = "type"]
     type_option: RoleTypeChoices,
     #[description = "The role that will be used for the previous type."]
-    role: serenity::Role,
+    role: poise::serenity_prelude::Role,
 ) -> Result<(), Error> {
 
     let database = &ctx.data().database();

@@ -1,6 +1,4 @@
-use poise::CreateReply;
-
-use crate::{Context, Error};
+use crate::{Context, Error, utils::Valeriyya};
 
 /// Joins a voice channel.
 #[poise::command(prefix_command, slash_command, default_member_permissions="VIEW_CHANNEL", category="Music")]
@@ -17,7 +15,7 @@ pub async fn join(ctx: Context<'_>) -> Result<(), Error> {
     let connect_to = match channel_id {
         Some(channel) => channel,
         None => {
-            ctx.send(CreateReply::default().content("Not in a voice channel").ephemeral(true))
+            ctx.send(Valeriyya::reply("Not in a voice channel").ephemeral(true))
             .await;
             
             return Ok(());

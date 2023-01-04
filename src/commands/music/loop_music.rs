@@ -1,6 +1,7 @@
-use poise::{CreateReply, serenity_prelude::CreateEmbed};
-
-use crate::{Context, Error, utils::PURPLE_COLOR};
+use crate::{
+    utils::Valeriyya,
+    Context, Error,
+};
 
 /// Puts the current song on repeat.
 #[poise::command(
@@ -8,7 +9,7 @@ use crate::{Context, Error, utils::PURPLE_COLOR};
     slash_command,
     default_member_permissions = "VIEW_CHANNEL",
     rename = "loop",
-    category="Music"
+    category = "Music"
 )]
 pub async fn loop_music(ctx: Context<'_>) -> Result<(), Error> {
     let guild_id = ctx.guild_id().unwrap();
@@ -17,24 +18,19 @@ pub async fn loop_music(ctx: Context<'_>) -> Result<(), Error> {
     if let Some(handler_lock) = manager.get(guild_id) {
         let handler = handler_lock.lock().await;
         if handler.queue().current().is_some() {
-           handler.queue().current().unwrap().enable_loop();
-           ctx.send(CreateReply::default()
-            .embed( CreateEmbed::default()
-                .color(PURPLE_COLOR)
-                    .description("The loop has been enabled.")
+            handler.queue().current().unwrap().enable_loop();
+
+            ctx.send(Valeriyya::reply_default().embed(
+                Valeriyya::embed()
+                    .description("Loop enabled")
                     .title("Loop information")
-                    .timestamp(poise::serenity_prelude::Timestamp::now())
-            )
-        ).await;
+            )).await;
         } else {
-            ctx.send(CreateReply::default()
-                .embed(CreateEmbed::default()
-                    .color(PURPLE_COLOR)
-                        .description("There is no songs in the queue.")
-                        .title("Loop information")
-                        .timestamp(poise::serenity_prelude::Timestamp::now())
-                )
-            ).await;
+            ctx.send(Valeriyya::reply_default().embed(
+                Valeriyya::embed()
+                    .description("There is no songs in the queue.")
+                    .title("Loop information")
+            )).await;
         }
     };
 

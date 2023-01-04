@@ -1,10 +1,9 @@
 use std::num::NonZeroU64;
 
-use poise::{CreateReply, serenity_prelude::{MessageId, EditMessage, UserId, Timestamp, CreateEmbedFooter}};
+use poise::serenity_prelude::{MessageId, UserId, Timestamp, ChannelId};
 
 use crate::{
-    serenity,
-    utils::{update_case, CaseUpdateAction, CaseUpdateValue, ActionTypes, valeriyya_embed, GuildDb},
+    utils::{update_case, CaseUpdateAction, CaseUpdateValue, ActionTypes, GuildDb, Valeriyya},
     Context, Error,
 };
 
@@ -24,9 +23,8 @@ pub async fn reason(
 
 
      if case_find.is_none() {
-        ctx.send(CreateReply::default().content(format!("Case with the id: {} doesn't exist", case))
-            .ephemeral(true)
-        ).await;
+        ctx.send(Valeriyya::reply(format!("Case with the id: {} doesn't exist", case)).ephemeral(true))
+        .await;
         return Ok(())
     } 
     
@@ -35,12 +33,10 @@ pub async fn reason(
         reference: None
     });
 
-    ctx.send(CreateReply::default().content(format!("Updated case with the id: {case}"))
-        .ephemeral(true)
-    ).await;
+    ctx.send(Valeriyya::reply(format!("Updated case with the id: {case}")).ephemeral(true)).await;
 
     if db.channels.logs.is_some() {
-        let channel = serenity::ChannelId(db.channels.logs.unwrap().parse::<NonZeroU64>().unwrap());
+        let channel = ChannelId(db.channels.logs.unwrap().parse::<NonZeroU64>().unwrap());
         if case_find.unwrap().message.is_some() {
             let case_found = case_find.unwrap();
             let mut log_channel_msg = channel.message(
@@ -49,10 +45,12 @@ pub async fn reason(
             let staff_user_cache = UserId(case_found.staff_id.parse::<NonZeroU64>().unwrap()).to_user(ctx.discord()).await?.to_owned();
             let staff_user = (staff_user_cache.tag(), staff_user_cache.id, staff_user_cache.face());
             let target_user = UserId(case_found.target_id.parse::<NonZeroU64>().unwrap()).to_user(ctx.discord()).await?.tag();
-            let mut embed = valeriyya_embed().timestamp(Timestamp::from(&Timestamp::from_unix_timestamp(case_found.date).unwrap()))
-            .author(serenity::CreateEmbedAuthor::new(format!("{} ({})", staff_user.0, staff_user.1)).icon_url(staff_user.2))
-            .footer(CreateEmbedFooter::new(format!("Case {}", case_found.id)));
 
+            let mut embed = Valeriyya::embed()
+                .timestamp(Timestamp::from(&Timestamp::from_unix_timestamp(case_found.date).unwrap()))
+                .author(Valeriyya::reply_author(format!("{} ({})", staff_user.0, staff_user.1)).icon_url(staff_user.2))
+                .footer(Valeriyya::reply_footer(format!("Case {}", case_found.id)));
+            
             if case_found.action == ActionTypes::Mute {
                 embed = embed.description(format!(
                     "Member: `{}`\nAction: `{:?}`\nReason: `{}`\nExpiration: {:?}",
@@ -62,11 +60,10 @@ pub async fn reason(
                 embed = embed.description(format!(
                     "Member: `{}`\nAction: `{:?}`\nReason: `{}`",
                     target_user, case_found.action, reason
-                ));
-            };
+                ))
+            }
 
-            let edit = EditMessage::default().embed(embed);
-            log_channel_msg.edit(ctx.discord(), edit).await;
+            log_channel_msg.edit(ctx.discord(), Valeriyya::msg_edit().embed(embed)).await;
         };
     }
 

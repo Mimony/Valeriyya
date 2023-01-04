@@ -1,13 +1,7 @@
-use std::num::NonZeroU64;
-
-use poise::{
-    serenity_prelude::{ChannelId, CreateMessage, Timestamp},
-    CreateReply,
-};
+use poise::serenity_prelude::{ChannelId, Timestamp, Member};
 
 use crate::{
-    serenity,
-    utils::{member_managable, ActionTypes, Case, valeriyya_embed, GuildDb},
+    utils::{member_managable, ActionTypes, Case, Valeriyya, GuildDb},
     Context, Error,
 };
 
@@ -19,7 +13,7 @@ use crate::{
 )]
 pub async fn kick(
     ctx: Context<'_>,
-    #[description = "The member to kick"] member: serenity::Member,
+    #[description = "The member to kick"] member: Member,
     #[description = "The reason for this kick."]
     #[rest]
     reason: Option<String>,
@@ -29,14 +23,10 @@ pub async fn kick(
 
     let mut guild_db = GuildDb::new(database, guild_id.to_string()).await;
     let case_number = guild_db.cases_number + 1;
-    let reason_default = reason.unwrap_or_else(|| format!("Use /reason {} <...reason> to seat a reason for this case.", case_number));
+    let reason_default = reason.unwrap_or_else(|| format!("Use /reason {} <...reason> to set a reason for this case.", case_number));
 
     if !member_managable(ctx, &member).await {
-        ctx.send(
-            CreateReply::default()
-                .content("The member can't be managed so you can't kick them!")
-                .ephemeral(true),
-        )
+        ctx.send(Valeriyya::reply("The member can't be managed so you can't kick them!").ephemeral(true))
         .await;
         return Ok(());
     }
@@ -50,26 +40,24 @@ pub async fn kick(
         .unwrap_or_else(|| String::from(""));
 
     let message = if guild_db.channels.logs.as_ref().is_some() {
-        let sent_msg = ChannelId(guild_db.channels.logs.as_ref().unwrap().parse::<NonZeroU64>().unwrap())
-            .send_message(
-                ctx.discord(),
-                CreateMessage::default().add_embed(
-                    valeriyya_embed()
-                    .author(
-                        serenity::CreateEmbedAuthor::new(format!("{} ({})", ctx.author().tag(), ctx.author().id))
-                            .icon_url(ctx.author().face()),
-                    )
-                        .thumbnail(&icon_url)
-                        .description(format!(
-                            "Member: `{}`\nAction: `{:?}`\nReason: `{}`",
-                            member.user.tag(),
-                            ActionTypes::Kick,
-                            reason_default
-                        ))
-                        .footer(serenity::CreateEmbedFooter::new(format!("Case {}", case_number)))
-                ),
-            )
-            .await?;
+        let sent_msg = ChannelId(guild_db.channels.logs.as_ref().unwrap().parse::<std::num::NonZeroU64>().unwrap())
+            .send_message(ctx.discord(), Valeriyya::msg_reply().add_embed(
+                Valeriyya::embed()
+                    .author(Valeriyya::reply_author(format!(
+                        "{} ({})",
+                        ctx.author().tag(),
+                        ctx.author().id
+                    )).icon_url(ctx.author().face()))
+                    .thumbnail(&icon_url)
+                    .description(format!(
+                        "Member: `{}`\nAction: `{:?}`\nReason: `{}`",
+                        member.user.tag(),
+                        ActionTypes::Kick,
+                        reason_default
+                    ))
+                    .footer(Valeriyya::reply_footer(format!("Case {}", case_number)))
+            )).await.expect("Guild log channel doesn't exist");
+
         Some(sent_msg.id.to_string())
     } else {
         None

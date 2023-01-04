@@ -1,11 +1,9 @@
 use crate::{
-    serenity,
-    utils::{member_managable, string_to_sec, ActionTypes, Case, valeriyya_embed, GuildDb},
+    utils::{member_managable, string_to_sec, ActionTypes, Case, Valeriyya, GuildDb},
     Context, Error,
 };
 use poise::{
-    serenity_prelude::{CreateMessage, Timestamp},
-    CreateReply,
+    serenity_prelude::{Timestamp, ChannelId, Member}
 };
 
 /// Mutes a member for a specified time.
@@ -16,7 +14,7 @@ use poise::{
 )]
 pub async fn mute(
     ctx: Context<'_>,
-    #[description = "The member to mute"] mut member: serenity::Member,
+    #[description = "The member to mute"] mut member: Member,
     #[description = "The time the member to be muted for. (Max 28 days)."] time: String,
     #[description = "The reason for this mute."]
     #[rest]
@@ -25,12 +23,7 @@ pub async fn mute(
     let string_time = string_to_sec(&time);
 
     if string_time < 60 {
-        ctx.send(
-            CreateReply::default()
-                .content("You can't mute someone for under 60 seconds!")
-                .ephemeral(true),
-        )
-        .await;
+        ctx.send(Valeriyya::reply("You can't mute someone for under 60 seconds!").ephemeral(true)).await;
         return Ok(());
     }
 
@@ -46,12 +39,7 @@ pub async fn mute(
     let reason_default = reason.unwrap_or_else(|| format!("Use /reason {} <...reason> to seat a reason for this case.", case_number));
 
     if !member_managable(ctx, &member).await {
-        ctx.send(
-            CreateReply::default()
-                .content("The member can't be managed so you can't mute them!")
-                .ephemeral(true),
-        )
-        .await;
+        ctx.send(Valeriyya::reply("The member can't be managed so you can't mute them!").ephemeral(true)).await;
         return Ok(());
     }
 
@@ -63,12 +51,7 @@ pub async fn mute(
                 .unix_timestamp())
             < 0)
     {
-        ctx.send(
-            CreateReply::default()
-                .content("This member is already muted")
-                .ephemeral(true),
-        )
-        .await;
+        ctx.send(Valeriyya::reply("This member is already muted").ephemeral(true)).await;
         return Ok(());
     };
 
@@ -81,7 +64,7 @@ pub async fn mute(
         .icon_url()
         .unwrap_or_else(|| String::from(""));
     let message = if guild_db.channels.logs.is_some() {
-        let sent_msg = serenity::ChannelId(
+        let sent_msg = ChannelId(
             guild_db.channels
                 .logs
                 .as_ref()
@@ -89,28 +72,19 @@ pub async fn mute(
                 .parse::<std::num::NonZeroU64>()
                 .unwrap(),
         )
-        .send_message(
-            ctx.discord(),
-            CreateMessage::default().add_embed(
-                valeriyya_embed()
-                    .author(
-                        serenity::CreateEmbedAuthor::new(format!("{} ({})", ctx.author().tag(), ctx.author().id))
-                            .icon_url(ctx.author().face()),
-                    )
-                    .thumbnail(&icon_url)
-                    .description(format!(
-                        "Member: `{}`\nAction: `{:?}`\nReason: `{}`\nExpiration: {}",
-                        member.user.tag(),
-                        ActionTypes::Mute,
-                        reason_default,
-                        time_format(time)
-                    ))
-                    .footer(
-                        serenity::CreateEmbedFooter::new(format!("Case {}", case_number)),
-                    ),
-            ),
-        )
-        .await?;
+        .send_message(ctx.discord(), Valeriyya::msg_reply().embed(
+            Valeriyya::embed()
+                .author(Valeriyya::reply_author(format!("{} ({})", ctx.author().tag(), ctx.author().id)).icon_url(ctx.author().face()))
+                .thumbnail(&icon_url)
+                .description(format!(
+                    "Member: `{}`\nAction: `{:?}`\nReason: `{}`\nExpiration: {}",
+                    member.user.tag(),
+                    ActionTypes::Mute,
+                    reason_default,
+                    time_format(time)
+                ))
+                .footer(Valeriyya::reply_footer(format!("Case {}", case_number)))
+            )).await.expect("Guild log channel doesn't exist");
         Some(sent_msg.id.to_string())
     } else {
         None

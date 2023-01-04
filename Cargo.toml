@@ -1,6 +1,6 @@
 [package]
 name = "valeriyya"
-version = "0.2.0"
+version = "0.3.0"
 edition = "2021"
 
 [profile.release]
@@ -21,21 +21,24 @@ tracing = "0.1"
 tracing-subscriber = "0.3.15"
 tracing-futures = "0.2"
 
+# Serenity Next Branch
 [dependencies.serenity]
 git = "https://github.com/serenity-rs/serenity"
 default-features = false
-features = ["builder", "cache", "client", "gateway", "http", "model", "utils", "rustls_backend", "chrono", "voice"]
-rev = "845334bc1869efa1fc3fcac0ef83cee99075fec7"
+features = ["builder", "cache", "client", "gateway", "http", "model", "utils", "rustls_backend", "chrono", "voice", "framework"]
+rev = "72c76467dab136f50c2b1739e1945736e4a7ff39"
 
+# Poise Serenity-Next Branch
 [dependencies.poise]
-git = "https://github.com/kangalioo/poise"
-rev = "60d006fac1f1c59bc6f63fbd1b4342f0df9af82d"
+git = "https://github.com/serenity-rs/poise"
+rev = "ecf4cf5ef2ef578e311facbcd3c26710a1d21195"
 
 [dependencies.mongodb]
 version = "2.2.2"
 default-features = false
 features = ["async-std-runtime"]
 
+# Songbird Symphonia Branch
 [dependencies.songbird]
 git = "https://github.com/FelixMcFelix/songbird"
 features = ["builtin-queue"]
@@ -46,3 +49,6 @@ features = ["aac", "mp3", "isomp4", "alac", "mkv"]
 git = "https://github.com/FelixMcFelix/Symphonia"
 branch = "songbird-fixes"
 
+# # Patching Serenity
+# [patch."https://github.com/serenity-rs/serenity"]
+# serenity = { version = "0.11.5" }
