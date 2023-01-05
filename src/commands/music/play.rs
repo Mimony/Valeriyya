@@ -67,12 +67,10 @@ pub async fn play(
         }
     };
 
-    let manager = songbird::get(ctx.discord()).await.unwrap().clone();
-
     let msg = ctx.say("Loading song...").await.unwrap();
-    manager.join(guild_id, connect_to).await;
+    ctx.data().songbird.join(guild_id, connect_to).await;
 
-    if let Some(handler_lock) = manager.get(guild_id) {
+    if let Some(handler_lock) = ctx.data().songbird.get(guild_id) {
         let mut handler = handler_lock.lock().await;
 
         let metadata: (Vec<Video>, bool) = match url.1 {
@@ -165,7 +163,7 @@ pub async fn play(
         }
 
         let queue_clone = handler.queue().clone();
-        let mng = manager.clone();
+        let mng = ctx.data().songbird.clone();
 
         tokio::task::spawn(async move {
             let queue = queue_clone;

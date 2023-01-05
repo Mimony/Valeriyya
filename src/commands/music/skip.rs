@@ -20,9 +20,7 @@ pub async fn skip(ctx: Context<'_>) -> Result<(), Error> {
         }
     };
 
-    let manager = songbird::get(ctx.discord()).await.unwrap().clone();
-
-    if let Some(handler_lock) = manager.get(guild_id) {
+    if let Some(handler_lock) = ctx.data().songbird.get(guild_id) {
         let handler = handler_lock.lock().await;
         let queue = handler.queue();
         match queue.is_empty() {

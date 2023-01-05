@@ -13,9 +13,8 @@ use crate::{
 )]
 pub async fn loop_music(ctx: Context<'_>) -> Result<(), Error> {
     let guild_id = ctx.guild_id().unwrap();
-    let manager = songbird::get(ctx.discord()).await.unwrap().clone();
 
-    if let Some(handler_lock) = manager.get(guild_id) {
+    if let Some(handler_lock) = ctx.data().songbird.get(guild_id) {
         let handler = handler_lock.lock().await;
         if handler.queue().current().is_some() {
             handler.queue().current().unwrap().enable_loop();

@@ -18,6 +18,7 @@ type Context<'a> = poise::Context<'a, Data, Error>;
 pub struct Data {
     db_client: Client,
     api_key: String,
+    songbird: std::sync::Arc<songbird::Songbird>
 }
 
 impl Data {
@@ -51,6 +52,8 @@ async fn init() -> Result<(), Error> {
         std::env::var("VALERIYYA_DISCORD_TOKEN").expect("(DISCORD_TOKEN IS NOT PRESENT)");
     let database_url = std::env::var("VALERIYYA_MONGODB").expect("(MONGODB_TOKEN IS NOT PRESENT)");
     let api_key = std::env::var("VALERIYYA_API_KEY").expect("(API_TOKEN IS NOT PRESENT)");
+
+    let songbird = songbird::Songbird::serenity();
 
     let database_options =
         ClientOptions::parse_with_resolver_config(database_url, ResolverConfig::cloudflare())
@@ -94,14 +97,20 @@ async fn init() -> Result<(), Error> {
         ..Default::default()
     };
 
+    let data = Data {
+        db_client,
+        api_key,
+        songbird: songbird.clone()
+    };
+
     let framework = poise::Framework::new(options, move |_ctx, _ready, _framework| {
-        Box::pin(async move {
-            Ok(Data { db_client, api_key })
+        Box::pin(async {
+            Ok(data)
         })
     });
 
     let mut client = poise::serenity_prelude::Client::builder(discord_token, discord_intents)
-        // .voice_manager(voice_manager)
+        .voice_manager_arc(songbird)
         .framework(framework)
         .await
         .unwrap();

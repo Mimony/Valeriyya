@@ -9,10 +9,9 @@ use crate::{utils::Valeriyya, Context, Error};
 )]
 pub async fn leave(ctx: Context<'_>) -> Result<(), Error> {
     let guild_id = ctx.guild_id().unwrap();
-    let manager = songbird::get(ctx.discord()).await.unwrap().clone();
 
-    if manager.get(guild_id).is_some() {
-        manager.remove(guild_id).await;
+    if ctx.data().songbird.get(guild_id).is_some() {
+        ctx.data().songbird.remove(guild_id).await;
 
         ctx.send(Valeriyya::reply_default().embed(
             Valeriyya::embed()
