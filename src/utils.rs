@@ -12,6 +12,7 @@ use poise::{
 };
 use serde::{Deserialize, Serialize};
 use songbird::{Event, EventContext, EventHandler};
+use iso8601_duration::Duration as iso_duration;
 
 use crate::{Context, Error};
 
@@ -49,6 +50,100 @@ macro_rules! regex_lazy {
     ($re:literal $(,)?) => {
         ::once_cell::sync::Lazy::<::regex::Regex>::new(|| regex::Regex::new($re).unwrap())
     };
+}
+
+// async fn get_spotify_metadata(url: impl Into<String>, reqwest: &reqwest::Client) {
+//     reqwest.get(url)
+//     .header(reqwest::Respo, )
+// }
+
+async fn search_video(query: impl Into<String>, api_key: &String, reqwest: &reqwest::Client) -> SearchVideoItem  {
+    let url = format!(
+        "https://youtube.googleapis.com/youtube/v3/search?part=snippet&order=relevance&type=video&maxResults=1&q={}&key={}", 
+        query.into(), 
+        api_key
+    );
+    let video = reqwest.get(url).send()
+    .await.expect("Error getting Video search.")
+    .json::<ResponseSearchVideoApi>()
+    .await.expect("Error parsing the Video search JSON.").items;
+    video.first().expect("Error getting the first Video search.").clone()
+}
+
+async fn get_metadata(ctx: Context<'_>, url: impl Into<String>, playlist: bool) -> Vec<Video>  {
+    let url = url.into();
+    let reqwest_client = reqwest::Client::new();
+    let api_key = ctx.data().api_key.clone();
+
+    let id = if playlist {
+        regex!(r"(?:(?:PL|LL|EC|UU|FL|RD|UL|TL|PU|OLAK5uy_)[0-9A-Za-z-_]{10,}|RDMM)").find(&url).map(|u| u.as_str().to_owned()).unwrap()
+    } else {
+        match regex!(r"[0-9A-Za-z_-]{10}[048AEIMQUYcgkosw]").find(&url).map(|u| u.as_str().to_owned()) {
+            Some(u) => u,
+            None => {
+                search_video(url.clone(), &api_key, &reqwest_client).await.id.video_id
+            }
+        }
+    };
+
+    if playlist {
+        let request_playlist_url = format!(
+            "https://youtube.googleapis.com/youtube/v3/playlistItems?part=snippet%2CcontentDetails&maxResults=100&playlistId={}&key={}",
+            id,
+            api_key
+        );
+        let playlist_items = reqwest_client.get(request_playlist_url)
+        .send()
+        .await.expect("Error getting Playlist JSON.")
+        .json::<ResponsePlaylistApi>()
+        .await.expect("Error parsing the Playlist JSON.").items;
+
+        let mut video_ids: Vec<String> = Vec::with_capacity(100);
+        for item in playlist_items.into_iter() {
+            video_ids.push(item.snippet.resource_id.video_id);
+        };
+
+        let request_videos_url = format!(
+            "https://youtube.googleapis.com/youtube/v3/videos?part=snippet%2CcontentDetails&id={}&key={}",
+            video_ids.join(","),
+            api_key
+        );
+
+        let video_items = reqwest_client.get(request_videos_url)
+        .send()
+        .await.expect("Error getting Videos from the Video Id Vector.")
+        .json::<ResponseVideoApi>()
+        .await.expect("Error parsing the Videos JSON.").items;
+
+        let mut videos: Vec<Video> = Vec::with_capacity(100);
+        for item in video_items.into_iter() {
+            let duration = iso_duration::parse(&item.content_details.duration).unwrap().to_std();
+            videos.push(Video {
+                id: item.id,
+                title: item.snippet.title,
+                duration
+            });
+        }
+        return videos;
+    }
+
+    let request_video_url = format!(
+        "https://youtube.googleapis.com/youtube/v3/videos?part=snippet%2CcontentDetails&id={}&key={}",
+        id,
+        api_key
+    );
+
+    let item = reqwest_client.get(request_video_url)
+    .send()
+    .await.expect("Error getting Video JSON")
+    .json::<ResponseVideoApi>()
+    .await.expect("Error parsing the Video JSON.").items.first().expect("There is no video from this url.").clone();
+    let duration = iso_duration::parse(&item.content_details.duration).unwrap().to_std();
+    vec![Video {
+        id: item.id,
+        title: item.snippet.title,
+        duration
+    }]
 }
 
 fn valeriyya_embed() -> CreateEmbed {
@@ -382,33 +477,69 @@ pub async fn update_case(
 }
 
 #[derive(Deserialize, Debug, Clone)]
-pub struct ResponseVideoApi {
-    pub kind: String,
-    pub etag: String,
-    pub nextPageToken: String,
-    pub regionCode: String,
-    pub pageInfo: PageInfo,
-    pub items: Vec<Item>,
+struct ResponseSearchVideoApi {
+    items: Vec<SearchVideoItem>
 }
 
 #[derive(Deserialize, Debug, Clone)]
-pub struct PageInfo {
-    pub totalResults: u32,
-    pub resultsPerPage: u8,
+struct SearchVideoItem {
+    id: SearchVideoId
 }
 
 #[derive(Deserialize, Debug, Clone)]
-pub struct Item {
-    pub kind: String,
-    pub etag: String,
-    pub id: ItemId,
+struct SearchVideoId {
+    #[serde(rename="videoId")]
+    video_id: String
 }
 
 #[derive(Deserialize, Debug, Clone)]
-pub struct ItemId {
-    pub kind: String,
-    pub videoId: String,
+struct VideoItem {
+    id: String,
+    snippet: VideoSnippet,
+    #[serde(rename="contentDetails")]
+    content_details: ContentDetails
 }
+
+#[derive(Deserialize, Debug, Clone)]
+struct VideoSnippet {
+    title: String,
+}
+
+#[derive(Deserialize, Debug, Clone)]
+struct ContentDetails {
+    duration: String,
+}
+
+#[derive(Deserialize, Debug, Clone)]
+struct ResponseVideoApi {
+    items: Vec<VideoItem>
+}
+
+#[derive(Deserialize, Debug, Clone)]
+struct PlaylistSnippet {
+    #[serde(rename="resourceId")]
+    resource_id: ResourceId
+}
+
+#[derive(Deserialize, Debug, Clone)]
+struct ResourceId {
+    #[serde(rename="videoId")]
+    video_id: String,
+}
+
+#[derive(Deserialize, Debug, Clone)]
+struct PlaylistItem {
+    id: String,
+    snippet: PlaylistSnippet,
+}
+
+#[derive(Deserialize, Debug, Clone)]
+struct ResponsePlaylistApi {
+    items: Vec<PlaylistItem>
+}
+
+// #[derive(Deserialize, Debug, Clone)]
+
 
 #[derive(Clone, Debug)]
 pub struct Video {
@@ -436,6 +567,7 @@ impl EventHandler for SongEndNotifier {
             .send_message(&self.http, Valeriyya::msg_reply().add_embed(
                 Valeriyya::embed()
                     .description(format!("{} has finished.", self.metadata.title))
+                    .title("Song information")
             )).await;
 
         None
@@ -453,7 +585,7 @@ impl EventHandler for SongPlayNotifier {
                         self.metadata.title,
                         format_args!("https://youtu.be/{}", self.metadata.id)
                     ))
-                    .title("Song playing")
+                    .title("Song information")
             )).await;
 
         None
@@ -498,4 +630,13 @@ impl Valeriyya {
     pub async fn get_database(db: &Database, guild_id: impl Into<String>) -> GuildDb {
         GuildDb::new(db, guild_id).await
     }
+
+    pub async fn get_video_metadata(ctx: Context<'_>, url: impl Into<String>) -> Vec<Video> {
+        get_metadata(ctx, url, false).await
+    }
+
+    pub async fn get_playlist_metadata(ctx: Context<'_>, url: impl Into<String>) -> Vec<Video> {
+        get_metadata(ctx, url, true).await
+    }
+
 }

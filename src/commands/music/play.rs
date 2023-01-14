@@ -1,8 +1,7 @@
 use crate::{
-    utils::{Valeriyya, ResponseVideoApi, SongEndNotifier, SongPlayNotifier, Video},
+    utils::{Valeriyya, SongEndNotifier, SongPlayNotifier, Video},
     Context, Error,
 };
-use futures::StreamExt;
 
 use songbird::{input::YoutubeDl, Event, TrackEvent};
 use std::time::Duration;
@@ -21,35 +20,8 @@ pub async fn play(
     #[rest]
     url: String,
 ) -> Result<(), Error> {
-    let video_id_regex = crate::regex!(r"[0-9A-Za-z_-]{10}[048AEIMQUYcgkosw]");
-    let playlist_id_regex =
-        crate::regex!(r"(?:(?:PL|LL|EC|UU|FL|RD|UL|TL|PU|OLAK5uy_)[0-9A-Za-z-_]{10,}|RDMM)");
-
+    let video_bool = crate::regex!(r"(?:(?:PL|LL|EC|UU|FL|RD|UL|TL|PU|OLAK5uy_)[0-9A-Za-z-_]{10,}|RDMM)").find(&url).is_none();
     let request_client = reqwest::Client::new();
-
-    let url: (String, bool) = match playlist_id_regex
-        .find(&url)
-        .map(|u| u.as_str().to_owned()) {
-            Some(url) => (url, false),
-            None => {
-                match video_id_regex
-                .find(&url)
-                .map(|u| u.as_str().to_owned()) {
-                    Some(url) => (url, true),
-                    None => {
-                        (request_client.get(
-                            format!(
-                                "https://youtube.googleapis.com/youtube/v3/search?part=snippet&order=relevance&type=video&maxResults=1&q={query}&key={api_key}", 
-                                query = url.clone(), api_key = ctx.data().api_key
-                            ))
-                            .send().await?.json::<ResponseVideoApi>().await?.items[0].id.videoId.clone(), true)
-
-                    }
-                }
-            },
-        };
-    let ytextract = ytextract::Client::new();
-
     let guild_id = ctx.guild_id().unwrap();
 
     let channel_id = ctx
@@ -62,7 +34,7 @@ pub async fn play(
     let connect_to = match channel_id {
         Some(channel) => channel,
         None => {
-            ctx.send(Valeriyya::reply("You are not in a voice channel").ephemeral(true)).await;
+            ctx.send(Valeriyya::reply("You are not in a voice channel..").ephemeral(true)).await;
             return Ok(());
         }
     };
@@ -73,60 +45,31 @@ pub async fn play(
     if let Some(handler_lock) = ctx.data().songbird.get(guild_id) {
         let mut handler = handler_lock.lock().await;
 
-        let metadata: (Vec<Video>, bool) = match url.1 {
+        let metedata_url = url.clone();
+        let metadata: Vec<Video> = match video_bool {
             true => {
-                let video = ytextract.video(url.0.parse()?).await?;
-                (
-                    vec![Video {
-                        id: video.id().to_string(),
-                        duration: video.duration(),
-                        title: video.title().to_string(),
-                    }],
-                    true,
-                )
-            }
+                Valeriyya::get_video_metadata(ctx, metedata_url).await
+            },
             false => {
-                let playlist_data = ytextract.playlist(url.0.parse()?).await?;
-                let videos = playlist_data.videos();
-                futures::pin_mut!(videos);
-                let mut vec: Vec<Video> = vec![];
-
-                while let Some(video) = videos.next().await {
-                    let video = match video {
-                        Ok(vid) => vid,
-                        Err(_) => {
-                            continue;
-                        }
-                    };
-
-                    let video = ytextract.video(video.id()).await?;
-                    vec.push(Video {
-                        id: video.id().to_string(),
-                        duration: video.duration(),
-                        title: video.title().to_string(),
-                    });
-                }
-                (vec, false)
+                Valeriyya::get_playlist_metadata(ctx, metedata_url).await
             }
         };
 
-        let source: Vec<YoutubeDl> = match metadata.1 {
+        let source = match video_bool {
             true => {
-                vec![YoutubeDl::new(request_client, metadata.0[0].id.parse()?)]
-            }
+                vec![YoutubeDl::new(request_client, metadata[0].id.clone())]
+            },
             false => {
-                let vids = &metadata.0;
-                let mut yt: Vec<YoutubeDl> = Vec::new();
-                for q in vids {
-                    yt.push(YoutubeDl::new(request_client.clone(), q.id.parse()?));
+                let videos = metadata.clone();
+                let mut yt: Vec<YoutubeDl> = Vec::with_capacity(100);
+                for vid in videos {
+                    yt.push(YoutubeDl::new(request_client.clone(), vid.id))
                 }
                 yt
             }
         };
 
         for (i, s) in source.into_iter().enumerate() {
-            let video_bool = &metadata.1;
-            let metadata = &metadata.0;
             let queue = handler.enqueue_with_preload(
                 s.into(),
                 Some(metadata[i].duration - Duration::from_secs(15)),
@@ -140,8 +83,7 @@ pub async fn play(
                 },
             );
 
-            #[allow(clippy::if_same_then_else)]
-            if !video_bool && i >= 1 {
+            if metadata.len() >= 2 && i >= 1 {
                 let _ = queue.add_event(
                     Event::Track(TrackEvent::Play),
                     SongPlayNotifier {
@@ -150,16 +92,7 @@ pub async fn play(
                         metadata: metadata[i].clone(),
                     },
                 );
-            } else if handler.queue().len() >= 2 {
-                let _ = queue.add_event(
-                    Event::Track(TrackEvent::Play),
-                    SongPlayNotifier {
-                        chan_id: ctx.channel_id(),
-                        http: ctx.discord().http.clone(),
-                        metadata: metadata[i].clone(),
-                    },
-                );
-            };
+            }
         }
 
         let queue_clone = handler.queue().clone();
@@ -178,15 +111,28 @@ pub async fn play(
             }
         });
 
-    
+        let information_title = match video_bool {
+            true => {
+                if handler.queue().len() >= 2 {
+                    "Queued"
+                } else {
+                    "Playing"
+                }
+            },
+            false => {
+                "Playing"
+            }
+        };
+
         msg.edit(ctx, Valeriyya::reply("").embed(
             Valeriyya::embed()
                 .description(format!(
-                    "Queued [{}]({})",
-                    metadata.0[0].title,
-                    format_args!("https://youtu.be/{}", metadata.0[0].id)
+                    "{} [{}]({})",
+                    information_title,
+                    metadata[0].title,
+                    format_args!("https://youtu.be/{}", metadata[0].id)
                 ))
-                .title("Song playing")
+                .title("Song information")
         )).await?;
 
         drop(handler);

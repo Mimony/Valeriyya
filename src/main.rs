@@ -10,6 +10,7 @@ use mongodb::options::{ClientOptions, ResolverConfig};
 use mongodb::{Client, Database};
 use poise::serenity_prelude::GatewayIntents;
 use poise::serenity_prelude::FullEvent;
+use tracing::{error, info};
 
 type Error = Box<dyn std::error::Error + Send + Sync>;
 type Context<'a> = poise::Context<'a, Data, Error>;
@@ -37,7 +38,7 @@ fn event_listeners(
     match event {
         FullEvent::Ready { ctx, data_about_bot } => {
             ctx.online();
-            println!("{} is connected!", data_about_bot.user.tag())
+            info!("{} is connected!", data_about_bot.user.tag())
         },
         _ => {},
     }
@@ -46,7 +47,7 @@ fn event_listeners(
 }
 
 async fn init() -> Result<(), Error> {
-    tracing_subscriber::fmt::init();
+    tracing_subscriber::fmt().pretty().init();
 
     let discord_token =
         std::env::var("VALERIYYA_DISCORD_TOKEN").expect("(DISCORD_TOKEN IS NOT PRESENT)");
@@ -123,7 +124,7 @@ async fn init() -> Result<(), Error> {
 #[tokio::main]
 async fn main() {
     if let Err(e) = init().await {
-        println!("{}", e);
+        error!("{}", e);
         std::process::exit(1);
     }
 }

@@ -20,6 +20,7 @@ futures = { version = "0.3.17", features = ["std"], default-features = false }
 tracing = "0.1"
 tracing-subscriber = "0.3.15"
 tracing-futures = "0.2"
+iso8601-duration = "0.1.0"
 
 # Serenity Next Branch
 [dependencies.serenity]
