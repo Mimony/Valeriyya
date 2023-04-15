@@ -1,6 +1,6 @@
 use crate::{utils::Valeriyya, Context, Error};
 
-/// Leaves the voice channel.
+#[doc = "Leaves the voice channel."]
 #[poise::command(
     prefix_command,
     slash_command,

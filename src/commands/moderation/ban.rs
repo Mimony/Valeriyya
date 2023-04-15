@@ -4,7 +4,7 @@ use crate::{
 };
 use poise::serenity_prelude::{ChannelId, Timestamp, UserId, Member};
 
-/// Bans a member from the guild.
+#[doc = "Bans a member from the guild."]
 #[poise::command(
     slash_command,
     category = "Moderation",

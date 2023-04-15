@@ -538,9 +538,6 @@ struct ResponsePlaylistApi {
     items: Vec<PlaylistItem>
 }
 
-// #[derive(Deserialize, Debug, Clone)]
-
-
 #[derive(Clone, Debug)]
 pub struct Video {
     pub id: String,
@@ -597,7 +594,7 @@ pub const PURPLE_COLOR: Color = Color::from_rgb(82, 66, 100);
 pub struct Valeriyya;
 
 impl Valeriyya {
-    // * Better Create Structs
+    // * Shortcuts to most Create structures
     pub fn embed() -> CreateEmbed {
         valeriyya_embed()
     }
@@ -626,7 +623,7 @@ impl Valeriyya {
         CreateEmbedFooter::new(content)
     }
 
-    // * Utils
+    // * Utility functions
     pub async fn get_database(db: &Database, guild_id: impl Into<String>) -> GuildDb {
         GuildDb::new(db, guild_id).await
     }

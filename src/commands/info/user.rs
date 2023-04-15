@@ -2,11 +2,11 @@ use poise::serenity_prelude::{Member, Timestamp, User};
 
 use crate::{ternary, utils::{get_guild_member, Valeriyya}, Context, Error};
 
-/// Gets the information about a user.
+#[doc = "Gets the information about a user."]
 #[poise::command(slash_command, category = "Information", default_member_permissions="SEND_MESSAGES")]
 pub async fn user(
     ctx: Context<'_>,
-    #[description = "Gets the information about a user."] user: Option<Member>,
+    #[description = "The user to get the information from."] user: Option<Member>,
 ) -> Result<(), Error> {
     let member = &user.unwrap_or(get_guild_member(ctx).await?.unwrap());
 

@@ -5,9 +5,7 @@ pub async fn help(ctx: Context<'_>, command: Option<String>) -> Result<(), Error
     poise::builtins::help(
         ctx,
         command.as_deref(),
-        poise::builtins::HelpConfiguration {
-            ..Default::default()
-        },
+        Default::default(),
     )
     .await?;
 

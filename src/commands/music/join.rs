@@ -1,6 +1,6 @@
 use crate::{Context, Error, utils::Valeriyya};
 
-/// Joins a voice channel.
+#[doc = "Joins a voice channel."]
 #[poise::command(prefix_command, slash_command, default_member_permissions="VIEW_CHANNEL", category="Music")]
 pub async fn join(ctx: Context<'_>) -> Result<(), Error> {
     

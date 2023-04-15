@@ -6,7 +6,7 @@ use crate::{
 use songbird::{input::YoutubeDl, Event, TrackEvent};
 use std::time::Duration;
 
-/// Plays a song.
+#[doc = "Plays a song."]
 #[poise::command(
     prefix_command,
     slash_command,

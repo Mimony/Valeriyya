@@ -5,7 +5,7 @@ use crate::{
     Context, Error,
 };
 
-/// Kicks a member from the guild.
+#[doc = "Kicks a member from the guild."]
 #[poise::command(
     slash_command,
     category = "Moderation",

@@ -3,7 +3,7 @@ use crate::{
     Context, Error,
 };
 
-/// Puts the current song on repeat.
+#[doc = "Puts the current song on repeat."]
 #[poise::command(
     prefix_command,
     slash_command,

@@ -6,7 +6,7 @@ use poise::{
     serenity_prelude::{Timestamp, ChannelId, Member}
 };
 
-/// Mutes a member for a specified time.
+#[doc = "Mutes a member for a specified time."]
 #[poise::command(
     slash_command,
     category = "Moderation",

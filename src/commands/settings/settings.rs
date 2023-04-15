@@ -13,13 +13,12 @@ pub enum ChannelTypeChoices {
     Welcome,
 }
 
-/// Changes the settings in this guild.
+#[doc = "Changes the settings in this guild."]
 #[poise::command(slash_command, category = "Settings", subcommands("channel", "role"), default_member_permissions="MANAGE_GUILD")]
 pub async fn settings(_ctx: Context<'_>) -> Result<(), Error> {
     Ok(())
 }
 
-/// The channel that will be used for the previous type.
 #[poise::command(slash_command, category = "Settings")]
 pub async fn channel(
     ctx: Context<'_>,
