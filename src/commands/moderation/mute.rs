@@ -1,5 +1,6 @@
 use crate::{
-    utils::{member_managable, string_to_sec, ActionTypes, Case, Valeriyya, GuildDb},
+    structs::{ActionTypes, Case},
+    utils::{member_managable, Valeriyya},
     Context, Error,
 };
 use poise::{
@@ -20,7 +21,7 @@ pub async fn mute(
     #[rest]
     reason: Option<String>,
 ) -> Result<(), Error> {
-    let string_time = string_to_sec(&time);
+    let string_time = Valeriyya::ms(&time);
 
     if string_time < 60 {
         ctx.send(Valeriyya::reply("You can't mute someone for under 60 seconds!").ephemeral(true)).await;
@@ -34,7 +35,7 @@ pub async fn mute(
     let database = &ctx.data().database();
     let guild_id = ctx.guild_id().unwrap();
 
-    let mut guild_db = GuildDb::new(database, guild_id.to_string()).await;
+    let mut guild_db = Valeriyya::get_database(database, guild_id.to_string()).await;
     let case_number = guild_db.cases_number + 1;
     let reason_default = reason.unwrap_or_else(|| format!("Use /reason {} <...reason> to seat a reason for this case.", case_number));
 
@@ -112,6 +113,6 @@ pub async fn mute(
 fn time_format(time: String) -> String {
     format!(
         "<t:{}:R>",
-        Timestamp::unix_timestamp(&Timestamp::now()) + string_to_sec(time)
+        Timestamp::unix_timestamp(&Timestamp::now()) + Valeriyya::ms(time)
     )
 }

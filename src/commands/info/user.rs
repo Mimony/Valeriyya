@@ -1,6 +1,6 @@
 use poise::serenity_prelude::{Member, Timestamp, User};
 
-use crate::{ternary, utils::{get_guild_member, Valeriyya}, Context, Error};
+use crate::{utils::{get_guild_member, Valeriyya}, Context, Error};
 
 #[doc = "Gets the information about a user."]
 #[poise::command(slash_command, category = "Information", default_member_permissions="SEND_MESSAGES")]
@@ -32,8 +32,8 @@ fn time_format(time: Timestamp) -> String {
 }
 
 fn is_bot(user: &User) -> &str {
-    ternary!(user.bot => {
-        "(User is a bot)";
-        "";
-    })
+    match user.bot {
+        true => "(User is a bot)",
+        false => "",
+    }
 }

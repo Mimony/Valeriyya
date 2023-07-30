@@ -5,9 +5,8 @@ use poise::{
 };
 
 use crate::{
-    utils::{
-        update_case, Valeriyya, ActionTypes, CaseUpdateAction, CaseUpdateValue, GuildDb,
-    },
+    structs::{ActionTypes, GuildDb, Case, CaseUpdateAction, CaseUpdateValue},
+    utils::{update_case, Valeriyya},
     Context, Error,
 };
 
@@ -44,7 +43,7 @@ pub async fn reference(
         database,
         guild_id.to_string(),
         case,
-        CaseUpdateAction::reference,
+        CaseUpdateAction::Reference,
         CaseUpdateValue {
             reason: None,
             reference: Some(reference),

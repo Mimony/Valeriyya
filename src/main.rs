@@ -1,10 +1,9 @@
 #![feature(fn_traits)]
 #![feature(once_cell)]
-#![allow(unused_must_use)]
-#![allow(clippy::uninlined_format_args)]
 
 mod commands;
 mod utils;
+mod structs;
 
 use mongodb::options::{ClientOptions, ResolverConfig};
 use mongodb::{Client, Database};

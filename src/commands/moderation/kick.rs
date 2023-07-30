@@ -1,7 +1,8 @@
 use poise::serenity_prelude::{ChannelId, Timestamp, Member};
 
 use crate::{
-    utils::{member_managable, ActionTypes, Case, Valeriyya, GuildDb},
+    structs::{ActionTypes, GuildDb, Case},
+    utils::{member_managable,Valeriyya},
     Context, Error,
 };
 
@@ -21,7 +22,7 @@ pub async fn kick(
     let database = &ctx.data().database();
     let guild_id = ctx.guild_id().unwrap();
 
-    let mut guild_db = GuildDb::new(database, guild_id.to_string()).await;
+    let mut guild_db = Valeriyya::get_database(database, guild_id.to_string()).await;
     let case_number = guild_db.cases_number + 1;
     let reason_default = reason.unwrap_or_else(|| format!("Use /reason {} <...reason> to set a reason for this case.", case_number));
 

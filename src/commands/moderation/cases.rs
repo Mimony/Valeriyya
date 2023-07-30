@@ -1,7 +1,8 @@
 use poise::serenity_prelude::{Timestamp, UserId, CreateEmbed, Member};
 
 use crate::{
-    utils::{get_guild_member, ActionTypes, Valeriyya, GuildDb, Case},
+    structs::{ActionTypes, GuildDb, Case},
+    utils::{get_guild_member,Valeriyya},
     Context, Error,
 };
 
@@ -28,7 +29,7 @@ pub async fn cases(
 
     let guild_id = ctx.guild_id().unwrap().0;
 
-    let mut db = GuildDb::new(database, guild_id.to_string()).await;
+    let mut db = Valeriyya::get_database(database, guild_id.to_string()).await;
     let staff = get_guild_member(ctx).await?.unwrap();
 
     if let OptionChoices::Show = option {

@@ -1,5 +1,5 @@
 use crate::{
-    utils::{GuildDb, GuildDbChannels, GuildDbRoles},
+    structs::{GuildDb, GuildDbChannels, GuildDbRoles},
     Context, Error,
 };
 
@@ -36,7 +36,7 @@ pub async fn channel(
     if let ChannelTypeChoices::Logs = type_option {
         db = db.set_channels(GuildDbChannels::default().set_logs_channel(Some(channel.id.to_string())));
         ctx.say(format!("The logs channel has been updated to {}.", channel.mention())).await;
-    } else {
+    } else if let ChannelTypeChoices::Welcome = type_option {
         db = db.set_channels(GuildDbChannels::default().set_welcome_channel(Some(channel.id.to_string())));
         ctx.say(format!("The welcome channel has been updated to {}.", channel.mention())).await;
     };

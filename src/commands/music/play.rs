@@ -1,5 +1,6 @@
 use crate::{
-    utils::{Valeriyya, SongEndNotifier, SongPlayNotifier, Video},
+    structs::{SongEndNotifier, SongPlayNotifier, Video},
+    utils::Valeriyya,
     Context, Error,
 };
 

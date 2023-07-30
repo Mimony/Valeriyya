@@ -3,7 +3,8 @@ use std::num::NonZeroU64;
 use poise::serenity_prelude::{MessageId, UserId, Timestamp, ChannelId};
 
 use crate::{
-    utils::{update_case, CaseUpdateAction, CaseUpdateValue, ActionTypes, GuildDb, Valeriyya},
+    structs::{ActionTypes, GuildDb, Case, CaseUpdateAction, CaseUpdateValue},
+    utils::{Valeriyya},
     Context, Error,
 };
 
@@ -17,23 +18,22 @@ pub async fn reason(
 ) -> Result<(), Error> {
     let database = &ctx.data().database();
     let guild_id = ctx.guild_id().unwrap().0;
-    let db = GuildDb::new(database, guild_id.to_string()).await;
+    let db = Valeriyya::get_database(database, guild_id.to_string()).await;
 
     let case_find = db.cases.iter().find(|c| c.id == case);
 
 
      if case_find.is_none() {
-        ctx.send(Valeriyya::reply(format!("Case with the id: {} doesn't exist", case)).ephemeral(true))
-        .await;
+        ctx.send(Valeriyya::reply(format!("Case with the id: {} doesn't exist", case)).ephemeral(true)).await?;
         return Ok(())
     } 
     
-    update_case(database, guild_id.to_string(), case, CaseUpdateAction::reason, CaseUpdateValue {
+    db = db.update_case(guild_id.to_string(), case, CaseUpdateAction::Reason, CaseUpdateValue {
         reason: Some(reason.clone()),
         reference: None
     });
 
-    ctx.send(Valeriyya::reply(format!("Updated case with the id: {case}")).ephemeral(true)).await;
+    ctx.send(Valeriyya::reply(format!("Updated case with the id: {case}")).ephemeral(true)).await?;
 
     if db.channels.logs.is_some() {
         let channel = ChannelId(db.channels.logs.unwrap().parse::<NonZeroU64>().unwrap());
@@ -63,7 +63,7 @@ pub async fn reason(
                 ))
             }
 
-            log_channel_msg.edit(ctx.discord(), Valeriyya::msg_edit().embed(embed)).await;
+            log_channel_msg.edit(ctx.discord(), Valeriyya::msg_edit().embed(embed)).await?;
         };
     }
 
