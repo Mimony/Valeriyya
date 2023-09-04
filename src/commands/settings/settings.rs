@@ -35,10 +35,10 @@ pub async fn channel(
     let mut db = GuildDb::new(database, guild_id.to_string()).await;
     if let ChannelTypeChoices::Logs = type_option {
         db = db.set_channels(GuildDbChannels::default().set_logs_channel(Some(channel.id.to_string())));
-        ctx.say(format!("The logs channel has been updated to {}.", channel.mention())).await;
+        ctx.say(format!("The logs channel has been updated to {}.", channel.mention())).await?;
     } else if let ChannelTypeChoices::Welcome = type_option {
         db = db.set_channels(GuildDbChannels::default().set_welcome_channel(Some(channel.id.to_string())));
-        ctx.say(format!("The welcome channel has been updated to {}.", channel.mention())).await;
+        ctx.say(format!("The welcome channel has been updated to {}.", channel.mention())).await?;
     };
 
     db.execute(database).await;
@@ -70,7 +70,7 @@ pub async fn role(
     let mut db = GuildDb::new(database, guild_id.to_string()).await;
     if let RoleTypeChoices::Staff = type_option {
         db = db.set_roles(GuildDbRoles::default().set_staff_role(Some(role.id.to_string())));
-        ctx.say(format!("The staff role has been updated to {}.", role.mention())).await;
+        ctx.say(format!("The staff role has been updated to {}.", role.mention())).await?;
     };
 
     db.execute(database).await;

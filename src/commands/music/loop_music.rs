@@ -21,23 +21,21 @@ pub async fn loop_music(
         let handler = handler_lock.lock().await;
         if handler.queue().current().is_some() {
             if !loop_bool {
-                handler.queue().current().unwrap().disable_loop();
+                handler.queue().current().unwrap().disable_loop()?;
             }
-            handler.queue().current().unwrap().enable_loop();
-
-            handler.queue().current().unwrap().enable_loop();
+            handler.queue().current().unwrap().enable_loop()?;
 
             ctx.send(Valeriyya::reply_default().embed(
                 Valeriyya::embed()
                     .description(format!("Loop {}", if loop_bool { "enabled" } else { "disabled" }))
                     .title("Loop information")
-            )).await;
+            )).await?;
         } else {
             ctx.send(Valeriyya::reply_default().embed(
                 Valeriyya::embed()
                     .description("There is no songs in the queue.")
                     .title("Loop information")
-            )).await;
+            )).await?;
         }
     };
 

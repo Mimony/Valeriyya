@@ -1,7 +1,7 @@
 use poise::serenity_prelude::{ChannelId, Timestamp, Member};
 
 use crate::{
-    structs::{ActionTypes, GuildDb, Case},
+    structs::{ActionTypes, Case},
     utils::{member_managable,Valeriyya},
     Context, Error,
 };
@@ -27,13 +27,12 @@ pub async fn kick(
     let reason_default = reason.unwrap_or_else(|| format!("Use /reason {} <...reason> to set a reason for this case.", case_number));
 
     if !member_managable(ctx, &member).await {
-        ctx.send(Valeriyya::reply("The member can't be managed so you can't kick them!").ephemeral(true))
-        .await;
+        ctx.send(Valeriyya::reply("The member can't be managed so you can't kick them!").ephemeral(true)).await?;
         return Ok(());
     }
     member
         .kick_with_reason(ctx.discord(), &reason_default)
-        .await;
+        .await?;
     let icon_url = ctx
         .guild()
         .unwrap()
@@ -77,7 +76,7 @@ pub async fn kick(
         reference: None,
     });
 
-    ctx.say(format!("{} has been kicked by {}!", member, ctx.author())).await;
+    ctx.say(format!("{} has been kicked by {}!", member, ctx.author())).await?;
 
     guild_db.execute(database).await;
     Ok(())

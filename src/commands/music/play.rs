@@ -35,31 +35,25 @@ pub async fn play(
     let connect_to = match channel_id {
         Some(channel) => channel,
         None => {
-            ctx.send(Valeriyya::reply("You are not in a voice channel..").ephemeral(true)).await;
+            ctx.send(Valeriyya::reply("You are not in a voice channel..").ephemeral(true)).await?;
             return Ok(());
         }
     };
 
     let msg = ctx.say("Loading song...").await.unwrap();
-    ctx.data().songbird.join(guild_id, connect_to).await;
+    let _ = ctx.data().songbird.join(guild_id, connect_to).await;
 
     if let Some(handler_lock) = ctx.data().songbird.get(guild_id) {
         let mut handler = handler_lock.lock().await;
 
         let metedata_url = url.clone();
         let metadata: Vec<Video> = match video_bool {
-            true => {
-                Valeriyya::get_video_metadata(ctx, metedata_url).await
-            },
-            false => {
-                Valeriyya::get_playlist_metadata(ctx, metedata_url).await
-            }
+            true => Valeriyya::get_video_metadata(ctx, metedata_url).await,
+            false => Valeriyya::get_playlist_metadata(ctx, metedata_url).await
         };
 
         let source = match video_bool {
-            true => {
-                vec![YoutubeDl::new(request_client, metadata[0].id.clone())]
-            },
+            true => vec![YoutubeDl::new(request_client, metadata[0].id.clone())],
             false => {
                 let videos = metadata.clone();
                 let mut yt: Vec<YoutubeDl> = Vec::with_capacity(100);
@@ -107,7 +101,7 @@ pub async fn play(
                     tokio::time::sleep(Duration::from_secs(600)).await;
                     continue;
                 }
-                mng.remove(guild_id).await;
+                let _ = mng.remove(guild_id).await;
                 break;
             }
         });

@@ -1,11 +1,9 @@
 use std::num::NonZeroU64;
 
-use poise::{
-    serenity_prelude::{ChannelId, MessageId, Timestamp, UserId}
-};
+use poise::serenity_prelude::{ChannelId, MessageId, Timestamp, UserId};
 
 use crate::{
-    structs::{ActionTypes, GuildDb, Case, CaseUpdateAction, CaseUpdateValue},
+    structs::{ActionTypes, GuildDb, CaseUpdateAction, CaseUpdateValue},
     utils::{update_case, Valeriyya},
     Context, Error,
 };
@@ -29,13 +27,13 @@ pub async fn reference(
     let case_2 = db.cases.iter().find(|c| c.id == reference);
 
     if case_1.is_none() & case_2.is_none() {
-        ctx.send(Valeriyya::reply("Cases with this ids don't exist").ephemeral(true)).await;
+        ctx.send(Valeriyya::reply("Cases with this ids don't exist").ephemeral(true)).await?;
         return Ok(());
     } else if case_1.is_none() {
-        ctx.send(Valeriyya::reply(format!("Case with the id: {} doesn't exist", case)).ephemeral(true)).await;
+        ctx.send(Valeriyya::reply(format!("Case with the id: {} doesn't exist", case)).ephemeral(true)).await?;
         return Ok(());
     } else if case_2.is_none() {
-        ctx.send(Valeriyya::reply(format!("Case with the id: {} doesn't exist", reference)).ephemeral(true)).await;
+        ctx.send(Valeriyya::reply(format!("Case with the id: {} doesn't exist", reference)).ephemeral(true)).await?;
         return Ok(());
     }
 
@@ -48,7 +46,7 @@ pub async fn reference(
             reason: None,
             reference: Some(reference),
         },
-    );
+    ).await;
 
     if db.channels.logs.is_some() {
         let channel = ChannelId(db.channels.logs.unwrap().parse::<NonZeroU64>().unwrap());
@@ -99,10 +97,10 @@ pub async fn reference(
             }
             
 
-            log_channel_msg.edit(ctx.discord(), Valeriyya::msg_edit().embed(embed)).await;
+            log_channel_msg.edit(ctx.discord(), Valeriyya::msg_edit().embed(embed)).await?;
         };
     }
 
-    ctx.send(Valeriyya::reply(format!("Updated case with the id: {case}")).ephemeral(true)).await;
+    ctx.send(Valeriyya::reply(format!("Updated case with the id: {case}")).ephemeral(true)).await?;
     Ok(())
 }

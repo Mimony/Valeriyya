@@ -1,5 +1,5 @@
 use crate::{
-    structs::{ActionTypes, Case, GuildDb},
+    structs::{ActionTypes, Case},
     utils::{member_managable, Valeriyya},
     Context, Error,
 };
@@ -36,8 +36,7 @@ pub async fn ban(
 
     if let Some(member) = &mem {
         if !member_managable(ctx, member).await {
-            ctx.send(Valeriyya::reply("The member can't be managed so you can't ban them!").ephemeral(true))
-            .await;
+            ctx.send(Valeriyya::reply("The member can't be managed so you can't ban them!").ephemeral(true)).await?;
             return Ok(());
         }
         if guild_id
@@ -47,8 +46,7 @@ pub async fn ban(
             .any(|ban| ban.user.id == member.user.id)
         {
 
-            ctx.send(Valeriyya::reply("This member is already banned from this guild.").ephemeral(true))
-            .await;
+            ctx.send(Valeriyya::reply("This member is already banned from this guild.").ephemeral(true)).await?;
         }
         member
             .ban_with_reason(ctx.discord(), 7, &reason_default)
@@ -104,7 +102,7 @@ pub async fn ban(
             member,
             ctx.author()
         ))
-        .await;
+        .await?;
     } else if let Some(m_id) = &member_id {
         let user_id = UserId(m_id.parse().unwrap());
         if guild_id
@@ -113,7 +111,7 @@ pub async fn ban(
             .iter()
             .any(|ban| ban.user.id == user_id)
         {
-            ctx.send(Valeriyya::reply("This member is already banned from this guild.").ephemeral(true)).await;
+            ctx.send(Valeriyya::reply("This member is already banned from this guild.").ephemeral(true)).await?;
         }
         guild_id
             .ban_with_reason(ctx.discord(), user_id, 7, &reason_default)
@@ -169,7 +167,7 @@ pub async fn ban(
             user_id,
             ctx.author()
         ))
-        .await;
+        .await?;
     }
     guild_db.execute(database).await;
     Ok(())

@@ -137,8 +137,9 @@ impl GuildDb {
         self
     }
 
-    pub fn update_case(mut self, gid: String, case_id: u32, action: CaseUpdateAction, value: CaseUpdateValue) -> Self {
-        let mut c = self.cases.iter_mut().find(|c| c.id == case_id).unwrap();
+    #[inline(always)]
+    pub fn update_case(mut self, case_id: u32, action: CaseUpdateAction, value: CaseUpdateValue) -> Self {
+        let c = self.cases.iter_mut().find(|c| c.id == case_id).unwrap();
 
         if let CaseUpdateAction::Reason = action {
             c.reason = value.reason.unwrap();

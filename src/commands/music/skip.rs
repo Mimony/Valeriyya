@@ -15,7 +15,7 @@ pub async fn skip(ctx: Context<'_>) -> Result<(), Error> {
     let _connect_to = match channel_id {
         Some(channel) => channel,
         None => {
-            ctx.send(Valeriyya::reply("You are not in a voice channel.").ephemeral(true)).await;
+            ctx.send(Valeriyya::reply("You are not in a voice channel.").ephemeral(true)).await?;
             return Ok(());
         }
     };
@@ -25,12 +25,12 @@ pub async fn skip(ctx: Context<'_>) -> Result<(), Error> {
         let queue = handler.queue();
         match queue.is_empty() {
             false => {
-                queue.skip();
-                ctx.send(Valeriyya::reply("The song has been skipped successfully.").ephemeral(true)).await;
+                let _ = queue.skip();
+                ctx.send(Valeriyya::reply("The song has been skipped successfully.").ephemeral(true)).await?;
             }
             true => {
                 drop(handler);
-                ctx.send(Valeriyya::reply("There is no songs in the queue!").ephemeral(true)).await;
+                ctx.send(Valeriyya::reply("There is no songs in the queue!").ephemeral(true)).await?;
             }
         };
     };

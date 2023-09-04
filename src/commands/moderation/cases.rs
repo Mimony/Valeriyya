@@ -1,7 +1,7 @@
 use poise::serenity_prelude::{Timestamp, UserId, CreateEmbed, Member};
 
 use crate::{
-    structs::{ActionTypes, GuildDb, Case},
+    structs::{ActionTypes, Case},
     utils::{get_guild_member,Valeriyya},
     Context, Error,
 };
@@ -36,20 +36,19 @@ pub async fn cases(
         let case = db.cases.iter().find(|c| c.id == id);
 
         if case.is_none() {
-            ctx.send(Valeriyya::reply(format!("Can't find a case with the id: {}", id)).ephemeral(true))
-            .await;
+            ctx.send(Valeriyya::reply(format!("Can't find a case with the id: {}", id)).ephemeral(true)).await?;
             return Ok(());
         }
         
         let case = case.unwrap();
         let target_user = UserId(case.target_id.parse::<std::num::NonZeroU64>().unwrap()).to_user(ctx.discord()).await?.tag();
 
-        ctx.send(Valeriyya::reply_default().embed(create_embed(ctx, staff, case, target_user))).await;
+        ctx.send(Valeriyya::reply_default().embed(create_embed(ctx, staff, case, target_user))).await?;
     } else if let OptionChoices::Delete = option {
         let case = db.cases.iter().find(|c| c.id == id);
 
         if case.is_none() {
-            ctx.send(Valeriyya::reply(format!("Can't find a case with the id: {}", id)).ephemeral(true)).await;
+            ctx.send(Valeriyya::reply(format!("Can't find a case with the id: {}", id)).ephemeral(true)).await?;
             return Ok(());
         }
 
@@ -67,7 +66,7 @@ pub async fn cases(
             Valeriyya::embed()
                 .author(Valeriyya::reply_author(format!("{} ({})", staff.user.tag(), staff.user.id)).icon_url(staff.user.face()))
         ))
-        .await;
+        .await?;
     }
     db.execute(database).await;
     Ok(())

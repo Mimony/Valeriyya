@@ -1,10 +1,10 @@
-use std::num::NonZeroU64;
+use std::{num::NonZeroU64, sync::Arc};
 
 use poise::serenity_prelude::{MessageId, UserId, Timestamp, ChannelId};
 
 use crate::{
-    structs::{ActionTypes, GuildDb, Case, CaseUpdateAction, CaseUpdateValue},
-    utils::{Valeriyya},
+    structs::{ActionTypes, CaseUpdateAction, CaseUpdateValue},
+    utils::Valeriyya,
     Context, Error,
 };
 
@@ -19,16 +19,20 @@ pub async fn reason(
     let database = &ctx.data().database();
     let guild_id = ctx.guild_id().unwrap().0;
     let db = Valeriyya::get_database(database, guild_id.to_string()).await;
+    let db = Arc::new(db);
 
     let case_find = db.cases.iter().find(|c| c.id == case);
 
 
-     if case_find.is_none() {
+    if case_find.is_none() {
         ctx.send(Valeriyya::reply(format!("Case with the id: {} doesn't exist", case)).ephemeral(true)).await?;
         return Ok(())
-    } 
+    }
     
-    db = db.update_case(guild_id.to_string(), case, CaseUpdateAction::Reason, CaseUpdateValue {
+    let db_clone = Arc::clone(&db);
+    let db = Arc::try_unwrap(db_clone).unwrap();
+    
+    let db = db.update_case(case, CaseUpdateAction::Reason, CaseUpdateValue {
         reason: Some(reason.clone()),
         reference: None
     });

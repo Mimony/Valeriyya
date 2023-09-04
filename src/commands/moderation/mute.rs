@@ -24,7 +24,7 @@ pub async fn mute(
     let string_time = Valeriyya::ms(&time);
 
     if string_time < 60 {
-        ctx.send(Valeriyya::reply("You can't mute someone for under 60 seconds!").ephemeral(true)).await;
+        ctx.send(Valeriyya::reply("You can't mute someone for under 60 seconds!").ephemeral(true)).await?;
         return Ok(());
     }
 
@@ -40,7 +40,7 @@ pub async fn mute(
     let reason_default = reason.unwrap_or_else(|| format!("Use /reason {} <...reason> to seat a reason for this case.", case_number));
 
     if !member_managable(ctx, &member).await {
-        ctx.send(Valeriyya::reply("The member can't be managed so you can't mute them!").ephemeral(true)).await;
+        ctx.send(Valeriyya::reply("The member can't be managed so you can't mute them!").ephemeral(true)).await?;
         return Ok(());
     }
 
@@ -52,13 +52,13 @@ pub async fn mute(
                 .unix_timestamp())
             < 0)
     {
-        ctx.send(Valeriyya::reply("This member is already muted").ephemeral(true)).await;
+        ctx.send(Valeriyya::reply("This member is already muted").ephemeral(true)).await?;
         return Ok(());
     };
 
     member
         .disable_communication_until_datetime(&ctx.discord().http, timestamp.unwrap())
-        .await;
+        .await?;
     let icon_url = ctx
         .guild()
         .unwrap()
@@ -104,7 +104,7 @@ pub async fn mute(
         reference: None,
     });
 
-    ctx.say(format!("{} has been muted by {}!", member, ctx.author())).await;
+    ctx.say(format!("{} has been muted by {}!", member, ctx.author())).await?;
 
     guild_db.execute(database).await;
     Ok(())

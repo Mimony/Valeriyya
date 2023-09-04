@@ -5,10 +5,10 @@
 use mongodb::Database;
 use poise::{
     serenity_prelude::{
-        Color, CreateEmbed, Member, Permissions, Role, RoleId, Timestamp, UserId, CreateEmbedAuthor, CreateEmbedFooter, CreateMessage, EditMessage,
+        Color, CreateEmbed, Member, RoleId, Timestamp, CreateEmbedAuthor, CreateEmbedFooter, CreateMessage, EditMessage,
     }, CreateReply,
 };
-use reqwest::header::{AUTHORIZATION, CONTENT_TYPE, ACCEPT};
+// use reqwest::header::{AUTHORIZATION, CONTENT_TYPE, ACCEPT};
 use iso8601_duration::Duration as iso_duration;
 
 use crate::{Context, Error, structs::{CaseUpdateAction, CaseUpdateValue, GuildDb, Video, ResponseVideoApi, ResponsePlaylistApi, ResponseSearchVideoApi, SearchVideoItem}};
@@ -38,14 +38,14 @@ macro_rules! regex_lazy {
     };
 }
 
-async fn _get_spotify_metadata(url: impl Into<String>, reqwest: &reqwest::Client) {
-    let url = format!("https://api.spotify.com/v1/search/{}", url.into());
-    reqwest.get(url)
-    .header(AUTHORIZATION, "Bearer [AUTH_TOKEN]")
-    .header(CONTENT_TYPE, "application/json")
-    .header(ACCEPT, "application/json")
-    .send().await.unwrap().text();
-}
+// async fn _get_spotify_metadata(url: impl Into<String>, reqwest: &reqwest::Client) {
+//     let url = format!("https://api.spotify.com/v1/search/{}", url.into());
+//     reqwest.get(url)
+//     .header(AUTHORIZATION, "Bearer [AUTH_TOKEN]")
+//     .header(CONTENT_TYPE, "application/json")
+//     .header(ACCEPT, "application/json")
+//     .send().await.unwrap().text();
+// }
 
 async fn search_video(query: impl Into<String>, api_key: &String, reqwest: &reqwest::Client) -> SearchVideoItem  {
     let url = format!(
@@ -107,7 +107,7 @@ async fn get_metadata(ctx: Context<'_>, url: impl Into<String>, playlist: bool) 
 
         let mut videos: Vec<Video> = Vec::with_capacity(100);
         for item in video_items.into_iter() {
-            let duration = iso_duration::parse(&item.content_details.duration).unwrap().to_std();
+            let duration = iso_duration::parse(&item.content_details.duration).unwrap().to_std().unwrap();
             videos.push(Video {
                 id: item.id,
                 title: item.snippet.title,
@@ -128,7 +128,7 @@ async fn get_metadata(ctx: Context<'_>, url: impl Into<String>, playlist: bool) 
     .await.expect("Error getting Video JSON")
     .json::<ResponseVideoApi>()
     .await.expect("Error parsing the Video JSON.").items.first().expect("There is no video from this url.").clone();
-    let duration = iso_duration::parse(&item.content_details.duration).unwrap().to_std();
+    let duration = iso_duration::parse(&item.content_details.duration).unwrap().to_std().unwrap();
     vec![Video {
         id: item.id,
         title: item.snippet.title,
@@ -182,37 +182,6 @@ pub async fn get_guild_member(ctx: Context<'_>) -> Result<Option<Member>, Error>
         ),
         None => None,
     })
-}
-
-fn aggregate_role_permissions(
-    guild_member: &Member,
-    guild_owner_id: UserId,
-    guild_roles: &std::collections::HashMap<RoleId, Role>,
-) -> Permissions {
-    if guild_owner_id == guild_member.user.id {
-        Permissions::all()
-    } else {
-        guild_member
-            .roles
-            .iter()
-            .filter_map(|r| guild_roles.get(r))
-            .fold(Permissions::empty(), |a, b| a | b.permissions)
-    }
-}
-
-pub async fn get_guild_permissions(ctx: Context<'_>) -> Result<Option<Permissions>, Error> {
-    if let (Some(guild_member), Some(guild_id)) = (get_guild_member(ctx).await?, ctx.guild_id()) {
-        let permissions = if let Some(guild) = guild_id.to_guild_cached(&ctx.discord()) {
-            aggregate_role_permissions(&guild_member, guild.owner_id, &guild.roles)
-        } else {
-            let guild = &guild_id.to_partial_guild(&ctx.discord()).await?;
-            aggregate_role_permissions(&guild_member, guild.owner_id, &guild.roles)
-        };
-
-        Ok(Some(permissions))
-    } else {
-        Ok(None)
-    }
 }
 
 pub async fn member_managable(ctx: Context<'_>, member: &Member) -> bool {
@@ -274,7 +243,7 @@ pub async fn update_case(
 ) {
     let mut db = Valeriyya::get_database(database, gid).await;
 
-    let mut c = db.cases.iter_mut().find(|c| c.id == id).unwrap();
+    let c = db.cases.iter_mut().find(|c| c.id == id).unwrap();
 
     if let CaseUpdateAction::Reason = action {
         c.reason = value.reason.unwrap();

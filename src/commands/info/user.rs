@@ -22,7 +22,7 @@ pub async fn user(
                 ),
                 time_format(member.joined_at.unwrap())
             ))
-    )).await;
+    )).await?;
 
     Ok(())
 }

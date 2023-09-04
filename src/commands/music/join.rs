@@ -15,14 +15,14 @@ pub async fn join(ctx: Context<'_>) -> Result<(), Error> {
     let connect_to = match channel_id {
         Some(channel) => channel,
         None => {
-            ctx.send(Valeriyya::reply("Not in a voice channel").ephemeral(true)).await;
+            ctx.send(Valeriyya::reply("Not in a voice channel").ephemeral(true)).await?;
             return Ok(());
         }
     };
 
-    ctx.data().songbird.join(guild_id, connect_to).await;
+    let _ = ctx.data().songbird.join(guild_id, connect_to).await;
 
-    ctx.send(Valeriyya::reply("I have joined your channel").ephemeral(true)).await;
+    ctx.send(Valeriyya::reply("I have joined your channel").ephemeral(true)).await?;
 
     Ok(())
 }
