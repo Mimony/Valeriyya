@@ -47,7 +47,7 @@ async fn init() -> Result<(), Error> {
     tracing_subscriber::fmt().pretty().init();
 
     let discord_token =
-        std::env::var("VALERIYYA_DISCORD_TOKEN_DEV").expect("(DISCORD_TOKEN IS NOT PRESENT)");
+        std::env::var("VALERIYYA_DISCORD_TOKEN").expect("(DISCORD_TOKEN IS NOT PRESENT)");
     let database_url = std::env::var("VALERIYYA_MONGODB").expect("(MONGODB_TOKEN IS NOT PRESENT)");
     let api_key = std::env::var("VALERIYYA_API_KEY").expect("(API_TOKEN IS NOT PRESENT)");
 
